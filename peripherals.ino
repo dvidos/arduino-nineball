@@ -38,8 +38,8 @@ void lampOn(int lampNo) {
 }
 
 void startLampBlinking(int lampNo, int timeMs) {
-  for (char i = 0; i < MAX_BLINKING_LAMPS; i++) {
-    if (!blinkingLamps[i].lampNo) {
+  for (int i = 0; i < MAX_BLINKING_LAMPS; i++) {
+      if (!blinkingLamps[i].lampNo) {
       blinkingLamps[i].lampNo = lampNo;
       blinkingLamps[i].timeMs = timeMs;
       blinkingLamps[i].timeLeft = timeMs;
@@ -51,7 +51,7 @@ void startLampBlinking(int lampNo, int timeMs) {
 }
 
 void stopLampBlinking(unsigned char lampNo) {
-  for (char i = 0; i < MAX_BLINKING_LAMPS; i++) {
+  for (int i = 0; i < MAX_BLINKING_LAMPS; i++) {
     if (blinkingLamps[i].lampNo == lampNo) {
       blinkingLamps[i].lampNo = 0;
       lampMatrix[lampNo / 8] &= ~(0x01 << (lampNo % 8));
