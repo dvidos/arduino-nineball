@@ -322,29 +322,40 @@ void setup_timers() {
 	TCCR1A = 0;                           // set entire TCCR1A register to 0
 	TCCR1B = 0;                           // same for TCCR1B
 	TCNT1  = 0;                           //initialize counter value to 0
-	OCR1A = 15624;                        // = (16*10^6) / (1*1024) - 1 (must be <65536)
+	OCR1A = 15624;                        // = (16,000,000) / (1*1024) - 1 (must be <65536)
 	TCCR1B |= (1 << WGM12);               // turn on CTC mode
 	TCCR1B |= (1 << CS12) | (1 << CS10);  // Set CS10 and CS12 bits for 1024 prescaler  
 	TIMSK1 |= (1 << OCIE1A);              // enable timer compare interrupt
-	
 	
 	// timer 3 to 1 msec - prescaler 64, compare value 249.
 	TCCR3A = 0;                           // set entire TCCRnA register to 0
 	TCCR3B = 0;                           // same for TCCRnB
 	TCNT3  = 0;                           // initialize counter value to 0
-	OCR3A = 250;                          // = (16*10^6) / (64*1000) - 1 (must be <65536)
+	OCR3A = 249;                          // = (16,000,000) / (64 * 1000) - 1 (must be <65536)
 	TCCR3B |= (1 << WGM32);               // turn on CTC mode
-	TCCR3B |= (1 << CS11) | (1 << CS10);  // Set CS11 and CS10 bits for 64 prescaler  	
+	TCCR3B |= (1 << CS31) | (1 << CS30);  // Set CS11 and CS10 bits for 64 prescaler  	
 	TIMSK3 |= (1 << OCIE3A);              // enable timer compare interrupt
-}
-
-
-ISR(TIMER1_COMPA_vect){
-   //noInterrupts();
-   //digitalWrite(13, !digitalRead(13));
+	
+	// timer 4 to 100 msecs - prescaler 64, compare value 24999.
+	TCCR4A = 0;                           // set entire TCCRnA register to 0
+	TCCR4B = 0;                           // same for TCCRnB
+	TCNT4  = 0;                           // initialize counter value to 0
+	OCR4A = 24999;                        // = (16,000,000) / (64 * 10) - 1 (must be <65536)
+	TCCR4B |= (1 << WGM42);               // turn on CTC mode
+	TCCR4B |= (1 << CS41) | (1 << CS40);  // Set CS11 and CS10 bits for 64 prescaler  	
+	TIMSK4 |= (1 << OCIE4A);              // enable timer compare interrupt
 }
 
 int x = 0;
+
+
+/**
+ * Timer 1, currently running every sec
+ */
+ISR(TIMER1_COMPA_vect){
+   //noInterrupts();
+   digitalWrite(13, !digitalRead(13));
+}
 
 /**
  * Timer 3, currently running every msec
@@ -352,12 +363,27 @@ int x = 0;
 ISR(TIMER3_COMPA_vect){
    noInterrupts();
    
-   x += 1;
-   if (x >= 1000) {
-	   digitalWrite(13, !digitalRead(13));
-	   x = 0;
-   }
+//   x += 1;
+//   if (x >= 1000) {
+//	   digitalWrite(13, !digitalRead(13));
+//	   x = 0;
+//   }
 }
+
+
+/**
+ * Timer 4, currently running every 100 msec
+ */
+ISR(TIMER4_COMPA_vect){
+   noInterrupts();
+   
+//   x += 1;
+//   if (x >= 10) {
+//	   digitalWrite(13, !digitalRead(13));
+//	   x = 0;
+//   }
+}
+
 
 
 void setup() {
@@ -374,5 +400,13 @@ void loop() {
 	delay(3000);
 }
 
+/*
+	Updates to future self:
+	- created timers interrupt handlers.
+		- timer1, every second, for long running timeouts
+		- timer3, every msec, for switch matrix, lamp matrix and score displays
+		- timer4, every 100 msec for coils and animations
+	- wanna move documentation and timers_init() to different file
+*/
 
 
