@@ -132,6 +132,7 @@ void setup() {
 	noInterrupts();
 	setup_timers();
 	setup_pins();
+	setup_sounds();
 	interrupts();
 }
 
