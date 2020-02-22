@@ -4,6 +4,9 @@
 	https://github.com/robertsonics/WAV-Trigger-Arduino-Serial-Library/blob/master/examples/WTrigBasic/WTrigBasic.ino#L28
 	
 	It seems I can use one of the internal I/O ports of the Mega, like 18/19.
+	https://github.com/robertsonics/WAV-Trigger-Arduino-Serial-Library/blob/master/wavTrigger.h#L38
+	Uncomment the desired one. One cable sound! Woot!
+	
 	
 	
 */
