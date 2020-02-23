@@ -57,6 +57,11 @@
 #endif
 
 
+// uncomment the line below to run the tests instead of the actual code.
+// results on the serial console.
+#define RUN_TESTS
+
+
 #define MODE_ATTRACT           0
 #define MODE_HAPPY_HOUR_GAME   1
 #define MODE_PRACTICE_GAME     2
@@ -129,11 +134,15 @@ void setup() {
 	// INIT_LOG();
 	// LOG("Hello from Arduino")
 	
+#ifdef RUN_TESTS
+    run_tests();
+#else
 	noInterrupts();
 	setup_timers();
 	setup_pins();
 	setup_sounds();
 	interrupts();
+#endif
 }
 
 void loop() {
@@ -155,5 +164,3 @@ void every_half_second() {
 		- timer4, every 100 msec for coils and animations
 	- wanna move documentation and timers_init() to different file
 */
-
-

@@ -10,7 +10,6 @@
     adding score is done with an unsigned int, in BCD, in tens. That means that 3,000 is encoded in 0x0300.
     also, adding score is done on a temporary buffer and a background process adds it to the real score, in thousands
     this is to simulate slowly giving the user points and make it more enjoyable.
-    
 */
 
 
@@ -18,6 +17,8 @@
 #define TIMEOUT_BALL_NINE_MOVING_TARGET  1    // move to the next moving target
 #define TIMEOUT_WOW_MOVING_TARGET        2    // move to the next moving target, skip no 1.
 #define TIMEOUT_RESET_SPINNER_VALUE      3    // spinner stopped spinning, reset its value
+#define TIMEOUT_SPECIAL_MOVING_TARGET    4    // time to move to another target!
+
 
 #define ANIM_TOP_LOOP_ADVANCE_VALUE   1    // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
 #define ANIM_TOP_LOOP_COLLECT_VALUE   2    // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
@@ -55,12 +56,14 @@
 #define SW_SPINNER                    26
 #define SW_TOP_LOOP_PASS              27
 #define SW_TOP_LOOP_TARGET            28
-#define SW_DRAIN_HOLE                 29
-#define SW_SHOOTING_LANE              30
-#define SW_START                      31
-#define SW_MENU_LEFT                  32
-#define SW_MENU_RIGHT                 33
-#define SW_TILT                       34
+#define SW_LEFT_SLINGSHOT             29
+#define SW_RIGHT_SLINGSHOT            30
+#define SW_DRAIN_HOLE                 31
+#define SW_SHOOTING_LANE              32
+#define SW_START                      33
+#define SW_MENU_LEFT                  34
+#define SW_MENU_RIGHT                 35
+#define SW_TILT                       36
 
 
 #define SOUND_FX_1                     1
@@ -81,22 +84,51 @@ void start_sound(int sound_no);
 void start_coil(int coil_no);
 void add_score(word bcd_amount_in_tens);
 
-struct game_runtime_t {
-    int loop_target_value: 3;    // 0..4 for 10k, 20k, 30k, 40k, 173k
-    int spinner_value: 3;        // 0..4 for 100, 400, 900, 1600, 2500.
-    int bonus_multiplier: 3;     // 1..7 for x1 .. x7 (minimum is 1, not zero)
-    int next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
-    int left_outlane: 1;
-    int right_outlane: 1;
-    int left_inlane: 1;
-    int right_inlane: 1;
-    int shoot_again: 1;    
-} game;
-struct game_settings_t {
-    
-} settings;
 
-void handle_timeout(char timeout_no) {
+	
+
+class Gameplay
+{
+public:
+    
+    void init();
+    void tick();
+
+private:
+            
+    int loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
+    int spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
+    int bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
+    int next_object_to_make: 3;    // 0-8 means 1-9. 9=wow, 10=special.
+    int current_moving_target: 3;  // moving target for "9", WOW, Special.
+    int left_outlane: 1;           // collects loop pass value if lit
+    int right_outlane: 1;          // collects loop pass value if lit
+    int left_inlane: 1;            // spots current target when lit
+    int right_inlane: 1;           // spots current target when lit
+    int top_pop_bumper: 1;         // spots current target when lit
+    int shoot_again: 1;    
+    
+    void handle_timeout(char timeout_no);	
+	void handle_animation_finished(char animation_no);
+	void handle_switch_closed(char switch_no);
+	void handle_switch_opened(char switch_no);
+	word get_spinner_score_bcd(byte spinner_value);
+	void collect_and_reset_loop_target_value();
+	void make_current_target_object();
+	void on_left_bank_drop_target_down(byte number);
+};
+
+void Gameplay::init()
+{
+}
+
+void Gameplay::tick()
+{
+}
+
+    
+
+void Gameplay::handle_timeout(char timeout_no) {
     switch (timeout_no) {
         case TIMEOUT_BALL_NINE_MOVING_TARGET:
             // move to the next moving target
@@ -104,7 +136,12 @@ void handle_timeout(char timeout_no) {
             break;
             
         case TIMEOUT_WOW_MOVING_TARGET:
-            // move to the next moving target, skip no 1.
+            // move to the next wow target
+            // adjust lamps accordingly
+            break;
+            
+        case TIMEOUT_SPECIAL_MOVING_TARGET:
+            // move to the next moving special, skip no 1.
             // adjust lamps accordingly
             break;
             
@@ -115,7 +152,7 @@ void handle_timeout(char timeout_no) {
     }
 }
 
-void handle_animation_finished(char animation_no) {
+void Gameplay::handle_animation_finished(char animation_no) {
     switch (animation_no) {
         case ANIM_TOP_LOOP_ADVANCE_VALUE:
             // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
@@ -138,15 +175,47 @@ void handle_animation_finished(char animation_no) {
     }
 }
 
-void handle_switch_closed(char switch_no) {
+void Gameplay::handle_switch_closed(char switch_no) {
     switch (switch_no) {
         case SW_LEFT_OUTLANE:
+            add_score(0x0300);
+            start_sound(SOUND_FX_1);
+            if (left_outlane)
+                collect_and_reset_loop_target_value();
+            break;
+       
         case SW_RIGHT_OUTLANE:
+            add_score(0x0300);
+            start_sound(SOUND_FX_1);
+            if (right_outlane)
+                collect_and_reset_loop_target_value();
+            break;
+       
         case SW_LEFT_INLANE:
+            add_score(0x010); // 100
+            start_sound(SOUND_FX_1);
+            if (left_inlane)
+                make_current_target_object();
+            break;
+            
         case SW_RIGHT_INLANE:
+            add_score(0x010); // 100
+            start_sound(SOUND_FX_1);
+            if (right_inlane)
+                make_current_target_object();
+            break;
         
         case SW_MAIN_POP_BUMPER:
+            add_score(0x0010); // 100
+            play_sound(SOUND_FX_1);
+            break;
+            
         case SW_TOP_POP_BUMPER:
+            add_score(0x0010); // 100
+            play_sound(SOUND_FX_1);
+            if (top_pop_bumper)
+                make_current_target_object();
+            break;
     
         case SW_TOP_BANK_LEFT_TARGET:
         case SW_TOP_BANK_CENTER_TARGET:
@@ -157,15 +226,36 @@ void handle_switch_closed(char switch_no) {
         case SW_RIGHT_BANK_RIGHT_TARGET:
         
         case SW_LEFT_BANK_TARGET_1:
+            on_left_bank_drop_target_down(1);
+            break;
+            
         case SW_LEFT_BANK_TARGET_2:
+            on_left_bank_drop_target_down(2);
+            break;
+            
         case SW_LEFT_BANK_TARGET_3:
+            on_left_bank_drop_target_down(3);
+            break;
+            
         case SW_LEFT_BANK_TARGET_4:
+            on_left_bank_drop_target_down(4);
+            break;
+            
         case SW_LEFT_BANK_TARGET_5:
+            on_left_bank_drop_target_down(5);
+            break;
+            
         case SW_LEFT_BANK_TARGET_6:
+            on_left_bank_drop_target_down(6);
+            break;
+            
         case SW_LEFT_BANK_TARGET_7:
+            on_left_bank_drop_target_down(7);
+            break;
+            
         case SW_LEFT_BANK_TARGET_8:
-            // I think we must raise the 8 drop targets whenever target 8 is hit,
-            // to avoid having a ball stuck on the gap that 8 leaves.
+            on_left_bank_drop_target_down(8);
+            break;
         
         case SW_LEFT_LANE_CAPTURE_FIRST_BALL:
         case SW_LEFT_LANE_CAPTURE_SECOND_BALL:
@@ -173,19 +263,19 @@ void handle_switch_closed(char switch_no) {
         case SW_LEFT_LANE_EXIT:
             add_score(0x0300);
             start_sound(SOUND_FX_1);
-            game.loop_target_value = ((game.loop_target_value + 1) % 5);
+            loop_target_value = ((loop_target_value + 1) % 5);
             start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
             break;
     
         case SW_SKILL_SHOT_TARGET:
             add_score(0x700);
-            game.spinner_value = 4; // maximum
+            spinner_value = 4; // maximum
             // adjust lamps
             // should turn off the red arrow lamp? (in the original game it seems to be always on)
             break;
         
         case SW_SPINNER:
-            add_score(get_spinner_score_bcd(game.spinner_value));
+            add_score(get_spinner_score_bcd(spinner_value));
             start_animation(ANIM_SPINNER_COLLECT_VALUE);
             start_timeout(TIMEOUT_RESET_SPINNER_VALUE); // one second?
             start_sound(SOUND_FX_SPINNER);
@@ -194,12 +284,15 @@ void handle_switch_closed(char switch_no) {
         case SW_TOP_LOOP_PASS:
             add_score(0x0300);
             start_sound(SOUND_FX_1);
-            game.loop_target_value = ((game.loop_target_value + 1) % 5);
+            loop_target_value = ((loop_target_value + 1) % 5);
             start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
             break;
         
         case SW_TOP_LOOP_TARGET:
-            // collect the score, animation, sound, etc.
+            collect_and_reset_loop_target_value();
+        
+        case SW_LEFT_SLINGSHOT:
+        case SW_RIGHT_SLINGSHOT:
         
         case SW_DRAIN_HOLE:
             // play sad fx, 
@@ -212,7 +305,7 @@ void handle_switch_closed(char switch_no) {
     }
 }
 
-void handle_switch_opened(char switch_no) {
+void Gameplay::handle_switch_opened(char switch_no) {
     switch (switch_no) {
         case SW_SHOOTING_LANE:
             // game on, no more players, start audio etc.
@@ -220,7 +313,7 @@ void handle_switch_opened(char switch_no) {
     }
 }
 
-word get_spinner_score_bcd(byte spinner_value) {
+word Gameplay::get_spinner_score_bcd(byte spinner_value) {
     if (spinner_value == 0) return 0x0010; //   100
     if (spinner_value == 1) return 0x0040; //   400
     if (spinner_value == 2) return 0x0090; //   900
@@ -229,11 +322,38 @@ word get_spinner_score_bcd(byte spinner_value) {
     return 0x0010; // 100
 }
 
-word get_loop_score_bcd(byte loop_target_value) {
-    if (loop_target_value == 4) return (word)0x173000; // 173,000  oopsy! dword!!!
-    if (loop_target_value == 3) return 0x4000;   //  40,000
-    if (loop_target_value == 2) return 0x3000;   //  30,000
-    if (loop_target_value == 1) return 0x2000;   //  20,000
-    return 0x1000; // 10,000    
+void Gameplay::collect_and_reset_loop_target_value() {
+    word score;
+    
+    if (loop_target_value == 4) {
+        // as I want to keep the bcd to tens, 173,000 will be 90,000 + 83,000
+        add_score(0x9000); // 90,000
+        score = 0x8300; // 83,000
+    }
+    else if (loop_target_value == 3) score = 0x4000;   //  40,000
+    else if (loop_target_value == 2) score = 0x3000;   //  30,000
+    else if (loop_target_value == 1) score = 0x2000;   //  20,000
+    else score = 0x1000; // 10,000    
+    
+    add_score(score);
+    start_sound(SOUND_FX_2);
+    start_animation(ANIM_TOP_LOOP_COLLECT_VALUE);
+    loop_target_value = 0;
 }
- 
+
+void Gameplay::make_current_target_object() {
+    // update status, bonus, start animations, kick up the drop targets etc.
+    
+    // next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
+    // set the according target lamp to on.
+    // 
+}
+
+void Gameplay::on_left_bank_drop_target_down(byte number) {
+    // number is from 1..8, not 0-7
+    // I think we must raise the 8 drop targets whenever target 8 is hit,
+    // to avoid having a ball stuck on the gap that 8 leaves.
+    // possibly make the current target object
+    // if we are at 9, check if target is the same as the 9 moving target.
+    // same for wow and special.
+}
