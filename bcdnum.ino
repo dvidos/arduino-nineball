@@ -1,5 +1,5 @@
 
-typedef unsigned int dword;
+#include "types.h"
 
 
 class BcdNum

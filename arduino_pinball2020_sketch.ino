@@ -5,8 +5,14 @@
 #define RUN_TESTS
 
 #include "audio.h"
+#include "lamp_matrix.h"
+#include "switch_matrix.h"
 
 CAudio Audio;
+CLampMatrix LampMatrix;
+CSwitchMatrix SwitchMatrix;
+
+
 
 
 #define USE_SERIAL_FOR_LOG_NO

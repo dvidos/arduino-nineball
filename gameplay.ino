@@ -13,13 +13,6 @@
 */
 
 #include "constants.h"
-#include "audio.h"
-
-void game_play_tick() {
-    // act on switches
-    // act on timeouts
-    // act on animations finished
-}
 
 void start_animation(int animation_no);
 void start_timeout(int timeout_no);
@@ -285,7 +278,9 @@ void Gameplay::make_current_target_object() {
     
     // next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
     // set the according target lamp to on.
-    // 
+    add_score(0x0100); // 1K
+    Audio.play(SOUND_FX_3);
+    
 }
 
 void Gameplay::on_left_bank_drop_target_down(byte number) {

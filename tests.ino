@@ -22,6 +22,12 @@ void run_tests()
     sprintf(buffer, "size of audio instance is: %d", sizeof(Audio));    
     Serial.println(buffer);
       
+    sprintf(buffer, "size of lamp matrix instance is: %d", sizeof(LampMatrix));    
+    Serial.println(buffer);
+      
+    sprintf(buffer, "size of switch matrix instance is: %d", sizeof(SwitchMatrix));    
+    Serial.println(buffer);
+      
     Gameplay gp;
     sprintf(buffer, "size of gameplay instance is: %d", sizeof(gp));    
     Serial.println(buffer);
@@ -68,7 +74,7 @@ void run_tests()
 bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition)
 {
     char buffer[96];
-    sprintf(buffer, "%s %4X0... ", addition ? "Adding" : "Subtracting", bcd_tens);
+    sprintf(buffer, "%s %4lX0... ", addition ? "Adding" : "Subtracting", bcd_tens);
     Serial.print(buffer);
     
     unsigned long adder_decimal = 

@@ -58,6 +58,7 @@
 
 /*
    See also https://lynx2015.files.wordpress.com/2015/08/arduino-mega-pinout-diagram.png
+   It's good to put the lamps rows and switch returns to a full port each.
 	
    Columns:
    - Arduino Pin No
