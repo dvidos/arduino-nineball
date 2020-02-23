@@ -11,6 +11,13 @@ CSwitchMatrix::CSwitchMatrix()
     events_queue_length = 0; 
 }
 
+bool CSwitchMatrix::is_switch_closed(byte switch_no)
+{
+    // switch / 8 is the byte offset
+    // switch % 8 is the bit
+    return (switches[switch_no >> 3] >> (switch_no & 0x7)) & 0x01;
+}
+
 void CSwitchMatrix::intercept_next_row()
 {
     // called from an interrupt.

@@ -10,6 +10,7 @@
             }
 
 bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition);
+void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
 
 void run_tests()
 {
@@ -18,6 +19,9 @@ void run_tests()
     
     char buffer[64];
     // sprintf does support "unsligned long", using %lu. tested with value 4294967295L 
+    
+    sprintf(buffer, "size of settings instance is: %d", sizeof(Settings));    
+    Serial.println(buffer);
     
     sprintf(buffer, "size of audio instance is: %d", sizeof(Audio));    
     Serial.println(buffer);
@@ -32,66 +36,87 @@ void run_tests()
     sprintf(buffer, "size of gameplay instance is: %d", sizeof(gp));    
     Serial.println(buffer);
 
-    BcdNum n;
+    BcdNum n = BcdNum();
     sprintf(buffer, "size of bcdnum instance is: %d", sizeof(n));    
     Serial.println(buffer);
-    
+
+    ASSERT(n.to_decimal() == 0);
+        
     unsigned long expected_value = 0;
   
-    test_bcd_number(&n, &expected_value, 0x0001, true);
-    test_bcd_number(&n, &expected_value, 0x0010, true);
-    test_bcd_number(&n, &expected_value, 0x0100, true);
-    test_bcd_number(&n, &expected_value, 0x1000, true);
-    test_bcd_number(&n, &expected_value, 0x2222, true);
-    test_bcd_number(&n, &expected_value, 0x6666, true);
-    test_bcd_number(&n, &expected_value, 0x0001, true);
-    test_bcd_number(&n, &expected_value, 0x1234, true);
-    test_bcd_number(&n, &expected_value, 0x4567, true);
-    test_bcd_number(&n, &expected_value, 0x6789, true);
-    //for (int i = 0; i < 1000; i++) 
-    //    test_bcd_number(&n, &expected_value, 0x9999, true);
+    test_bcd_math(&n, &expected_value, 0);
+    test_bcd_math(&n, &expected_value, 6);
+    test_bcd_math(&n, &expected_value, 6);
+    test_bcd_math(&n, &expected_value, 63);
+    test_bcd_math(&n, &expected_value, 63);
+    test_bcd_math(&n, &expected_value, 673);
+    test_bcd_math(&n, &expected_value, 673);
+    test_bcd_math(&n, &expected_value, 6730);
+    test_bcd_math(&n, &expected_value, 6000);
+    test_bcd_math(&n, &expected_value, 9999);
+    test_bcd_math(&n, &expected_value, 5555);
+    test_bcd_math(&n, &expected_value, 4444);
+    test_bcd_math(&n, &expected_value, 3333);
+    test_bcd_math(&n, &expected_value, 9999);
+    test_bcd_math(&n, &expected_value, 123456);
+    test_bcd_math(&n, &expected_value, 654321);
+    test_bcd_math(&n, &expected_value, 99174678);
+  
+    test_bcd_math(&n, &expected_value, -6);
+    test_bcd_math(&n, &expected_value, -6);
+    test_bcd_math(&n, &expected_value, -63);
+    test_bcd_math(&n, &expected_value, -63);
+    test_bcd_math(&n, &expected_value, -673);
+    test_bcd_math(&n, &expected_value, -673);
+    test_bcd_math(&n, &expected_value, -6730);
+    test_bcd_math(&n, &expected_value, -6000);
+    test_bcd_math(&n, &expected_value, -9999);
+    test_bcd_math(&n, &expected_value, -5555);
+    test_bcd_math(&n, &expected_value, -4444);
+    test_bcd_math(&n, &expected_value, -3333);
+    test_bcd_math(&n, &expected_value, -9999);
+    test_bcd_math(&n, &expected_value, -123456);
+    test_bcd_math(&n, &expected_value, -654321);
+    test_bcd_math(&n, &expected_value, -99174678);
     
-    n.from_decimal(12345678);
-    ASSERT(n.to_decimal() == 12345678L);
-    expected_value = n.to_decimal();
+    ASSERT(n.is_zero());
     
-    test_bcd_number(&n, &expected_value, 0x0001, false);
-    test_bcd_number(&n, &expected_value, 0x0010, false);
-    test_bcd_number(&n, &expected_value, 0x0100, false);
-    test_bcd_number(&n, &expected_value, 0x1000, false);
-    test_bcd_number(&n, &expected_value, 0x2222, false);
-    test_bcd_number(&n, &expected_value, 0x1111, false);
-    test_bcd_number(&n, &expected_value, 0x3333, false);
-    test_bcd_number(&n, &expected_value, 0x7777, false);
-    test_bcd_number(&n, &expected_value, 0x9999, false);
-    test_bcd_number(&n, &expected_value, 0x8888, false);
-    test_bcd_number(&n, &expected_value, 0x9999, false);
-    test_bcd_number(&n, &expected_value, 0x8888, false);
-    test_bcd_number(&n, &expected_value, 0x9999, false);
+    test_bcdnum_comparisons(0, 0);
+    test_bcdnum_comparisons(1, 1);
+    test_bcdnum_comparisons(0, 1);
+    test_bcdnum_comparisons(1, 0);
+    test_bcdnum_comparisons(100, 101);
+    test_bcdnum_comparisons(100, 201);
+    test_bcdnum_comparisons(1000, 1001);
+    test_bcdnum_comparisons(2000, 1999);
+    test_bcdnum_comparisons(3333, 3399);
 }
 
 
-bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition)
+bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
 {
-    char buffer[96];
-    sprintf(buffer, "%s %4lX0... ", addition ? "Adding" : "Subtracting", bcd_tens);
-    Serial.print(buffer);
+    bool addition = true;    
+    char buffer[64];
     
-    unsigned long adder_decimal = 
-        ((bcd_tens >> 12) & 0x0F) * 10000L +
-        ((bcd_tens >>  8) & 0x0F) *  1000L +
-        ((bcd_tens >>  4) & 0x0F) *   100L +
-        ((bcd_tens >>  0) & 0x0F) *    10L;  // note, this is tens.
-
-    if (addition)
-    {
-        n->add_bcd_tens(bcd_tens);
-        (*expected_value) += adder_decimal;
+    if (amount < 0) {
+        addition = false;
+        amount *= -1;
+        
+        sprintf(buffer, "Subtracting %ld...", amount);
+    } else {
+        sprintf(buffer, "Adding %ld...", amount);
     }
-    else
-    {
-        n->subtract_bcd_tens(bcd_tens);
-        (*expected_value) -= adder_decimal;
+    Serial.println(buffer);
+    
+    
+    BcdNum other = BcdNum(amount);
+    
+    if (addition) {
+        n->add(other);
+        (*expected_value) += amount;
+    } else {
+        n->subtract(other);
+        (*expected_value) -= amount;
     }
     
     bool success = (n->to_decimal() == *expected_value);
@@ -102,6 +127,19 @@ bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, b
     }
     Serial.println(buffer);
     
-    return success;
+    return success;    
 }
 
+void test_bcdnum_comparisons(dword decimal_1, dword decimal_2)
+{
+    BcdNum n1 = BcdNum(decimal_1);
+    BcdNum n2 = BcdNum(decimal_2);
+    
+    if (decimal_1 == decimal_2) {
+        ASSERT(n1 == n2);
+    } else if (decimal_1 > decimal_2) {
+        ASSERT(n1 > n2);
+    } else if (decimal_2 > decimal_1) {
+        ASSERT(n2 > n1);
+    }
+}

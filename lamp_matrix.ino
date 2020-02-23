@@ -18,7 +18,7 @@ void CLampMatrix::lamp_on(byte lamp_no)
 void CLampMatrix::lamp_off(byte lamp_no)
 {
     // lamp_no / 8 is the byte to store
-    // lamp_no % 8 is the bit to turn on
+    // lamp_no % 8 is the bit to turn off
     
     lamps[lamp_no >> 3] &= ~(1 << (lamp_no & 0x7));
 }
@@ -26,7 +26,7 @@ void CLampMatrix::lamp_off(byte lamp_no)
 bool CLampMatrix::is_on(byte lamp_no)
 {
     // lamp_no / 8 is the byte to store
-    // lamp_no % 8 is the bit to turn on
+    // lamp_no % 8 is the bit to check
     
     return (lamps[lamp_no >> 3] >> (lamp_no & 0x7)) & 0x01;
 }

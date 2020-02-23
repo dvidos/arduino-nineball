@@ -1,4 +1,3 @@
-
 /*
     the initial idea was to have a state machine,
     switching actions based on context and events that happened.
@@ -10,6 +9,11 @@
     adding score is done with an unsigned int, in BCD, in tens. That means that 3,000 is encoded in 0x0300.
     also, adding score is done on a temporary buffer and a background process adds it to the real score, in thousands
     this is to simulate slowly giving the user points and make it more enjoyable.
+    
+    slingshots, spinner and pop bumpers control the percentage of the time that the dead bumper, the two return lanes
+    and the two outlanes and the two 3-bank lites are on. it can be setup to liberal or conservative.
+    
+    
 */
 
 #include "constants.h"
@@ -38,7 +42,10 @@ private:
     int left_inlane: 1;            // spots current target when lit
     int right_inlane: 1;           // spots current target when lit
     int top_pop_bumper: 1;         // spots current target when lit
-    int shoot_again: 1;    
+    
+    int extra_balls: 2;            // up to 3 extra balls can be awarded. shoot again will lite for them.
+    int special_achieved: 1;       // whether one special is achieved, to avoid giving more, if not allowed.
+        
     
     void handle_timeout(char timeout_no);	
 	void handle_animation_finished(char animation_no);
@@ -112,14 +119,16 @@ void Gameplay::handle_switch_closed(char switch_no) {
         case SW_LEFT_OUTLANE:
             add_score(0x0300);
             Audio.play(SOUND_FX_1);
-            if (left_outlane)
+            if (left_outlane && next_object_to_make < 8)
+                // spot objects 1-7
                 collect_and_reset_loop_target_value();
             break;
        
         case SW_RIGHT_OUTLANE:
             add_score(0x0300);
             Audio.play(SOUND_FX_1);
-            if (right_outlane)
+            if (right_outlane && next_object_to_make <= 7)
+                // spot objects 1-7
                 collect_and_reset_loop_target_value();
             break;
        
@@ -145,17 +154,20 @@ void Gameplay::handle_switch_closed(char switch_no) {
         case SW_TOP_POP_BUMPER:
             add_score(0x0010); // 100
             Audio.play(SOUND_FX_1);
-            if (top_pop_bumper)
+            if (top_pop_bumper && next_object_to_make <= 7)
+                // spot objects 1-7
                 make_current_target_object();
             break;
     
         case SW_TOP_BANK_LEFT_TARGET:
         case SW_TOP_BANK_CENTER_TARGET:
         case SW_TOP_BANK_RIGHT_TARGET:
+            // when all 3 drop targets down, increase bonus multiplier
         
         case SW_RIGHT_BANK_LEFT_TARGET:
         case SW_RIGHT_BANK_CENTER_TARGET:
         case SW_RIGHT_BANK_RIGHT_TARGET:
+            // when all 3 drop targets down, increase bonus multiplier
         
         case SW_LEFT_BANK_TARGET_1:
             on_left_bank_drop_target_down(1);
@@ -189,9 +201,27 @@ void Gameplay::handle_switch_closed(char switch_no) {
             on_left_bank_drop_target_down(8);
             break;
         
-        case SW_LEFT_LANE_CAPTURE_FIRST_BALL:
-        case SW_LEFT_LANE_CAPTURE_SECOND_BALL:
-        case SW_LEFT_LANE_CAPTURE_THIRD_BALL:
+        case SW_LEFT_LANE_THIRD_BALL:
+            if (SwitchMatrix.is_switch_closed(SW_LEFT_LANE_SECOND_BALL)) {
+                if (next_object_to_make >= 6 && next_object_to_make <= 8)  // spot objects 6-8
+                    make_current_target_object();
+                // we should also release all balls for multiplay
+            }
+            break;
+            
+        case SW_LEFT_LANE_SECOND_BALL:
+            if (SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL)) {
+                if (next_object_to_make >= 6 && next_object_to_make <= 8) // spot objects 6-8
+                    make_current_target_object();
+            }
+            break;
+            
+        case SW_LEFT_LANE_CAPTURED_BALL:
+            if (next_object_to_make < 9) // spot objects 1-8
+                make_current_target_object();
+            // if not object 5 is made, we should start kicking this out...
+            break;
+            
         case SW_LEFT_LANE_EXIT:
             add_score(0x0300);
             Audio.play(SOUND_FX_1);
@@ -222,6 +252,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
         
         case SW_TOP_LOOP_TARGET:
             collect_and_reset_loop_target_value();
+            break;
         
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:

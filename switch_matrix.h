@@ -21,6 +21,7 @@ public:
     CSwitchMatrix();
     
     void intercept_next_row();
+    bool is_switch_closed(byte switch_no);
     bool get_next_switch_event(byte *switch_no, byte *was_pressed);
 };
 
