@@ -1,3 +1,4 @@
+#include "audio.h"
 
 #define ASSERT(x)    \
             Serial.print("Testing "); \
@@ -18,6 +19,13 @@ void run_tests()
     char buffer[64];
     // sprintf does support "unsligned long", using %lu. tested with value 4294967295L 
     
+    sprintf(buffer, "size of audio instance is: %d", sizeof(Audio));    
+    Serial.println(buffer);
+      
+    Gameplay gp;
+    sprintf(buffer, "size of gameplay instance is: %d", sizeof(gp));    
+    Serial.println(buffer);
+
     BcdNum n;
     sprintf(buffer, "size of bcdnum instance is: %d", sizeof(n));    
     Serial.println(buffer);
@@ -59,7 +67,6 @@ void run_tests()
 
 bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition)
 {
-    char stringified[32];
     char buffer[96];
     sprintf(buffer, "%s %4X0... ", addition ? "Adding" : "Subtracting", bcd_tens);
     Serial.print(buffer);

@@ -12,65 +12,8 @@
     this is to simulate slowly giving the user points and make it more enjoyable.
 */
 
-
-
-#define TIMEOUT_BALL_NINE_MOVING_TARGET  1    // move to the next moving target
-#define TIMEOUT_WOW_MOVING_TARGET        2    // move to the next moving target, skip no 1.
-#define TIMEOUT_RESET_SPINNER_VALUE      3    // spinner stopped spinning, reset its value
-#define TIMEOUT_SPECIAL_MOVING_TARGET    4    // time to move to another target!
-
-
-#define ANIM_TOP_LOOP_ADVANCE_VALUE   1    // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
-#define ANIM_TOP_LOOP_COLLECT_VALUE   2    // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
-#define ANIM_BONUS_MULTIPLIER         3    // fast blink of the new value for 8 times.
-#define ANIM_SPINNER_INCREASE_VALUE   4    // on the original game, there is no animation for increasing the value of the spinner
-#define ANIM_SPINNER_COLLECT_VALUE    5    // moderate chase of one lamp each time, through the lamps that were already lit.
-#define ANIM_BALLS_DIAMOND            6    // on the original game it seems odd/even blink pretty fast
-
-
-#define SW_LEFT_OUTLANE                1
-#define SW_RIGHT_OUTLANE               2
-#define SW_LEFT_INLANE                 3
-#define SW_RIGHT_INLANE                4
-#define SW_MAIN_POP_BUMPER             5
-#define SW_TOP_POP_BUMPER              6
-#define SW_TOP_BANK_LEFT_TARGET        7
-#define SW_TOP_BANK_CENTER_TARGET      8
-#define SW_TOP_BANK_RIGHT_TARGET       9
-#define SW_RIGHT_BANK_LEFT_TARGET     10
-#define SW_RIGHT_BANK_CENTER_TARGET   11
-#define SW_RIGHT_BANK_RIGHT_TARGET    12
-#define SW_LEFT_BANK_TARGET_1         13
-#define SW_LEFT_BANK_TARGET_2         14
-#define SW_LEFT_BANK_TARGET_3         15
-#define SW_LEFT_BANK_TARGET_4         16
-#define SW_LEFT_BANK_TARGET_5         17
-#define SW_LEFT_BANK_TARGET_6         18
-#define SW_LEFT_BANK_TARGET_7         19
-#define SW_LEFT_BANK_TARGET_8         20
-#define SW_LEFT_LANE_CAPTURE_FIRST_BALL    21
-#define SW_LEFT_LANE_CAPTURE_SECOND_BALL   22
-#define SW_LEFT_LANE_CAPTURE_THIRD_BALL    23
-#define SW_LEFT_LANE_EXIT             24
-#define SW_SKILL_SHOT_TARGET          25
-#define SW_SPINNER                    26
-#define SW_TOP_LOOP_PASS              27
-#define SW_TOP_LOOP_TARGET            28
-#define SW_LEFT_SLINGSHOT             29
-#define SW_RIGHT_SLINGSHOT            30
-#define SW_DRAIN_HOLE                 31
-#define SW_SHOOTING_LANE              32
-#define SW_START                      33
-#define SW_MENU_LEFT                  34
-#define SW_MENU_RIGHT                 35
-#define SW_TILT                       36
-
-
-#define SOUND_FX_1                     1
-#define SOUND_FX_SPINNER               2
-#define SOUND_BALL_DRAIN               3
-
-
+#include "constants.h"
+#include "audio.h"
 
 void game_play_tick() {
     // act on switches
@@ -80,12 +23,8 @@ void game_play_tick() {
 
 void start_animation(int animation_no);
 void start_timeout(int timeout_no);
-void start_sound(int sound_no);
 void start_coil(int coil_no);
 void add_score(word bcd_amount_in_tens);
-
-
-	
 
 class Gameplay
 {
@@ -179,40 +118,40 @@ void Gameplay::handle_switch_closed(char switch_no) {
     switch (switch_no) {
         case SW_LEFT_OUTLANE:
             add_score(0x0300);
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             if (left_outlane)
                 collect_and_reset_loop_target_value();
             break;
        
         case SW_RIGHT_OUTLANE:
             add_score(0x0300);
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             if (right_outlane)
                 collect_and_reset_loop_target_value();
             break;
        
         case SW_LEFT_INLANE:
             add_score(0x010); // 100
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             if (left_inlane)
                 make_current_target_object();
             break;
             
         case SW_RIGHT_INLANE:
             add_score(0x010); // 100
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             if (right_inlane)
                 make_current_target_object();
             break;
         
         case SW_MAIN_POP_BUMPER:
             add_score(0x0010); // 100
-            play_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             break;
             
         case SW_TOP_POP_BUMPER:
             add_score(0x0010); // 100
-            play_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             if (top_pop_bumper)
                 make_current_target_object();
             break;
@@ -262,7 +201,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
         case SW_LEFT_LANE_CAPTURE_THIRD_BALL:
         case SW_LEFT_LANE_EXIT:
             add_score(0x0300);
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
             start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
             break;
@@ -278,12 +217,12 @@ void Gameplay::handle_switch_closed(char switch_no) {
             add_score(get_spinner_score_bcd(spinner_value));
             start_animation(ANIM_SPINNER_COLLECT_VALUE);
             start_timeout(TIMEOUT_RESET_SPINNER_VALUE); // one second?
-            start_sound(SOUND_FX_SPINNER);
+            Audio.play(SOUND_SPINNER);
             break;
         
         case SW_TOP_LOOP_PASS:
             add_score(0x0300);
-            start_sound(SOUND_FX_1);
+            Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
             start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
             break;
@@ -336,7 +275,7 @@ void Gameplay::collect_and_reset_loop_target_value() {
     else score = 0x1000; // 10,000    
     
     add_score(score);
-    start_sound(SOUND_FX_2);
+    Audio.play(SOUND_FX_2);
     start_animation(ANIM_TOP_LOOP_COLLECT_VALUE);
     loop_target_value = 0;
 }
