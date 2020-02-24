@@ -2,7 +2,8 @@
  * uncomment the line below to run the tests instead of the actual code. 
  * results on the serial console.
  */
-#define RUN_TESTS
+#define RUN_TESTS              // comment out to run normal code
+#define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
 
 #include "types.h"
 #include "constants.h"
@@ -17,17 +18,22 @@ CSwitchMatrix SwitchMatrix;
 CSettings Settings;
 
 
-
-
-
-#define USE_SERIAL_FOR_LOG_NO
-#ifdef USE_SERIAL_FOR_LOG
-	#define INIT_LOG()    Serial.begin(9600); Serial.println("Serial Log initialized");
-	#define LOG(message)  Serial.println(message);     
+#ifdef LOG_ON_SERIAL_MONITOR
+    #define LOG_INIT()      Serial.begin(9600); Serial.println("Serial Log initialized");      
+    #define LOG(...)        log_info(__VA_ARGS__)
+    void log_info(const char *fmt, ...) {
+        char buffer[128];
+        va_list args_list;
+        va_start(args_list, fmt);
+        vsprintf(buffer, fmt, args_list);
+        Serial.println(buffer);
+    }
 #else
-	#define INIT_LOG()    ;
-	#define LOG(message)  ;     
-#endif
+    #define LOG_INIT()      (void)0
+    #define LOG(fmt, ...)   (void)0
+#endif // LOG_ON_USB_CABLE
+
+
 
 
 
@@ -44,39 +50,10 @@ void setup() {
 }
 
 void loop() {
-#ifndef RUN_TESTS
-
-	loop_pins();
-	delay(100);
+#ifdef RUN_TESTS
+#else
 #endif
 }
 
-void every_second() {
-}
 
-void every_half_second() {
-}
-
-
-
-// see https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
-// and https://playground.arduino.cc/Code/AvailableMemory/
-
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
- 
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
 

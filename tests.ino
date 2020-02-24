@@ -1,48 +1,31 @@
 #include "audio.h"
+#ifdef RUN_TESTS
 
-#define ASSERT(x)    \
-            Serial.print("Testing "); \
-            Serial.print(#x); \
-            if (x) { \
-                Serial.println(" ...OK"); \
-            } else { \
-                Serial.println(" ... ERROR!!!"); \
-            }
+
+#define ASSERT(condition)    if(!(condition)) { LOG("** Failed asserting that \"%s\"", #condition); }
+
 
 bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
+int freeMemory();
+
 
 void run_tests()
 {
-    Serial.begin(9600);
-    Serial.println("Running tests");
-    
-    char buffer[64];
-    // sprintf does support "unsligned long", using %lu. tested with value 4294967295L 
-    
-    sprintf(buffer, "size of settings instance is: %d", sizeof(Settings));    
-    Serial.println(buffer);
-    
-    sprintf(buffer, "size of audio instance is: %d", sizeof(Audio));    
-    Serial.println(buffer);
-      
-    sprintf(buffer, "size of lamp matrix instance is: %d", sizeof(LampMatrix));    
-    Serial.println(buffer);
-      
-    sprintf(buffer, "size of switch matrix instance is: %d", sizeof(SwitchMatrix));    
-    Serial.println(buffer);
-      
     Gameplay gp;
-    sprintf(buffer, "size of gameplay instance is: %d", sizeof(gp));    
-    Serial.println(buffer);
-
-    BcdNum n = BcdNum();
-    sprintf(buffer, "size of bcdnum instance is: %d", sizeof(n));    
-    Serial.println(buffer);
-
-    ASSERT(n.to_decimal() == 0);
-        
+    BcdNum n;
     unsigned long expected_value = 0;
+    
+    LOG_INIT();
+    LOG("free memory (stack - heap) %d (total 8 KB or 8192 bytes), %f %", freeMemory(), (freeMemory() * 100.0)/8192);
+    LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(Settings));
+    LOG("size of audio instance is %d bytes", sizeof(Audio));    
+    LOG("size of lamp matrix instance is %d bytes", sizeof(LampMatrix));    
+    LOG("size of switch matrix instance is %d bytes", sizeof(SwitchMatrix));    
+    LOG("size of gameplay instance is %d bytes", sizeof(gp));    
+    LOG("size of bcdnum instance is %d bytes", sizeof(n));
+        
+    ASSERT(n.to_decimal() == 0);
   
     test_bcd_math(&n, &expected_value, 0);
     test_bcd_math(&n, &expected_value, 6);
@@ -81,6 +64,35 @@ void run_tests()
     
     ASSERT(n.is_zero());
     
+    LOG("Adding 2 tens...");
+    n.add_tens(0x0002);
+    ASSERT(n.to_decimal() == 20);
+    
+    LOG("Adding 8 tens...");
+    n.add_tens(0x0008);
+    ASSERT(n.to_decimal() == 100);
+    
+    LOG("Adding 1 hundred...");
+    n.add_hundreds(0x0001);
+    ASSERT(n.to_decimal() == 200);
+    
+    LOG("Adding 8 hundreds...");
+    n.add_hundreds(0x0008);
+    ASSERT(n.to_decimal() == 1000);
+    
+    LOG("Adding 2 thousands...");
+    n.add_thousands(0x0002);
+    ASSERT(n.to_decimal() == 3000);
+    
+    LOG("Adding 7 thousands...");
+    n.add_thousands(0x0007);
+    ASSERT(n.to_decimal() == 10000);
+    
+    LOG("Adding 302 thousands...");
+    n.add_thousands(0x0302);
+    ASSERT(n.to_decimal() == 312000);
+    
+    LOG("Adding 2 tens...");
     test_bcdnum_comparisons(0, 0);
     test_bcdnum_comparisons(1, 1);
     test_bcdnum_comparisons(0, 1);
@@ -101,12 +113,10 @@ bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
     if (amount < 0) {
         addition = false;
         amount *= -1;
-        
-        sprintf(buffer, "Subtracting %ld...", amount);
+        LOG("Subtracting %ld...", amount);
     } else {
-        sprintf(buffer, "Adding %ld...", amount);
+        LOG("Adding %ld...", amount);
     }
-    Serial.println(buffer);
     
     
     BcdNum other = BcdNum(amount);
@@ -121,11 +131,10 @@ bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
     
     bool success = (n->to_decimal() == *expected_value);
     if (success) {
-        sprintf(buffer, " OK, gotten %10lu", n->to_decimal());
+        // LOG("OK, gotten %lu", n->to_decimal());
     } else {
-        sprintf(buffer, " ERROR! expected %lu, got %lu", *expected_value, n->to_decimal());
+        LOG("ERROR! expected %lu, got %lu", *expected_value, n->to_decimal());
     }
-    Serial.println(buffer);
     
     return success;    
 }
@@ -135,6 +144,7 @@ void test_bcdnum_comparisons(dword decimal_1, dword decimal_2)
     BcdNum n1 = BcdNum(decimal_1);
     BcdNum n2 = BcdNum(decimal_2);
     
+    LOG("comparing %u to %u...", decimal_1, decimal_2);
     if (decimal_1 == decimal_2) {
         ASSERT(n1 == n2);
     } else if (decimal_1 > decimal_2) {
@@ -143,3 +153,29 @@ void test_bcdnum_comparisons(dword decimal_1, dword decimal_2)
         ASSERT(n2 > n1);
     }
 }
+
+
+// see https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
+// and https://playground.arduino.cc/Code/AvailableMemory/
+
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+ 
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
+
+
+
+#endif // RUN_TESTS

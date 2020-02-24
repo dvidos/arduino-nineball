@@ -59,8 +59,10 @@ void BcdNum::add_tens(dword tens_bcd)
     byte bcd[4];
     bcd[0] = 0x00;
     bcd[1] = (tens_bcd & 0xF000) >> 12;
-    bcd[1] = (tens_bcd & 0x0FF0) >> 4;
-    bcd[2] = (tens_bcd & 0x000F) << 4; 
+    bcd[2] = (tens_bcd & 0x0FF0) >> 4;
+    bcd[3] = (tens_bcd & 0x000F) << 4; 
+    
+    // LOG("buffer prepared to add 0x%04X tens: 0x%02X 0x%02X 0x%02X 0x%02X", tens_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
     
     math_operation(bcd, true);
 }
@@ -70,8 +72,10 @@ void BcdNum::add_hundreds(dword hundreds_bcd)
     byte bcd[4];
     bcd[0] = 0x00;
     bcd[1] = (hundreds_bcd & 0xFF00) >> 8;
-    bcd[1] = (hundreds_bcd & 0x00FF);
-    bcd[2] = 0x00; 
+    bcd[2] = (hundreds_bcd & 0x00FF);
+    bcd[3] = 0x00; 
+    
+    // LOG("buffer prepared to add 0x%04X hundreds: 0x%02X 0x%02X 0x%02X 0x%02X", hundreds_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
     
     math_operation(bcd, true);
 }
@@ -81,8 +85,10 @@ void BcdNum::add_thousands(dword thousands_bcd)
     byte bcd[4];
     bcd[0] = (thousands_bcd & 0xF000) >> 12;
     bcd[1] = (thousands_bcd & 0x0FF0) >> 4;
-    bcd[1] = (thousands_bcd & 0x000F) << 4; 
-    bcd[2] = 0x00; 
+    bcd[2] = (thousands_bcd & 0x000F) << 4; 
+    bcd[3] = 0x00;
+    
+    // LOG("buffer prepared to add 0x%04X thousands: 0x%02X 0x%02X 0x%02X 0x%02X", thousands_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
     
     math_operation(bcd, true);
 }
@@ -169,7 +175,7 @@ unsigned long BcdNum::to_decimal()
     return value;
 }
 
-void BcdNum::math_operation(byte amount_bcd[], bool do_addition)
+void BcdNum::math_operation(byte amount_bcd[4], bool do_addition)
 {
     // expects amount bcd to mirror the bcd property (4 bytes, MSB=0, LSB=3)
     
@@ -178,6 +184,13 @@ void BcdNum::math_operation(byte amount_bcd[], bool do_addition)
     char amount_nibble;
     char current_value;
     char new_value;
+
+    /*LOG("Will %s x%02x%02x%02x%02x %s x%02x%02x%02x%02x",
+        do_addition ? "add" : "subtract",
+        amount_bcd[0], amount_bcd[1], amount_bcd[2], amount_bcd[3],
+        do_addition ? "to" : "from",
+        bcd[0], bcd[1], bcd[2], bcd[3]   
+    );*/    
     
     carry = 0;
     for (char i = 7; i >= 0; i--)

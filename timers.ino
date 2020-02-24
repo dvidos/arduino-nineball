@@ -226,15 +226,11 @@ void setup_timers() {
 }
 
 
-int x = 0;
-
-
 /**
  * Timer 1, currently running every sec
  */
 ISR(TIMER1_COMPA_vect){
    noInterrupts();
-   every_second();
 }
 
 /**
@@ -243,24 +239,14 @@ ISR(TIMER1_COMPA_vect){
 ISR(TIMER3_COMPA_vect){
    noInterrupts();
    
-//   x += 1;
-//   if (x >= 1000) {
-//	   digitalWrite(13, !digitalRead(13));
-//	   x = 0;
-//   }
+   LampMatrix.output_next_column();
+   SwitchMatrix.intercept_next_row();
 }
-
 
 /**
  * Timer 4, currently running every 100 msec
  */
 ISR(TIMER4_COMPA_vect){
    noInterrupts();
-   
-   x += 1;
-   if (x >= 2) {
-	   every_half_second();
-	   x = 0;
-   }
 }
 
