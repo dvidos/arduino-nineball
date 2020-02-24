@@ -27,7 +27,7 @@ class Gameplay
 {
 public:
     
-    void init();
+    void init(byte mode);
     void tick();
 
 private:
@@ -43,9 +43,8 @@ private:
     int right_inlane: 1;           // spots current target when lit
     int top_pop_bumper: 1;         // spots current target when lit
     
-    int extra_balls: 2;            // up to 3 extra balls can be awarded. shoot again will lite for them.
-    int special_achieved: 1;       // whether one special is achieved, to avoid giving more, if not allowed.
-        
+    int extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
+    int one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
     
     void handle_timeout(char timeout_no);	
 	void handle_animation_finished(char animation_no);
@@ -57,8 +56,11 @@ private:
 	void on_left_bank_drop_target_down(byte number);
 };
 
-void Gameplay::init()
+void Gameplay::init(byte mode)
 {
+    // start gameplay, in a specific mode.
+    // e.g. EVA_HAPPY_MODE (unlimited balls)
+    // or   DIMITRIS_PRACTICE_MODE (if we have space for the code) 
 }
 
 void Gameplay::tick()

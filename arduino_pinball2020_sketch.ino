@@ -1,6 +1,6 @@
 /**
- * uncomment the line below to run the tests instead of the actual code. 
- * results on the serial console.
+ * Created by Dimitris Vidos, for a custom Stern Nineball pinball machine.
+ * All rights reserved.
  */
 #define RUN_TESTS              // comment out to run normal code
 #define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
@@ -11,6 +11,20 @@
 #include "lamp_matrix.h"
 #include "switch_matrix.h"
 #include "settings.h"
+
+/**
+ * All .ino and .pde files in the sketch folder (shown in the IDE as tabs with no extension) 
+ * are concatenated together, starting with the file that matches the folder name followed 
+ * by the others in alphabetical order, and the .cpp extension is added to the filename.
+ *
+ * See also: https://github.com/arduino/Arduino/wiki/Build-Process
+ *
+ * Another idea for organizing code:
+ *  ArduinoWorkspace --- /myproj/ ----+ /src/ --------+ myproj.cpp
+ *                                    + myproj.ino    + sensor.h
+ *                                                    + sensor.cpp
+ *                                                    + (more files)
+ */
 
 CAudio Audio;
 CLampMatrix LampMatrix;
