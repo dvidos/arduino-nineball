@@ -19,10 +19,9 @@ The hardware connected to this Arduino mega is:
 * The SparkFun WavTrigger board for sound effects and music
 * A small "T" relay for energizing the flippers and pop bumpers when gameplay begins
 
-
 ## Software
 
-Essentially the software tries to emulate the original game, as described in the [game manual].
+Essentially the software tries to emulate the original game, as described in the [game manual][3].
 Since this is a machine for fun and not for profit, a lot of coin related options are left out.
 
 
