@@ -1,5 +1,31 @@
 # Nineball Pinball Project
 
+This is a project where an Arduino mega is used to recreate the [Stern Nineball][1] pinball machine with custom hardware.
+
+The story started around 1990, where a Stern Nineball [playfield][2] was found in a trashcan and salvaged. After being hung on my wall
+for years, on 2007 I tried to rebuild the rest of the machine with custom hardware and sofrware.
+
+The project stalled for lack of funds and time. On 2020, it got restarted. A new microcontroller was chosen (an Arduino Mega)
+and this repository holds the code for this project.
+
+## Hardware
+
+The hardware connected to this Arduino mega is:
+
+* A 8 x 8 lamp matrix of #44 lamps, powered through power transistors
+* A 5 x 8 switch matrix for all the switches on the playfield
+* A collection of 10 to 15 high powered coils (+45 VDC) controlled through power transistors
+* Two seven digits 7-segments displays for displaying score
+* The SparkFun WavTrigger board for sound effects and music
+* A small "T" relay for energizing the flippers and pop bumpers when gameplay begins
+
+
+## Software
+
+Essentially the software tries to emulate the original game, as described in the [game manual].
+Since this is a machine for fun and not for profit, a lot of coin related options are left out.
+
+
 ## Notes
 
 ### menu selection
@@ -59,3 +85,7 @@ Uncomment the desired one. One cable sound! Woot!
 
 
 
+[1]: https://www.ipdb.org/machine.cgi?id=1678
+[2]: https://www.ipdb.org/images/1678/image-4.jpg
+[3]: https://www.ipdb.org/files/1678/Stern_1980_Nine_Ball_Manual.pdf
+  
