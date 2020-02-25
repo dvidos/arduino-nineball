@@ -176,3 +176,106 @@
 		DISPLAY_BLANKING_LINE = 0;
 	}
 */
+
+class CScoreDisplay
+{
+public:
+    
+    struct {
+       byte digits[4];   // most significant nibble is ignored
+       byte lit_digits;  // most significant bit is ignored
+    } displays[2];
+    
+    byte next_display_digit_to_strobe = 0;    
+    
+    // digit_no can be 0..15 from left to right, 0 and 8 are ignored
+    // value can be 0..9
+    void show_digit(byte digit_no, byte value);
+    
+    // this turns off the specific digit.
+    // digit_no can be 0..15 from left to right, 0 and 8 are ignored
+    void hide_digit(byte digit_no);
+    void hide_all();
+    
+    // score_display can be: 0=for left, 1=for right.
+    // turns off anything at the left that is zero
+    void display_bcd_num(byte score_display, const BcdNum &num);
+    
+    // this is called by interrupt handler every msec 
+    void ISR_strobe_next_display_digit();
+};
+
+
+void CScoreDisplay::show_digit(byte digit_no, byte value)
+{
+    digit_no &= 0xF;               // force 0..15
+    value &= 0xF;                  // force 0..15
+    byte display = digit_no >> 3;  // so that 8+ means 2nd display
+    digit_no &= 0x7;               // make digit no in the range 0..7
+    byte offset = digit_no >> 1;   // digit / 2 is the byte offset (0..3)
+    
+    if (digit_no & 1) {
+        // right nibble
+        displays[display].digits[offset] = (displays[display].digits[offset] & 0xF0) | (value & 0xF);
+    } else {
+        // left nibble
+        displays[display].digits[offset] = (value << 4) | (displays[display].digits[offset] & 0xF);
+    }
+    
+    // turn on that digit too
+    displays[display].lit_digits |= (1 << (7 - digit_no))
+}
+
+void CScoreDisplay::hide_digit(byte digit_no)
+{
+    digit_no &= 0xF;               // force 0..15
+    byte display = digit_no >> 3;  // so that 8+ means 2nd display
+    digit_no &= 0x7;               // make digit no in the range 0..7
+    
+    // turn on that digit too
+    displays[display].lit_digits &= ~(1 << (7 - digit_no))
+}
+
+void CScoreDisplay::hide_all()
+{
+    displays[0].lit_digits = 0
+    displays[1].lit_digits = 0
+}
+
+void CScoreDisplay::display_bcd_num(byte score_display, const BcdNum &num)
+{
+    digit_no &= 0xF;               // force 0..15
+    byte display = digit_no >> 3;  // so that 8+ means 2nd display
+    digit_no &= 0x7;               // make digit no in the range 0..7
+    
+    displays[display].digits[0] = num->bcd[0];
+    displays[display].digits[1] = num->bcd[1];
+    displays[display].digits[2] = num->bcd[2];
+    displays[display].digits[3] = num->bcd[3];
+    
+    // elimintate zeros, find the first nonzero item
+    byte mask = 0;
+    if (displays[display].digits[0] & 0x0F)
+        mask |= 0x40;
+    if (mask || (displays[display].digits[1] & 0xF0))
+        mask |= 0x20;
+    if (mask || (displays[display].digits[1] & 0x0F))
+        mask |= 0x10;
+    if (mask || (displays[display].digits[2] & 0xF0))
+        mask |= 0x08;
+    if (mask || (displays[display].digits[2] & 0x0F))
+        mask |= 0x04;
+    if (mask || (displays[display].digits[3] & 0xF0))
+        mask |= 0x02;
+    if (mask || (displays[display].digits[3] & 0x0F))
+        mask |= 0x01;
+    
+    displays[display].lit_digits = mask
+}
+
+
+void CScoreDisplay::ISR_strobe_next_display_digit()
+{
+}
+
+
