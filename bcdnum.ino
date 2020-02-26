@@ -103,7 +103,7 @@ bool BcdNum::is_zero()
 
 byte BcdNum::get_nibble(byte location)
 {
-    // location should be 0 for the rightmost, 7 for the left most
+    // location should be 0 for the leftmost, 7 for the right most
     // location / 2 (>>1) is the byte, location & 1 is the nibble
     // i.e. 0=units, 1=tens, 2=hundreds etc.
     

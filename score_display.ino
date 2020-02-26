@@ -14,10 +14,16 @@
 	#define DISPLAY_LEFT_LATCH	   PORTDbits.RD6 // strobe left score display
 	#define DISPLAY_RIGHT_LATCH	   PORTDbits.RD7 // strobe right score display
 	
+	On the MIOS PCB, the port we had connected for the score displays, above the PIC microcontroller,
+	has the following pings:
+	
+	top row, left to right, verified with schematic as well.
+	B+  B-  Vs  Vd  V0  D5  D6  D7
+	B7  B6  B5  B4  B3  B2  B1  B0
+	
 	each score display has the following signals:
 	  7 lines for specific digit enable, same for all displays		pins 4,5,6,7,8,9,
 	    stern uses pin 11 for 7th digit, bally and PinLED use pin 12.
-
 	  4 lines BCD data for the digit, same for all displays.		pins 16-19
 	  1 line display blanking, same for all displays.				pin 10
 	  1 line latch. different for each display.						pin 15
@@ -181,12 +187,17 @@ class CScoreDisplay
 {
 public:
     
+    // I think that on the pinled.de displays, 0xF means don't show anything
+    // so we don't need to keep a bitmap of what to display or not.
+    
     struct {
        byte digits[4];   // most significant nibble is ignored
-       byte lit_digits;  // most significant bit is ignored
     } displays[2];
     
-    byte next_display_digit_to_strobe = 0;    
+    byte last_digit_strobed;
+    
+    inline byte get_nibble_value(byte display_no, byte digit_no);
+    inline void set_nibble_value(byte display_no, byte digit_no, byte value);  
     
     // digit_no can be 0..15 from left to right, 0 and 8 are ignored
     // value can be 0..9
@@ -199,83 +210,142 @@ public:
     
     // score_display can be: 0=for left, 1=for right.
     // turns off anything at the left that is zero
-    void display_bcd_num(byte score_display, const BcdNum &num);
+    void display_bcd_num(byte score_display, BcdNum& num);
     
     // this is called by interrupt handler every msec 
     void ISR_strobe_next_display_digit();
 };
 
+inline byte CScoreDisplay::get_nibble_value(byte display_no, byte digit_no)
+{
+    // byte offset is digit_no / 2 (from 0..7 to 0..3)
+    if (digit_no & 1) {
+        // right nibble
+        return displays[display_no].digits[digit_no >> 2] & 0xF;
+    } else {
+        // left nibble
+        return displays[display_no].digits[digit_no >> 2] >> 4;
+    }
+}
+
+inline void CScoreDisplay::set_nibble_value(byte display_no, byte digit_no, byte value)
+{
+    // byte offset is digit_no / 2 (from 0..7 to 0..3)
+    if (digit_no & 1) {
+        // right nibble
+        displays[display_no].digits[digit_no >> 2] = 
+            (displays[display_no].digits[digit_no >> 2] & 0xF0) | (value & 0xF);
+    } else {
+        // left nibble
+        displays[display_no].digits[digit_no >> 2] =
+            (value << 4) | (displays[display_no].digits[digit_no >> 2] & 0x0F);
+    }
+}  
 
 void CScoreDisplay::show_digit(byte digit_no, byte value)
 {
-    digit_no &= 0xF;               // force 0..15
-    value &= 0xF;                  // force 0..15
-    byte display = digit_no >> 3;  // so that 8+ means 2nd display
-    digit_no &= 0x7;               // make digit no in the range 0..7
-    byte offset = digit_no >> 1;   // digit / 2 is the byte offset (0..3)
-    
-    if (digit_no & 1) {
-        // right nibble
-        displays[display].digits[offset] = (displays[display].digits[offset] & 0xF0) | (value & 0xF);
-    } else {
-        // left nibble
-        displays[display].digits[offset] = (value << 4) | (displays[display].digits[offset] & 0xF);
-    }
-    
-    // turn on that digit too
-    displays[display].lit_digits |= (1 << (7 - digit_no))
+    register byte display_no = digit_no >> 3; // 0..15 becomes 0..1
+    digit_no &= 0x7; // keep it to 0..7 range
+    set_nibble_value(display_no, digit_no, value);
 }
 
 void CScoreDisplay::hide_digit(byte digit_no)
 {
-    digit_no &= 0xF;               // force 0..15
-    byte display = digit_no >> 3;  // so that 8+ means 2nd display
-    digit_no &= 0x7;               // make digit no in the range 0..7
-    
-    // turn on that digit too
-    displays[display].lit_digits &= ~(1 << (7 - digit_no))
+    // the BCD-to-7segments decoder used does not display A-F hexadecimal, 
+    // so we use this to "turn off" a specific digit.
+    show_digit(digit_no, 0xF);
 }
 
 void CScoreDisplay::hide_all()
 {
-    displays[0].lit_digits = 0
-    displays[1].lit_digits = 0
+    memset(displays[0].digits, 0xF, 4);
+    memset(displays[1].digits, 0xF, 4);
 }
 
-void CScoreDisplay::display_bcd_num(byte score_display, const BcdNum &num)
+void CScoreDisplay::display_bcd_num(byte score_display, BcdNum& num)
 {
-    digit_no &= 0xF;               // force 0..15
-    byte display = digit_no >> 3;  // so that 8+ means 2nd display
-    digit_no &= 0x7;               // make digit no in the range 0..7
+    register byte first_non_zero_found;
+    register byte value;
     
-    displays[display].digits[0] = num->bcd[0];
-    displays[display].digits[1] = num->bcd[1];
-    displays[display].digits[2] = num->bcd[2];
-    displays[display].digits[3] = num->bcd[3];
-    
-    // elimintate zeros, find the first nonzero item
-    byte mask = 0;
-    if (displays[display].digits[0] & 0x0F)
-        mask |= 0x40;
-    if (mask || (displays[display].digits[1] & 0xF0))
-        mask |= 0x20;
-    if (mask || (displays[display].digits[1] & 0x0F))
-        mask |= 0x10;
-    if (mask || (displays[display].digits[2] & 0xF0))
-        mask |= 0x08;
-    if (mask || (displays[display].digits[2] & 0x0F))
-        mask |= 0x04;
-    if (mask || (displays[display].digits[3] & 0xF0))
-        mask |= 0x02;
-    if (mask || (displays[display].digits[3] & 0x0F))
-        mask |= 0x01;
-    
-    displays[display].lit_digits = mask
+    // go from left to right. detect first non-zero value, hide the ones to its left.
+    for (byte nibble = 0; nibble < 8; nibble++) {
+        value = num.get_nibble(nibble);
+        
+        if (value) {
+            first_non_zero_found = 1;
+        } else {
+            // value is zero. should we display it?
+            if (!first_non_zero_found)
+                value = 0xF;
+        }
+        
+        set_nibble_value(score_display, nibble, value);
+    }
 }
+
+
+#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
+#define SET_SCORE_DISPLAY_DEMUX_OUTPUT(x)   ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_C(x)        ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_B(x)        ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_A(x)        ((void)0)
+#define SET_SCORE_DISPLAY_BLANKING_LINE(x)  ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_3(x)      ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_2(x)      ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_1(x)      ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_0(x)      ((void)0)
+#define SET_SCORE_DISPLAY_LEFT_LATCH(x)     ((void)0)
+#define SET_SCORE_DISPLAY_RIGHT_LATCH(x)    ((void)0)
 
 
 void CScoreDisplay::ISR_strobe_next_display_digit()
 {
+    register byte value;
+
+    last_digit_strobed += 1;
+    if (last_digit_strobed >= 7)
+        last_digit_strobed = 0;
+    
+    // turn off the 3-to-8 demux
+    SET_SCORE_DISPLAY_DEMUX_OUTPUT(0);
+    SET_SCORE_DISPLAY_BLANKING_LINE(1);
+    NOP(); 
+    NOP();
+    
+    // left display (0) first
+    value = get_nibble_value(0, last_digit_strobed);
+    SET_SCORE_DISPLAY_BCD_BIT_3(value >> 3);
+    SET_SCORE_DISPLAY_BCD_BIT_2(value >> 2);
+    SET_SCORE_DISPLAY_BCD_BIT_1(value >> 1);
+    SET_SCORE_DISPLAY_BCD_BIT_0(value >> 0);
+    
+    SET_SCORE_DISPLAY_LEFT_LATCH(1);
+    NOP();
+    NOP();
+    SET_SCORE_DISPLAY_LEFT_LATCH(0);
+    
+    // right display (1) next
+    value = get_nibble_value(1, last_digit_strobed);
+    SET_SCORE_DISPLAY_BCD_BIT_3(value >> 3);
+    SET_SCORE_DISPLAY_BCD_BIT_2(value >> 2);
+    SET_SCORE_DISPLAY_BCD_BIT_1(value >> 1);
+    SET_SCORE_DISPLAY_BCD_BIT_0(value >> 0);
+    
+    SET_SCORE_DISPLAY_RIGHT_LATCH(1);
+    NOP();
+    NOP();
+    SET_SCORE_DISPLAY_RIGHT_LATCH(0);
+    
+    SET_SCORE_DISPLAY_DEMUX_C(last_digit_strobed >> 2);
+    SET_SCORE_DISPLAY_DEMUX_B(last_digit_strobed >> 1);
+    SET_SCORE_DISPLAY_DEMUX_A(last_digit_strobed >> 0);
+    
+    NOP();
+    NOP();
+    
+    // now enable things back on (how are we hiding digits???)
+    SET_SCORE_DISPLAY_DEMUX_OUTPUT(1);
+    SET_SCORE_DISPLAY_BLANKING_LINE(0);
 }
 
 

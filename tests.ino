@@ -108,7 +108,6 @@ void run_tests()
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
 {
     bool addition = true;    
-    char buffer[64];
     
     if (amount < 0) {
         addition = false;
