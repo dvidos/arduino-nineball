@@ -319,6 +319,7 @@ void CScoreDisplay::ISR_strobe_next_display_digit()
     SET_SCORE_DISPLAY_BCD_BIT_1(value >> 1);
     SET_SCORE_DISPLAY_BCD_BIT_0(value >> 0);
     
+    // latch this into the digit's memory
     SET_SCORE_DISPLAY_LEFT_LATCH(1);
     NOP();
     NOP();
@@ -331,6 +332,7 @@ void CScoreDisplay::ISR_strobe_next_display_digit()
     SET_SCORE_DISPLAY_BCD_BIT_1(value >> 1);
     SET_SCORE_DISPLAY_BCD_BIT_0(value >> 0);
     
+    // latch this into the digit's memory
     SET_SCORE_DISPLAY_RIGHT_LATCH(1);
     NOP();
     NOP();
