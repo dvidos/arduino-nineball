@@ -35,6 +35,8 @@ typedef unsigned long dword;
     #define LOG(fmt, ...)   (void)0
 #endif // LOG_ON_USB_CABLE
 
+#include <wavTrigger.h>
+
 #include "constants.h"
 #include "pins.h"
 
@@ -50,7 +52,7 @@ typedef unsigned long dword;
 CAudio Audio;
 CLampMatrix LampMatrix;
 CSwitchMatrix SwitchMatrix;
-CSettings Settings;
+CGameSettings GameSettings;
 
 #include "timers.h"
 #include "tests.h"

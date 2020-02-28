@@ -30,7 +30,7 @@
 
 
 
-class CSettings
+class CGameSettings
 {
 public:
 
@@ -82,15 +82,15 @@ public:
 
 
 
-void CSettings::save_to_flash()
+void CGameSettings::save_to_flash()
 {
 }
 
-void CSettings::load_from_flash()
+void CGameSettings::load_from_flash()
 {
 }
 
-void CSettings::on_ball_served(char profile_no)
+void CGameSettings::on_ball_served(char profile_no)
 {
     balls_served += 1;
     if (profile_no >= 0) {
@@ -98,7 +98,7 @@ void CSettings::on_ball_served(char profile_no)
     }
 }
 
-void CSettings::on_score_achieved(BcdNum score, char profile_no)
+void CGameSettings::on_score_achieved(BcdNum score, char profile_no)
 {
     if (score > highest_score) {
         highest_score.copy_from(score);

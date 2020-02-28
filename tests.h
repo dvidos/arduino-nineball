@@ -17,7 +17,7 @@ void run_tests()
     
     LOG_INIT();
     LOG("free memory (stack - heap) %d (total 8 KB or 8192 bytes), %f %", freeMemory(), (freeMemory() * 100.0)/8192);
-    LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(Settings));
+    LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
     LOG("size of audio instance is %d bytes", sizeof(Audio));    
     LOG("size of lamp matrix instance is %d bytes", sizeof(LampMatrix));    
     LOG("size of switch matrix instance is %d bytes", sizeof(SwitchMatrix));    

@@ -1,6 +1,4 @@
 
-#include "types.h"
-
 
 class BcdNum
 {
