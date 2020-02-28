@@ -318,6 +318,7 @@ void CScoreDisplay::ISR_strobe_next_display_digit()
     
     // right display (1) next
     value = get_nibble_value(1, last_digit_strobed);
+    value = value;
     SET_SCORE_DISPLAY_BCD_BIT_3(value >> 3);
     SET_SCORE_DISPLAY_BCD_BIT_2(value >> 2);
     SET_SCORE_DISPLAY_BCD_BIT_1(value >> 1);

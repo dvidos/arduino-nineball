@@ -20,9 +20,6 @@ typedef unsigned int word;
 typedef unsigned long dword;
 
 
-#include "constants.h"
-#include "pins.h"
-
 #ifdef LOG_ON_SERIAL_MONITOR
     #define LOG_INIT()      Serial.begin(9600); Serial.println("Serial Log initialized");      
     #define LOG(...)        log_info(__VA_ARGS__)
@@ -38,8 +35,44 @@ typedef unsigned long dword;
     #define LOG(fmt, ...)   (void)0
 #endif // LOG_ON_USB_CABLE
 
+#include "constants.h"
+#include "pins.h"
 
-#include "bcdnum.inc"
+#include "bcdnum.h"
+#include "audio.h"
+#include "lamp_matrix.h"
+#include "switch_matrix.h"
+#include "score_display.h"
+#include "animations.h"
+#include "game_settings.h"
+#include "gameplay.h"
+
+CAudio Audio;
+CLampMatrix LampMatrix;
+CSwitchMatrix SwitchMatrix;
+CSettings Settings;
+
+#include "timers.h"
+#include "tests.h"
+
+void setup() {
+    #ifdef RUN_TESTS
+        run_tests();
+    #else
+    	noInterrupts();
+    	setup_timers();
+    	setup_pins();
+    	setup_sounds();
+    	interrupts();
+    #endif
+}
+
+void loop() {
+    #ifdef RUN_TESTS
+    #else
+    #endif
+}
+
 
 
 
