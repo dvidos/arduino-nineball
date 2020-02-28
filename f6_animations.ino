@@ -29,6 +29,9 @@
 #define LAMP_GROUP_OBJECTS_SPECIAL        6
 
 
+extern CLampMatrix LampMatrix;
+
+
 const byte lampGroups[4][10] PROGMEM = {
     { 0, 1, 2, 3, 4 },
     { 32, 33, 34, 35, 36 },

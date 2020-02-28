@@ -1,39 +1,27 @@
 /**
  * Created by Dimitris Vidos, for a custom Stern Nineball pinball machine.
  * All rights reserved.
- */
-#define RUN_TESTS              // comment out to run normal code
-#define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
-
-#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
-
-#include "types.h"
-#include "constants.h"
-#include "pins.h"
-#include "audio.h"
-#include "lamp_matrix.h"
-#include "switch_matrix.h"
-#include "settings.h"
-
-/**
+ *
  * All .ino and .pde files in the sketch folder (shown in the IDE as tabs with no extension) 
  * are concatenated together, starting with the file that matches the folder name followed 
  * by the others in alphabetical order, and the .cpp extension is added to the filename.
  *
  * See also: https://github.com/arduino/Arduino/wiki/Build-Process
- *
- * Another idea for organizing code:
- *  ArduinoWorkspace --- /myproj/ ----+ /src/ --------+ myproj.cpp
- *                                    + myproj.ino    + sensor.h
- *                                                    + sensor.cpp
- *                                                    + (more files)
  */
+#define RUN_TESTS              // comment out to run normal code
+#define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
 
-CAudio Audio;
-CLampMatrix LampMatrix;
-CSwitchMatrix SwitchMatrix;
-CSettings Settings;
+#define SWITCH_MATRIX_EVENTS_QUEUE_SIZE   16
 
+#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
+
+typedef unsigned char byte;
+typedef unsigned int word;
+typedef unsigned long dword;
+
+
+#include "constants.h"
+#include "pins.h"
 
 #ifdef LOG_ON_SERIAL_MONITOR
     #define LOG_INIT()      Serial.begin(9600); Serial.println("Serial Log initialized");      
@@ -51,26 +39,7 @@ CSettings Settings;
 #endif // LOG_ON_USB_CABLE
 
 
-
-
-
-void setup() {
-#ifdef RUN_TESTS
-    run_tests();
-#else
-	noInterrupts();
-	setup_timers();
-	setup_pins();
-	setup_sounds();
-	interrupts();
-#endif
-}
-
-void loop() {
-#ifdef RUN_TESTS
-#else
-#endif
-}
+#include "bcdnum.inc"
 
 
 

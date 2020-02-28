@@ -1,11 +1,10 @@
-#include "audio.h"
 #ifdef RUN_TESTS
 
 
 #define ASSERT(condition)    if(!(condition)) { LOG("** Failed asserting that \"%s\"", #condition); }
 
 
-bool test_bcd_number(BcdNum *n, unsigned long *expected_value, dword bcd_tens, bool addition);
+bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
 int freeMemory();
 

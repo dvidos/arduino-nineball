@@ -23,6 +23,10 @@ void start_timeout(int timeout_no);
 void start_coil(int coil_no);
 void add_score(word bcd_amount_in_tens);
 
+extern CAudio Audio;
+extern CSwitchMatrix SwitchMatrix;
+
+
 class Gameplay
 {
 public:
