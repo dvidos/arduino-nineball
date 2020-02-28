@@ -108,8 +108,6 @@
 #define LAMP_START                    63
 
 
-
-
 #define SW_LEFT_OUTLANE                1
 #define SW_RIGHT_OUTLANE               2
 #define SW_LEFT_INLANE                 3

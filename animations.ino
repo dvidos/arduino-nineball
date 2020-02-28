@@ -24,6 +24,10 @@
 #define LAMP_GROUP_SPINNER_TARGET_VALUE   1
 #define LAMP_GROUP_BONUS_MULTIPLIER       2
 #define LAMP_GROUP_OBJECTS_DIAMOND        3
+#define LAMP_GROUP_OBJECTS_NUMBERS        4
+#define LAMP_GROUP_OBJECTS_WOW            5
+#define LAMP_GROUP_OBJECTS_SPECIAL        6
+
 
 const byte lampGroups[4][10] PROGMEM = {
     { 0, 1, 2, 3, 4 },
@@ -133,14 +137,15 @@ void empty(byte lamps[], byte lamps_count, byte &step_no)
     }
 }
 
-
-    
 class CAnimator
 {
 public:
 
     void start(byte animation_no);
     void stop_all();
+    
+    void start_blinking(byte lamp_no);
+    void stop_blinking();
     
     void ISR_every_100_milliseconds();
 };

@@ -1,6 +1,12 @@
 
 #include "switch_matrix.h"
 
+#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
+
+
+
+
+
 CSwitchMatrix::CSwitchMatrix()
 {
     // we do not know the status of all switches, 
@@ -28,15 +34,15 @@ void CSwitchMatrix::intercept_next_row()
         current_send = 0;
         
     // move this to the pins
-    // say SET(PORTF, 3, current_send >> 2); 
-    // say SET(PORTF, 7, current_send >> 1); 
-    // say SET(PORTF, 0, current_send >> 0);
+    SET_SWITCH_MATRIX_DEMUX_A(current_send >> 2);
+    SET_SWITCH_MATRIX_DEMUX_B(current_send >> 1);
+    SET_SWITCH_MATRIX_DEMUX_C(current_send >> 0);
     
     // give it a moment...
-    asm("nop \n nop \n nop \n");
+    NOP();
     
-    // now read the 8 bites (hopefully a whole port)
-    byte current_returns = 0; // say PORTK
+    // now read the 8 returns (hopefully a whole port, for speed)
+    byte current_returns = GET_SWITCH_MATRIX_RETURNS_OCTET();
     if (current_returns != switches[current_send])
     {
         // detect changes and put in a queue

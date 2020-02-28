@@ -1,6 +1,9 @@
 
 #include "lamp_matrix.h" 
 
+
+
+
 CLampMatrix::CLampMatrix()
 {
     memset(lamps, 0, 8);
@@ -37,15 +40,16 @@ void CLampMatrix::output_next_column()
     // we need to apply the next column to the ports
 
     // clear all ourputs for current column
-    // say, PORTD = 0
+    SET_LAMP_MATRIX_RETURNS_OCTET(0);
     
     // change the 3 bits that dictate the column
     current_send = (current_send + 1) & 0x7;
-    // say SET(PORT4, 3, (current_send >> 2))
-    // say SET(PORT4, 6, (current_send >> 1))
-    // say SET(PORT4, 2, (current_send >> 0))
+    
+    SET_LAMP_MATRIX_DEMUX_A(currenr_send >> 2);
+    SET_LAMP_MATRIX_DEMUX_B(currenr_send >> 1);
+    SET_LAMP_MATRIX_DEMUX_C(currenr_send >> 0);
     
     // set all outputs for the new column
-    // say, PORTD = lamps[current_send];
+    SET_LAMP_MATRIX_RETURNS_OCTET(lamps[current_send]);
 }
 

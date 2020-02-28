@@ -5,8 +5,11 @@
 #define RUN_TESTS              // comment out to run normal code
 #define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
 
+#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
+
 #include "types.h"
 #include "constants.h"
+#include "pins.h"
 #include "audio.h"
 #include "lamp_matrix.h"
 #include "switch_matrix.h"

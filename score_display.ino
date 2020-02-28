@@ -183,11 +183,16 @@
 	}
 */
 
+
+
+
+
+
 class CScoreDisplay
 {
 public:
     
-    // I think that on the pinled.de displays, 0xF means don't show anything
+    // I think that on the pinled.de displays, 0xA - 0xF means don't show anything
     // so we don't need to keep a bitmap of what to display or not.
     
     struct {
@@ -282,20 +287,6 @@ void CScoreDisplay::display_bcd_num(byte score_display, BcdNum& num)
         set_nibble_value(score_display, nibble, value);
     }
 }
-
-
-#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
-#define SET_SCORE_DISPLAY_DEMUX_OUTPUT(x)   ((void)0)
-#define SET_SCORE_DISPLAY_DEMUX_C(x)        ((void)0)
-#define SET_SCORE_DISPLAY_DEMUX_B(x)        ((void)0)
-#define SET_SCORE_DISPLAY_DEMUX_A(x)        ((void)0)
-#define SET_SCORE_DISPLAY_BLANKING_LINE(x)  ((void)0)
-#define SET_SCORE_DISPLAY_BCD_BIT_3(x)      ((void)0)
-#define SET_SCORE_DISPLAY_BCD_BIT_2(x)      ((void)0)
-#define SET_SCORE_DISPLAY_BCD_BIT_1(x)      ((void)0)
-#define SET_SCORE_DISPLAY_BCD_BIT_0(x)      ((void)0)
-#define SET_SCORE_DISPLAY_LEFT_LATCH(x)     ((void)0)
-#define SET_SCORE_DISPLAY_RIGHT_LATCH(x)    ((void)0)
 
 
 void CScoreDisplay::ISR_strobe_next_display_digit()

@@ -41,7 +41,7 @@
    using direct port, it takes 2 cpu cycles, while digitalWrite takes about 50.
   	
    digitalWrite(pin, LOW);       digitalWrite(pin, HIGH);    7000 nsec
-   CLR(PORTB, 0) ;     				SET(PORTB, 0);               250 nsec
+   CLR(PORTB, 0) ;               SET(PORTB, 0);               250 nsec
    PORTB |= _BV(0);              PORTB &= ~(_BV(0));          250 nsec
 	
    The macros used:
@@ -141,33 +141,28 @@
    A15  PK7  ADC15         U              U
 
 */
-int current_pin = 0;
-int pins[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
-               18,19,20,21,22,23, 24,25,26,27,28,29,30,31,32,33,34,
-               35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53};
 
+#define SET_PLAY_ENABLE_RELAY(x)              ((void)0)
 
+#define SET_LAMP_MATRIX_DEMUX_A(x)            ((void)0)
+#define SET_LAMP_MATRIX_DEMUX_B(x)            ((void)0)
+#define SET_LAMP_MATRIX_DEMUX_C(x)            ((void)0)
+#define SET_LAMP_MATRIX_RETURNS_OCTET(octet)  ((void)0)
 
-void setup_pins() {
-   //int pins_len = sizeof(pins)/sizeof(pins[0]);
-   //for (int i = 0; i < pins_len; i++)
-   //	pinMode(pins[i], OUTPUT);
-	
-   // set the A0 input to PULLUP_RESISTOR
-   pinMode(13, OUTPUT);
-   pinMode(A0, INPUT_PULLUP);
-}
+#define SET_SWITCH_MATRIX_DEMUX_A(x)          ((void)0)
+#define SET_SWITCH_MATRIX_DEMUX_B(x)          ((void)0)
+#define SET_SWITCH_MATRIX_DEMUX_C(x)          ((void)0)
+#define GET_SWITCH_MATRIX_RETURNS_OCTET()     0
 
-void loop_pins() {
-   int pins_len = sizeof(pins)/sizeof(pins[0]);
-   for (int i = 0; i < pins_len; i++)
-      digitalWrite(pins[i], 0);
+#define SET_SCORE_DISPLAY_DEMUX_OUTPUT(x)     ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_C(x)          ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_B(x)          ((void)0)
+#define SET_SCORE_DISPLAY_DEMUX_A(x)          ((void)0)
+#define SET_SCORE_DISPLAY_BLANKING_LINE(x)    ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_3(x)        ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_2(x)        ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_1(x)        ((void)0)
+#define SET_SCORE_DISPLAY_BCD_BIT_0(x)        ((void)0)
+#define SET_SCORE_DISPLAY_LEFT_LATCH(x)       ((void)0)
+#define SET_SCORE_DISPLAY_RIGHT_LATCH(x)      ((void)0)
 
-   current_pin++;
-   if (current_pin >= pins_len)
-      current_pin = 0;
-		
-   digitalWrite(pins[current_pin], 1);
-
-   digitalWrite(13, digitalRead(A0));
-}

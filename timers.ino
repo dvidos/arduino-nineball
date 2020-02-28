@@ -229,14 +229,14 @@ void setup_timers() {
 /**
  * Timer 1, currently running every sec
  */
-ISR(TIMER1_COMPA_vect){
+ISR(TIMER1_COMPA_vect) {
    noInterrupts();
 }
 
 /**
  * Timer 3, currently running every msec
  */
-ISR(TIMER3_COMPA_vect){
+ISR(TIMER3_COMPA_vect) {
    noInterrupts();
    
    LampMatrix.output_next_column();
@@ -246,7 +246,7 @@ ISR(TIMER3_COMPA_vect){
 /**
  * Timer 4, currently running every 100 msec
  */
-ISR(TIMER4_COMPA_vect){
+ISR(TIMER4_COMPA_vect) {
    noInterrupts();
 }
 
