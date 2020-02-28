@@ -82,6 +82,17 @@ https://github.com/robertsonics/WAV-Trigger-Arduino-Serial-Library/blob/master/w
 Uncomment the desired one. One cable sound! Woot!
 
 
+## Maintenability
+
+Unfortunately, this is prey to the shallow entry curve of Arduino. Yes, it worked well since the first time I plugged it in.
+But now I cannot add the WavLibrary to the source control. I cannot modify the makefile. 
+I cannot build using custom or open source tools. 
+So, I guess, this is the price to pay for so easy to get-started platform.
+
+I may try to find a way to build from makefile.
+
+
+
 
 
 [1]: https://www.ipdb.org/machine.cgi?id=1678
