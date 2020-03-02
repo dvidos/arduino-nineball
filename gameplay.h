@@ -168,7 +168,11 @@ void Gameplay::handle_switch_closed(char switch_no) {
         case SW_TOP_BANK_LEFT_TARGET:
         case SW_TOP_BANK_CENTER_TARGET:
         case SW_TOP_BANK_RIGHT_TARGET:
+            // depending on settings, outside or center target advances spinner.
+            // if it's the middle target and wow is lit, collect it
             // when all 3 drop targets down, increase bonus multiplier
+            // if multiplier entered 6x or 7x (depending on setting) start top banks WOW
+            //  
         
         case SW_RIGHT_BANK_LEFT_TARGET:
         case SW_RIGHT_BANK_CENTER_TARGET:

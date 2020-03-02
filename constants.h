@@ -12,16 +12,6 @@
 #define MODE_DIAGNOSTICS       6
 
 
-#define DIAGNOSTICS_LAMP_MATRIX_COLUMNS          1 # selects which column
-#define DIAGNOSTICS_LAMP_MATRIX_ROWS             2 # B2 selects which row
-#define DIAGNOSTICS_LAMP_MATRIX_LAMP             3 # B2 selects which lamp
-#define DIAGNOSTICS_LAMP_MATRIX_ALL              4 # all lamps blink on-off every second   
-#define DIAGNOSTICS_SCORE_DISPLAY_SINGLE_NUMBER  5 # B2 selects which number all displays should show 0-9
-#define DIAGNOSTICS_SCORE_DISPLAY_SINGLE_DIGIT   6 # B2 selects which digit will display 8 or F, 0 to 13
-#define DIAGNOSTICS_SWITCH_MATRIX                7 # number of switch closed displayed (B1/B2 are excluded)
-#define DIAGNOSTICS_COILS                        8 # B2 selects which coild to fire, fired every 2 secs?
-#define DIAGNOSTICS_Q_RELAY                      9 # B2 selects whether q relay is energized or not
-#define DIAGNOSTICS_SOUND                       10 # B2 selects sound to fire. 
 
 #define GAME_MODE_BALL_EJECTING    0
 #define GAME_MODE_BALL_SETTING_UP_NUMBER    0

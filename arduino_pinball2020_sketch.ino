@@ -1,3 +1,4 @@
+
 /**
  * Created by Dimitris Vidos, for a custom Stern Nineball pinball machine.
  * All rights reserved.
@@ -36,6 +37,7 @@ typedef unsigned long dword;
 #endif // LOG_ON_USB_CABLE
 
 #include <wavTrigger.h>
+#include <EEPROM.h>
 
 #include "constants.h"
 #include "pins.h"

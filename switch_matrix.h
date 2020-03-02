@@ -1,4 +1,9 @@
-
+/**
+ * 5 sends with 8 returns. 5 sends using 3 pins and a 3-to-8 demux on the switch matrix.
+ * 
+ * See also https://github.com/nickgammon/Keypad_Decoder/blob/master/Keypad_Decoder.ino
+ * and      https://playground.arduino.cc/Main/KeypadTutorial/
+ */
     
 #define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
 
