@@ -55,6 +55,8 @@ CAudio Audio;
 CLampMatrix LampMatrix;
 CSwitchMatrix SwitchMatrix;
 CGameSettings GameSettings;
+CAnimator Animator;
+
 
 #include "timers.h"
 #include "tests.h"
@@ -76,6 +78,8 @@ void loop() {
     #else
     #endif
 }
+
+
 
 
 

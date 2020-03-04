@@ -13,6 +13,7 @@ public:
     
     void lamp_on(byte lamp_no);
     void lamp_off(byte lamp_no);
+    void set_lamp(byte lamp_no, bool value);
     bool is_on(byte lamp_no);
     
     void output_next_column();
@@ -28,7 +29,7 @@ CLampMatrix::CLampMatrix()
     current_send = 0;
 }
 
-void CLampMatrix::lamp_on(byte lamp_no)
+void inline CLampMatrix::lamp_on(byte lamp_no)
 {
     // lamp_no / 8 is the byte to store
     // lamp_no % 8 is the bit to turn on
@@ -36,12 +37,20 @@ void CLampMatrix::lamp_on(byte lamp_no)
     lamps[lamp_no >> 3] |= (1 << (lamp_no & 0x7));
 }
 
-void CLampMatrix::lamp_off(byte lamp_no)
+void inline CLampMatrix::lamp_off(byte lamp_no)
 {
     // lamp_no / 8 is the byte to store
     // lamp_no % 8 is the bit to turn off
     
     lamps[lamp_no >> 3] &= ~(1 << (lamp_no & 0x7));
+}
+
+void inline CLampMatrix::set_lamp(byte lamp_no, bool value)
+{
+    if (value)
+        lamp_on(lamp_no);
+    else
+        lamp_off(lamp_no);
 }
 
 bool CLampMatrix::is_on(byte lamp_no)

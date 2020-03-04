@@ -195,7 +195,7 @@ void setup_timers() {
 	// timer1 -> 1 sec
 	// timer3 -> 1 msec
 	// timer4 -> 100 msecs
-	
+	// timer5 -> 10 msecs
 	
 	// set compare match register for 1hz increments	
 	TCCR1A = 0;                           // set entire TCCR1A register to 0
@@ -223,6 +223,15 @@ void setup_timers() {
 	TCCR4B |= (1 << WGM42);               // turn on CTC mode
 	TCCR4B |= (1 << CS41) | (1 << CS40);  // Set CS11 and CS10 bits for 64 prescaler  	
 	TIMSK4 |= (1 << OCIE4A);              // enable timer compare interrupt
+	
+	// timer 5 to 10 msecs - prescaler 64, compare value 24999.
+	TCCR5A = 0;                           // set entire TCCRnA register to 0
+	TCCR5B = 0;                           // same for TCCRnB
+	TCNT5  = 0;                           // initialize counter value to 0
+	OCR5A = 2499;                         // = (16,000,000) / (64 * 100) - 1 (must be <65536)
+	TCCR5B |= (1 << WGM52);               // turn on CTC mode
+	TCCR5B |= (1 << CS51) | (1 << CS50);  // Set CS11 and CS10 bits for 64 prescaler  	
+	TIMSK5 |= (1 << OCIE5A);              // enable timer compare interrupt
 }
 
 
@@ -239,8 +248,8 @@ ISR(TIMER1_COMPA_vect) {
 ISR(TIMER3_COMPA_vect) {
    noInterrupts();
    
-   LampMatrix.output_next_column();
-   SwitchMatrix.intercept_next_row();
+   ScoreDisplay::ISR_strobe_next_display_digit();
+   LampMatrix::output_next_column();
 }
 
 /**
@@ -248,5 +257,15 @@ ISR(TIMER3_COMPA_vect) {
  */
 ISR(TIMER4_COMPA_vect) {
    noInterrupts();
+}
+
+/**
+ * Timer 5, currently running every 10 msec
+ */
+ISR(TIMER5_COMPA_vect) {
+   noInterrupts();
+   
+   SwitchMatrix::intercept_next_row();
+   Animator::ISR_every_10_milliseconds();
 }
 
