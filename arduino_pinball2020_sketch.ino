@@ -55,6 +55,7 @@ CAudio Audio;
 CLampMatrix LampMatrix;
 CSwitchMatrix SwitchMatrix;
 CGameSettings GameSettings;
+CScoreDisplay ScoreDisplay;
 CAnimator Animator;
 
 

@@ -13,6 +13,15 @@
 
 
 
+#define ANIM_TOP_LOOP_ADVANCE_VALUE   1    // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
+#define ANIM_TOP_LOOP_COLLECT_VALUE   2    // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
+#define ANIM_SPINNER_INCREASE_VALUE   3    // on the original game, there is no animation for increasing the value of the spinner
+#define ANIM_SPINNER_COLLECT_VALUE    4    // moderate chase of one lamp each time, through the lamps that were already lit.
+#define ANIM_BONUS_MULTIPLIER         5    // fast blink of the new value for 8 times.
+
+
+
+
 #define GAME_MODE_BALL_EJECTING    0
 #define GAME_MODE_BALL_SETTING_UP_NUMBER    0
 #define GAME_MODE_BALL_WAITING_FOR_NUMBER_1    0

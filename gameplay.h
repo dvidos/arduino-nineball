@@ -51,7 +51,6 @@ private:
     int one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
     
     void handle_timeout(char timeout_no);	
-	void handle_animation_finished(char animation_no);
 	void handle_switch_closed(char switch_no);
 	void handle_switch_opened(char switch_no);
 	word get_spinner_score_bcd(byte spinner_value);
@@ -93,29 +92,6 @@ void Gameplay::handle_timeout(char timeout_no) {
         case TIMEOUT_RESET_SPINNER_VALUE:
             // make spinner_value zero, 
             // adjust lamps accordingly
-            break;
-    }
-}
-
-void Gameplay::handle_animation_finished(char animation_no) {
-    switch (animation_no) {
-        case ANIM_TOP_LOOP_ADVANCE_VALUE:
-            // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
-            // set the lamps to the appropriate top loop score
-        case ANIM_TOP_LOOP_COLLECT_VALUE:
-           // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
-            // set the lamps to the appropriate top loop score
-        case ANIM_BONUS_MULTIPLIER:
-            // fast blink of the new value for 8 times.
-            // set the lamps to the appropriate bonus multiplier
-        case ANIM_SPINNER_INCREASE_VALUE:
-            // on the original game, there is no animation for increasing the value of the spinner
-            // set the lamps to the approrpiate spinner value
-        case ANIM_SPINNER_COLLECT_VALUE:
-            // moderate chase of one lamp each time, through the lamps that were already lit.
-            // set the lamps to the approrpiate spinner value
-        case ANIM_BALLS_DIAMOND:
-            // set the lamps to the appropriate objects made
             break;
     }
 }

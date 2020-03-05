@@ -232,8 +232,12 @@ void setup_timers() {
 	TCCR5B |= (1 << WGM52);               // turn on CTC mode
 	TCCR5B |= (1 << CS51) | (1 << CS50);  // Set CS11 and CS10 bits for 64 prescaler  	
 	TIMSK5 |= (1 << OCIE5A);              // enable timer compare interrupt
-}
+} 
 
+extern CAnimator Animator;
+extern CLampMatrix LampMatrix;
+extern CSwitchMatrix SwitchMatrix;
+extern CScoreDisplay ScoreDisplay;
 
 /**
  * Timer 1, currently running every sec
@@ -248,8 +252,8 @@ ISR(TIMER1_COMPA_vect) {
 ISR(TIMER3_COMPA_vect) {
    noInterrupts();
    
-   ScoreDisplay::ISR_strobe_next_display_digit();
-   LampMatrix::output_next_column();
+   ScoreDisplay.ISR_strobe_next_display_digit();
+   LampMatrix.output_next_column();
 }
 
 /**
@@ -265,7 +269,7 @@ ISR(TIMER4_COMPA_vect) {
 ISR(TIMER5_COMPA_vect) {
    noInterrupts();
    
-   SwitchMatrix::intercept_next_row();
-   Animator::ISR_every_10_milliseconds();
+   SwitchMatrix.intercept_next_row();
+   Animator.tick();
 }
 
