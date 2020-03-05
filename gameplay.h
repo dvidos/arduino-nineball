@@ -18,16 +18,16 @@
 
 #include "constants.h"
 
-void start_animation(int animation_no);
 void start_timeout(int timeout_no);
 void start_coil(int coil_no);
 void add_score(word bcd_amount_in_tens);
 
 extern CAudio Audio;
+extern CAnimator Animator;
 extern CSwitchMatrix SwitchMatrix;
 
 
-class Gameplay
+class CGameplay
 {
 public:
     
@@ -59,20 +59,20 @@ private:
 	void on_left_bank_drop_target_down(byte number);
 };
 
-void Gameplay::init(byte mode)
+void CGameplay::init(byte mode)
 {
     // start gameplay, in a specific mode.
     // e.g. EVA_HAPPY_MODE (unlimited balls)
     // or   DIMITRIS_PRACTICE_MODE (if we have space for the code) 
 }
 
-void Gameplay::tick()
+void CGameplay::tick()
 {
 }
 
     
 
-void Gameplay::handle_timeout(char timeout_no) {
+void CGameplay::handle_timeout(char timeout_no) {
     switch (timeout_no) {
         case TIMEOUT_BALL_NINE_MOVING_TARGET:
             // move to the next moving target
@@ -96,7 +96,7 @@ void Gameplay::handle_timeout(char timeout_no) {
     }
 }
 
-void Gameplay::handle_switch_closed(char switch_no) {
+void CGameplay::handle_switch_closed(char switch_no) {
     switch (switch_no) {
         case SW_LEFT_OUTLANE:
             add_score(0x0300);
@@ -212,7 +212,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
             add_score(0x0300);
             Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
-            start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
+            Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
             break;
     
         case SW_SKILL_SHOT_TARGET:
@@ -224,7 +224,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
         
         case SW_SPINNER:
             add_score(get_spinner_score_bcd(spinner_value));
-            start_animation(ANIM_SPINNER_COLLECT_VALUE);
+            Animator.start(ANIM_SPINNER_COLLECT_VALUE, 0);
             start_timeout(TIMEOUT_RESET_SPINNER_VALUE); // one second?
             Audio.play(SOUND_SPINNER);
             break;
@@ -233,7 +233,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
             add_score(0x0300);
             Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
-            start_animation(ANIM_TOP_LOOP_ADVANCE_VALUE);
+            Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
             break;
         
         case SW_TOP_LOOP_TARGET:
@@ -254,7 +254,7 @@ void Gameplay::handle_switch_closed(char switch_no) {
     }
 }
 
-void Gameplay::handle_switch_opened(char switch_no) {
+void CGameplay::handle_switch_opened(char switch_no) {
     switch (switch_no) {
         case SW_SHOOTING_LANE:
             // game on, no more players, start audio etc.
@@ -262,7 +262,7 @@ void Gameplay::handle_switch_opened(char switch_no) {
     }
 }
 
-word Gameplay::get_spinner_score_bcd(byte spinner_value) {
+word CGameplay::get_spinner_score_bcd(byte spinner_value) {
     if (spinner_value == 0) return 0x0010; //   100
     if (spinner_value == 1) return 0x0040; //   400
     if (spinner_value == 2) return 0x0090; //   900
@@ -271,7 +271,7 @@ word Gameplay::get_spinner_score_bcd(byte spinner_value) {
     return 0x0010; // 100
 }
 
-void Gameplay::collect_and_reset_loop_target_value() {
+void CGameplay::collect_and_reset_loop_target_value() {
     word score;
     
     if (loop_target_value == 4) {
@@ -286,11 +286,11 @@ void Gameplay::collect_and_reset_loop_target_value() {
     
     add_score(score);
     Audio.play(SOUND_FX_2);
-    start_animation(ANIM_TOP_LOOP_COLLECT_VALUE);
+    Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0);
     loop_target_value = 0;
 }
 
-void Gameplay::make_current_target_object() {
+void CGameplay::make_current_target_object() {
     // update status, bonus, start animations, kick up the drop targets etc.
     
     // next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
@@ -300,7 +300,7 @@ void Gameplay::make_current_target_object() {
     
 }
 
-void Gameplay::on_left_bank_drop_target_down(byte number) {
+void CGameplay::on_left_bank_drop_target_down(byte number) {
     // number is from 1..8, not 0-7
     // I think we must raise the 8 drop targets whenever target 8 is hit,
     // to avoid having a ball stuck on the gap that 8 leaves.

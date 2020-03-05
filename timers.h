@@ -238,6 +238,7 @@ extern CAnimator Animator;
 extern CLampMatrix LampMatrix;
 extern CSwitchMatrix SwitchMatrix;
 extern CScoreDisplay ScoreDisplay;
+extern CCoils Coils; 
 
 /**
  * Timer 1, currently running every sec
@@ -261,6 +262,8 @@ ISR(TIMER3_COMPA_vect) {
  */
 ISR(TIMER4_COMPA_vect) {
    noInterrupts();
+   
+   Animator.every_100_msecs_interrupt();
 }
 
 /**
@@ -269,7 +272,7 @@ ISR(TIMER4_COMPA_vect) {
 ISR(TIMER5_COMPA_vect) {
    noInterrupts();
    
+   Coils.every_10_msecs_interrupt();
    SwitchMatrix.intercept_next_row();
-   Animator.tick();
 }
 

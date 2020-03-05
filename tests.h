@@ -11,7 +11,6 @@ int freeMemory();
 
 void run_tests()
 {
-    Gameplay gp;
     BcdNum n;
     unsigned long expected_value = 0;
     
@@ -20,10 +19,26 @@ void run_tests()
     LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
     LOG("size of audio instance is %d bytes", sizeof(Audio));    
     LOG("size of lamp matrix instance is %d bytes", sizeof(LampMatrix));    
+    LOG("size of score display instance is %d bytes", sizeof(ScoreDisplay));    
     LOG("size of switch matrix instance is %d bytes", sizeof(SwitchMatrix));    
-    LOG("size of gameplay instance is %d bytes", sizeof(gp));    
+    LOG("size of gameplay instance is %d bytes", sizeof(Gameplay));    
+    LOG("size of attract instance is %d bytes", sizeof(Attract));    
+    LOG("size of animator instance is %d bytes", sizeof(Animator));    
+    LOG("size of coils instance is %d bytes", sizeof(Coils));
     LOG("size of bcdnum instance is %d bytes", sizeof(n));
-        
+    
+    int global_variables_total_memory = 
+        sizeof(Animator) + 
+        sizeof(Coils) +
+        sizeof(Audio) +
+        sizeof(Coils) +
+        sizeof(Gameplay) +
+        sizeof(GameSettings) +
+        sizeof(LampMatrix) +
+        sizeof(ScoreDisplay) +
+        sizeof(SwitchMatrix);
+    LOG("total size of resident global variables is %d bytes", global_variables_total_memory);
+    
     ASSERT(n.to_decimal() == 0);
   
     test_bcd_math(&n, &expected_value, 0);

@@ -166,3 +166,13 @@
 #define SET_SCORE_DISPLAY_LEFT_LATCH(x)       ((void)0)
 #define SET_SCORE_DISPLAY_RIGHT_LATCH(x)      ((void)0)
 
+
+#define SET_OUTHOLE_EJECT_COIL(x)             ((void)0)
+#define SET_LEFT_SLINGSHOT_COIL(x)            ((void)0)
+#define SET_RIGHT_SLINGSHOT_COIL(x)           ((void)0)
+#define SET_TOP_BANK_RESET_COIL(x)            ((void)0)
+#define SET_RIGHT_BANK_RESET_COIL(x)          ((void)0)
+#define SET_LEFT_BANK_RESET_COIL(x)           ((void)0)
+#define SET_CAPTURE_LANE_EJECT_COIL(x)        ((void)0)
+#define SET_KNOCKER_COIL(x)                   ((void)0)
+#define SET_FLIPPERS_RELAY(x)                 ((void)0)

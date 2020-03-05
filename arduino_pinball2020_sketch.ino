@@ -46,10 +46,12 @@ typedef unsigned long dword;
 #include "audio.h"
 #include "lamp_matrix.h"
 #include "switch_matrix.h"
+#include "coils.h"
 #include "score_display.h"
 #include "animations.h"
 #include "game_settings.h"
 #include "gameplay.h"
+#include "attract.h"
 
 CAudio Audio;
 CLampMatrix LampMatrix;
@@ -57,7 +59,9 @@ CSwitchMatrix SwitchMatrix;
 CGameSettings GameSettings;
 CScoreDisplay ScoreDisplay;
 CAnimator Animator;
-
+CCoils Coils;
+CGameplay Gameplay;
+CAttract Attract;
 
 #include "timers.h"
 #include "tests.h"
@@ -67,6 +71,7 @@ void setup() {
         run_tests();
     #else
     	noInterrupts();
+    	
     	setup_timers();
     	setup_pins();
     	setup_sounds();

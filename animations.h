@@ -91,7 +91,7 @@ public:
     void start_blinking(byte lamp_no);
     void stop_blinking();
     
-    void tick();
+    void every_100_msecs_interrupt();
     
 private:
     byte blinking_on: 1;          // whether a lamp should blink 
@@ -206,7 +206,7 @@ void CAnimator::stop_blinking()
     blinking_on = false;
 }
 
-void CAnimator::tick()
+void CAnimator::every_100_msecs_interrupt()
 {
     // diminish counters, update lamps etc.
     for (byte i = 0; i < LAMP_GROUPS_COUNT; i++)

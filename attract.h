@@ -6,8 +6,8 @@ class CAttract
     byte menu_item: 4;
     byte item_value;
     
-    void handle_switch(byte switch_no)
-}
+//    void handle_switch(byte switch_no)
+};
 
 /*
     Using left button underneath, we cycle the modes.
@@ -75,7 +75,7 @@ class CAttract
 
 
 
-
+/*
 void CAttract::handle_switch(byte switch_no)
 {
    switch (switch_no)
@@ -359,3 +359,4 @@ void CAttract::diagnostics_next_value()
     }
 }
 
+*/
