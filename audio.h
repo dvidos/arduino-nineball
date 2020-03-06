@@ -5,6 +5,7 @@ public:
     
     CAudio();
     
+    void init();
     void play(int sound_no);
     void stop_all();
     
@@ -17,6 +18,10 @@ protected:
 CAudio::CAudio()
 {
     trigger.start();
+}
+
+void CAudio::init()
+{
 }
 
 void CAudio::play(int sound_no)

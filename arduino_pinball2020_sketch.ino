@@ -1,4 +1,3 @@
-
 /**
  * Created by Dimitris Vidos, for a custom Stern Nineball pinball machine.
  * All rights reserved.
@@ -9,39 +8,39 @@
  *
  * See also: https://github.com/arduino/Arduino/wiki/Build-Process
  */
-#define RUN_TESTS              // comment out to run normal code
-#define LOG_ON_SERIAL_MONITOR  // comment out to stop sending log messages to the serial port (USB cable)
+ 
+ 
+/**
+ * Whether we want to LOG() onto the serial monitor.
+ * Commenting this out makes the LOG() macro to do nothing.
+ */
+#define LOG_ON_SERIAL_MONITOR
 
-#define SWITCH_MATRIX_EVENTS_QUEUE_SIZE   16
+/**
+ * Software tests is a function that runs various unit tests.
+ * Results logged in serial monitor
+ *
+ * Expected hardware: USB cable only
+ */
+#define RUN_SOFTWARE_TESTS
 
-#define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
+/**
+ * Hardware tests is a small applet to run various operations,
+ * mainly verifying the cooperation of software and hardware.
+ * 
+ * Expected hardware: A0-A7: buttons to earth, A8-A15: LEDs
+ */
+#define RUN_HARDWARE_TESTS
 
-typedef unsigned char byte;
-typedef unsigned int word;
-typedef unsigned long dword;
 
 
-#ifdef LOG_ON_SERIAL_MONITOR
-    #define LOG_INIT()      Serial.begin(9600); Serial.println("Serial Log initialized");      
-    #define LOG(...)        log_info(__VA_ARGS__)
-    void log_info(const char *fmt, ...) {
-        char buffer[128];
-        va_list args_list;
-        va_start(args_list, fmt);
-        vsprintf(buffer, fmt, args_list);
-        Serial.println(buffer);
-    }
-#else
-    #define LOG_INIT()      (void)0
-    #define LOG(fmt, ...)   (void)0
-#endif // LOG_ON_USB_CABLE
 
+#include <Arduino.h>
 #include <wavTrigger.h>
 #include <EEPROM.h>
-
+#include "defines.h"
 #include "constants.h"
 #include "pins.h"
-
 #include "bcdnum.h"
 #include "audio.h"
 #include "lamp_matrix.h"
@@ -52,36 +51,61 @@ typedef unsigned long dword;
 #include "game_settings.h"
 #include "gameplay.h"
 #include "attract.h"
+#include "timers.h"
+#include "tests_software.h"
+#include "tests_hardware.h"
 
+/**
+ * Declaring global objects affords us avoiding malloc() and nasty out-of-memory surprises
+ */
 CAudio Audio;
 CLampMatrix LampMatrix;
 CSwitchMatrix SwitchMatrix;
-CGameSettings GameSettings;
 CScoreDisplay ScoreDisplay;
+CGameSettings GameSettings;
 CAnimator Animator;
 CCoils Coils;
 CGameplay Gameplay;
 CAttract Attract;
 
-#include "timers.h"
-#include "tests.h"
 
 void setup() {
-    #ifdef RUN_TESTS
-        run_tests();
+    LOG_INIT();
+    LOG("setup() starting");
+    
+    #if defined(RUN_SOFRWARE_TESTS)
+        run_software_tests();
+    #elif defined(RUN_HARDWARE_TESTS)
+        hardware_tests_init();
     #else
     	noInterrupts();
     	
     	setup_timers();
     	setup_pins();
     	setup_sounds();
+    	
+    	Audio.init();
+    	LampMatrix.init();
+    	SwitchMatrix.init();
+    	ScoreDisplay.init();
+    	GameSettings.init();
+    	Coils.init();
+    	
     	interrupts();
+    	
+    	Attract.start();
     #endif
+    
+    LOG("setup() finished");
 }
 
 void loop() {
-    #ifdef RUN_TESTS
+    #if defined(RUN_SOFTWARE_TESTS)
+        ; // nothing
+    #elif defined(RUN_HARDWARE_TESTS)
+        hardware_tests_tick();
     #else
+        Attract.tick();
     #endif
 }
 

@@ -83,36 +83,14 @@
 	void DISP_ShowAll(unsigned char value)
 	{
 		DISP_DigitsValues[ 0] = value;
-		DISP_DigitsValues[ 1] = value;
-		DISP_DigitsValues[ 2] = value;
-		DISP_DigitsValues[ 3] = value;
-		DISP_DigitsValues[ 4] = value;
-		DISP_DigitsValues[ 5] = value;
-		DISP_DigitsValues[ 6] = value;
-		DISP_DigitsValues[ 7] = value;
-		DISP_DigitsValues[ 8] = value;
-		DISP_DigitsValues[ 9] = value;
-		DISP_DigitsValues[10] = value;
-		DISP_DigitsValues[11] = value;
-		DISP_DigitsValues[12] = value;
+		...
 		DISP_DigitsValues[13] = value;
 	}
 	
 	void DISP_HideAll()
 	{
 		DISP_DigitsValues[ 0] = 0xF;
-		DISP_DigitsValues[ 1] = 0xF;
-		DISP_DigitsValues[ 2] = 0xF;
-		DISP_DigitsValues[ 3] = 0xF;
-		DISP_DigitsValues[ 4] = 0xF;
-		DISP_DigitsValues[ 5] = 0xF;
-		DISP_DigitsValues[ 6] = 0xF;
-		DISP_DigitsValues[ 7] = 0xF;
-		DISP_DigitsValues[ 8] = 0xF;
-		DISP_DigitsValues[ 9] = 0xF;
-		DISP_DigitsValues[10] = 0xF;
-		DISP_DigitsValues[11] = 0xF;
-		DISP_DigitsValues[12] = 0xF;
+		..
 		DISP_DigitsValues[13] = 0xF;
 	}
 
@@ -192,6 +170,8 @@ class CScoreDisplay
 {
 public:
     
+    void init();
+    
     // I think that on the pinled.de displays, 0xA - 0xF means don't show anything
     // so we don't need to keep a bitmap of what to display or not.
     
@@ -220,6 +200,11 @@ public:
     // this is called by interrupt handler every msec 
     void ISR_strobe_next_display_digit();
 };
+
+void CScoreDisplay::init()
+{
+    SET_SCORE_DISPLAY_PINS_MODE();
+}
 
 inline byte CScoreDisplay::get_nibble_value(byte display_no, byte digit_no)
 {

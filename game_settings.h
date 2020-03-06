@@ -69,10 +69,6 @@ public:
     void on_score_achieved(BcdNum score, char profile_no = -1);
 };
 
-
-
-
-
 void CGameSettings::save_to_flash()
 {
 }

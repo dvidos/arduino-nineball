@@ -2,12 +2,24 @@
 
 class CAttract
 {
+public:
     byte mode: 3;
     byte menu_item: 4;
     byte item_value;
     
 //    void handle_switch(byte switch_no)
+    void start();
+    void tick();
+    
 };
+
+void CAttract::start()
+{
+}
+
+void CAttract::tick()
+{
+}
 
 /*
     Using left button underneath, we cycle the modes.

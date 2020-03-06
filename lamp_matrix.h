@@ -10,6 +10,7 @@ public:
     byte current_send: 3; 
     
     CLampMatrix();
+    void init();
     
     void lamp_on(byte lamp_no);
     void lamp_off(byte lamp_no);
@@ -27,6 +28,11 @@ CLampMatrix::CLampMatrix()
 {
     memset(lamps, 0, 8);
     current_send = 0;
+}
+
+void CLampMatrix::init()
+{
+    SET_LAMP_MATRIX_PINS_MODE();
 }
 
 void inline CLampMatrix::lamp_on(byte lamp_no)

@@ -1,12 +1,23 @@
-#ifdef RUN_TESTS
+#ifdef RUN_SOFTWARE_TESTS
 
 
-#define ASSERT(condition)    if(!(condition)) { LOG("** Failed asserting that \"%s\"", #condition); }
 
 
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
 int freeMemory();
+
+
+extern CGameSettings GameSettings;
+extern CLampMatrix LampMatrix;
+extern CAudio Audio;
+extern CSwitchMatrix SwitchMatrix;
+extern CGameplay Gameplay;
+extern CCoils Coils;
+extern CAnimator Animator;
+extern CAttract Attract;
+
+
 
 
 void run_tests()
@@ -15,7 +26,7 @@ void run_tests()
     unsigned long expected_value = 0;
     
     LOG_INIT();
-    LOG("free memory (stack - heap) %d (total 8 KB or 8192 bytes), %f %", freeMemory(), (freeMemory() * 100.0)/8192);
+    LOG("free memory (stack - heap) is %d bytes, (total 8 KB or 8192 bytes), %d %%", freeMemory(), (freeMemory() * 100)/8192);
     LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
     LOG("size of audio instance is %d bytes", sizeof(Audio));    
     LOG("size of lamp matrix instance is %d bytes", sizeof(LampMatrix));    

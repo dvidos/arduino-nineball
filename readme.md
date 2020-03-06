@@ -82,6 +82,14 @@ https://github.com/robertsonics/WAV-Trigger-Arduino-Serial-Library/blob/master/w
 Uncomment the desired one. One cable sound! Woot!
 
 
+## Run Modes
+
+The program can run on three modes:
+
+* `RUN_SOFTWARE_TESTS` - runs unit tests, presenting output on the serial monitor
+* `RUN_HARDWARE_TESTS` - runs a small applet, allowing verification of various functionalities
+* no defines - runs the normal pinball sofrware, as supposed to.
+
 ## Maintenability
 
 Unfortunately, this is prey to the shallow entry curve of Arduino. Yes, it worked well since the first time I plugged it in.
@@ -92,6 +100,17 @@ So, I guess, this is the price to pay for so easy to get-started platform.
 I may try to find a way to build from makefile.
 
 
+## To Do
+
+* Initialize Pins (I/O)
+* Construct and test switch matrix
+* Connect and test audio
+* Implement 4-player game.
+* Implement Eva Happy Hour mode
+* Implement score display and updates in increments every 100 msec.
+* Write documentation for hardware, as we go. 
+* Create connectors for the various pieces.
+*   
 
 
 
@@ -99,3 +118,4 @@ I may try to find a way to build from makefile.
 [2]: https://www.ipdb.org/images/1678/image-4.jpg
 [3]: https://www.ipdb.org/files/1678/Stern_1980_Nine_Ball_Manual.pdf
   
+

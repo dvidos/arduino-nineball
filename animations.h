@@ -85,6 +85,8 @@ public:
     CAnimation animations[LAMP_GROUPS_COUNT];
 
     CAnimator();
+    void init();
+    
     void start(byte animation_no, byte final_bitmap);
     void stop_all();
     
@@ -119,6 +121,10 @@ CAnimator::CAnimator()
         animations[i].active = 0;
     
     blinking_on = false; 
+}
+
+void CAnimator::init()
+{
 }
 
 void CAnimator::start(byte animation_no, byte final_bitmap)

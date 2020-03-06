@@ -24,6 +24,7 @@ public:
     byte events_queue_length: 5; 
     
     CSwitchMatrix();
+    void init();
     
     void intercept_next_row();
     bool is_switch_closed(byte switch_no);
@@ -42,6 +43,11 @@ CSwitchMatrix::CSwitchMatrix()
     current_send = 0;
     memset(events_queue, 0, sizeof(events_queue));
     events_queue_length = 0; 
+}
+
+void CSwitchMatrix::init()
+{
+    SET_SWITCH_MATRIX_PINS_MODE();
 }
 
 bool CSwitchMatrix::is_switch_closed(byte switch_no)
