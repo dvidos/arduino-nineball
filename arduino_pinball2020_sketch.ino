@@ -9,7 +9,7 @@
  * See also: https://github.com/arduino/Arduino/wiki/Build-Process
  */
  
- 
+
 /**
  * Whether we want to LOG() onto the serial monitor.
  * Commenting this out makes the LOG() macro to do nothing.
@@ -22,7 +22,7 @@
  *
  * Expected hardware: USB cable only
  */
-#define RUN_SOFTWARE_TESTS
+//#define RUN_SOFTWARE_TESTS
 
 /**
  * Hardware tests is a small applet to run various operations,
