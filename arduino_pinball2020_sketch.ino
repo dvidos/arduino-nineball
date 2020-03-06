@@ -69,14 +69,17 @@ CGameplay Gameplay;
 CAttract Attract;
 
 
+
 void setup() {
     LOG_INIT();
     LOG("setup() starting");
     
-    #if defined(RUN_SOFRWARE_TESTS)
+    #if defined(RUN_SOFTWARE_TESTS)
         run_software_tests();
+        
     #elif defined(RUN_HARDWARE_TESTS)
         hardware_tests_init();
+        
     #else
     	noInterrupts();
     	

@@ -143,26 +143,26 @@
 */
 
 #define SET_SCORE_DISPLAY_PINS_MODE()    \
-            pinMode(0, OUTPUT);  \
-            pinMode(0, OUTPUT);  \
-            pinMode(0, OUTPUT);
+            pinMode(99, OUTPUT);  \
+            pinMode(99, OUTPUT);  \
+            pinMode(99, OUTPUT);
 
 #define SET_COILS_PINS_MODE()    \
-            pinMode(0, OUTPUT);  \
-            pinMode(0, OUTPUT);  \
-            pinMode(0, OUTPUT);
+            pinMode(99, OUTPUT);  \
+            pinMode(99, OUTPUT);  \
+            pinMode(99, OUTPUT);
 
 #define SET_LAMP_MATRIX_PINS_MODE()  \
-            pinMode(0, OUTPUT); \
-            pinMode(0, OUTPUT); \
-            pinMode(0, OUTPUT); \
-            pinMode(0, INPUT);  \
-            pinMode(0, INPUT_PULLUP);
+            pinMode(99, OUTPUT); \
+            pinMode(99, OUTPUT); \
+            pinMode(99, OUTPUT); \
+            pinMode(99, INPUT);  \
+            pinMode(99, INPUT_PULLUP);
 
 #define SET_SWITCH_MATRIX_PINS_MODE()  \
-            pinMode(0, OUTPUT); \
-            pinMode(0, OUTPUT); \
-            pinMode(0, OUTPUT);
+            pinMode(99, OUTPUT); \
+            pinMode(99, OUTPUT); \
+            pinMode(99, OUTPUT);
 
 #define SET_PLAY_ENABLE_RELAY(x)              ((void)0)
 
@@ -199,3 +199,4 @@
 #define SET_KNOCKER_COIL(x)                   ((void)0)
 
 #define SET_FLIPPERS_RELAY(x)                 ((void)0)
+

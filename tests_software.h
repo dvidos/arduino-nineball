@@ -20,12 +20,11 @@ extern CAttract Attract;
 
 
 
-void run_tests()
+void run_software_tests()
 {
     BcdNum n;
     unsigned long expected_value = 0;
     
-    LOG_INIT();
     LOG("free memory (stack - heap) is %d bytes, (total 8 KB or 8192 bytes), %d %%", freeMemory(), (freeMemory() * 100)/8192);
     LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
     LOG("size of audio instance is %d bytes", sizeof(Audio));    

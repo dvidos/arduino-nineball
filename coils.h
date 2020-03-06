@@ -55,7 +55,7 @@ CCoils::CCoils()
     SET_FLIPPERS_RELAY(0);
 }
 
-void init()
+void CCoils::init()
 {
     SET_COILS_PINS_MODE();
 }

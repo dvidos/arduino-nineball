@@ -23,6 +23,22 @@ typedef unsigned long dword;
 
 
 /**
+ * A sort of exception handler or core dump.
+ * Will freeze processing, but would allow the user to see what caused the fatal.
+ * Use wisely.
+ */
+#define FATAL(flashes)                                                                    \
+        pinMode(13, OUTPUT);                                                              \
+        while (1) {                                                                       \
+            for (byte fatal_flashes = 0; fatal_flashes < (flashes); fatal_flashes++) {    \
+                digitalWrite(13, HIGH); delay(175);                                       \
+                digitalWrite(13, LOW);  delay(175);                                       \
+            }                                                                             \
+            delay(1000);                                                                  \
+        }
+
+
+/**
  * A useful macro for tests.
  * We can map it out to nothing if NDEBUG is defined later on...
  */
@@ -37,7 +53,7 @@ typedef unsigned long dword;
  * A central way to have LOG() calls in code, without affecting performance in the end.
  */
 #ifdef LOG_ON_SERIAL_MONITOR
-    #define LOG_INIT()      Serial.begin(9600); Serial.println("Serial Log initialized");      
+    #define LOG_INIT()      Serial.begin(9600); while (!Serial) { ; } Serial.println("Serial Log initialized");      
     #define LOG(...)        log_info(__VA_ARGS__)
     void log_info(const char *fmt, ...) {
         char buffer[128];
