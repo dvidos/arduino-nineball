@@ -53,7 +53,7 @@ typedef unsigned long dword;
  * A central way to have LOG() calls in code, without affecting performance in the end.
  */
 #ifdef LOG_ON_SERIAL_MONITOR
-    #define LOG_INIT()      Serial.begin(9600); while (!Serial) { ; } Serial.println("Serial Log initialized");      
+    #define LOG_INIT()      Serial.begin(57600/*9600*/); while (!Serial) { ; } Serial.println("Serial Log initialized");      
     #define LOG(...)        log_info(__VA_ARGS__)
     void log_info(const char *fmt, ...) {
         char buffer[128];

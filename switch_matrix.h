@@ -3,6 +3,16 @@
  * 
  * See also https://github.com/nickgammon/Keypad_Decoder/blob/master/Keypad_Decoder.ino
  * and      https://playground.arduino.cc/Main/KeypadTutorial/
+ * 
+ * For debouncind switch matrix, read: https://summivox.wordpress.com/2016/06/03/keyboard-matrix-scanning-and-debouncing/
+ * Essentially, keep state for more than one time in memory, deduct a switch has moved
+ * when it has been in a stable state for long enough.
+ * 2-5 msecs is usually the metal bouncing time, so maybe we only need one?
+ * 
+ * Another technique for games is to switch state immediately with the first spike,
+ * but avoid reading the switch for a small period of time, until it is stable.
+ * Maybe our 5 msecs (time it takes to strobe all outputs) will be enough, 
+ * maybe we can give 2 msecs to each column, distributing switch reads every 10 msecs. 
  */
     
 #define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec

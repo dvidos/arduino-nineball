@@ -53,7 +53,9 @@
    we could create preprocessor macros for each pin, as in:
    #define SET_PIN_STROBE()  SET(PORTC, 3)  	
    #define CLR_PIN_STROBE()  CLR(PORTC, 3)
-	
+   
+   To output, we use PORTx (e.g. PORTF)
+   To input, we use PINx (e.g. PINF)
 */
 
 /*
