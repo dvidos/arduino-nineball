@@ -10,10 +10,17 @@ typedef unsigned long dword;
 
 /**
  * Size of the queue that stores switch events in the interrupt handler
- * The idea is that at tick() time (the main loop) things will be fast enough
+ * The idea is that at loop() time (the main loop) things will be fast enough
  * to consume this queue before it overflows.
  */
 #define SWITCH_MATRIX_EVENTS_QUEUE_SIZE   16
+
+/**
+ * Size of the queue that stores timeout events in the interrupt handler
+ * The idea is that at loop() time (the main loop) things will be fast enough
+ * to consume this queue before it overflows.
+ */
+#define TIME_KEEPER_EVENTS_QUEUE_SIZE     8
 
 
 /**

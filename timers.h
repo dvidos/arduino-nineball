@@ -238,13 +238,16 @@ extern CAnimator Animator;
 extern CLampMatrix LampMatrix;
 extern CSwitchMatrix SwitchMatrix;
 extern CScoreDisplay ScoreDisplay;
-extern CCoils Coils; 
+extern CCoils Coils;
+extern CTimeKeeper TimeKeeper; 
 
 /**
  * Timer 1, currently running every sec
  */
 ISR(TIMER1_COMPA_vect) {
    noInterrupts();
+   
+   TimeKeeper.every_second_interrupt();
 }
 
 /**
@@ -274,5 +277,6 @@ ISR(TIMER5_COMPA_vect) {
    
    Coils.every_10_msecs_interrupt();
    SwitchMatrix.intercept_next_row();
+   TimeKeeper.every_10_milliseconds_interrupt();
 }
 

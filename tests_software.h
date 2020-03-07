@@ -5,6 +5,7 @@
 
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
+void test_timeouts();
 int freeMemory();
 
 
@@ -15,6 +16,7 @@ extern CSwitchMatrix SwitchMatrix;
 extern CGameplay Gameplay;
 extern CCoils Coils;
 extern CAnimator Animator;
+extern CTimeKeeper TimeKeeper;
 extern CAttract Attract;
 
 
@@ -25,7 +27,7 @@ void run_software_tests()
     BcdNum n;
     unsigned long expected_value = 0;
     
-    LOG("free memory (stack - heap) is %d bytes, (total 8 KB or 8192 bytes), %d %%", freeMemory(), (freeMemory() * 100)/8192);
+    LOG("free memory (stack - heap) is %d bytes, (total 8 KB or 8192 bytes), %d%%", freeMemory(), (freeMemory() * 100)/8192);
     LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
     LOG("size of audio instance is %d bytes", sizeof(Audio));    
     LOG("size of lamp matrix instance is %d bytes", sizeof(LampMatrix));    
@@ -34,6 +36,7 @@ void run_software_tests()
     LOG("size of gameplay instance is %d bytes", sizeof(Gameplay));    
     LOG("size of attract instance is %d bytes", sizeof(Attract));    
     LOG("size of animator instance is %d bytes", sizeof(Animator));    
+    LOG("size of time keeper instance is %d bytes", sizeof(TimeKeeper));    
     LOG("size of coils instance is %d bytes", sizeof(Coils));
     LOG("size of bcdnum instance is %d bytes", sizeof(n));
     
@@ -46,6 +49,7 @@ void run_software_tests()
         sizeof(GameSettings) +
         sizeof(LampMatrix) +
         sizeof(ScoreDisplay) +
+        sizeof(TimeKeeper) +
         sizeof(SwitchMatrix);
     LOG("total size of resident global variables is %d bytes", global_variables_total_memory);
     
@@ -126,6 +130,8 @@ void run_software_tests()
     test_bcdnum_comparisons(1000, 1001);
     test_bcdnum_comparisons(2000, 1999);
     test_bcdnum_comparisons(3333, 3399);
+    
+    test_timeouts();
 }
 
 
@@ -198,6 +204,32 @@ int freeMemory() {
   return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif  // __arm__
 }
+
+
+void test_timeouts()
+{
+    byte timeout_no;
+    byte got_it;
+    
+    LOG("Testing timeouts");
+    
+    TimeKeeper.start_timeout(2, 100);
+    // retrieve fast, before the timeout is expired 
+    got_it = TimeKeeper.get_next_expiration_event(&timeout_no);
+    ASSERT(got_it == false);
+    
+    // wait a bit, try again.
+    delay(150);
+    got_it = TimeKeeper.get_next_expiration_event(&timeout_no);
+    ASSERT(got_it == true);
+    ASSERT(timeout_no == 2);
+    
+    // make sure nothing is in the queue
+    delay(150);
+    got_it = TimeKeeper.get_next_expiration_event(&timeout_no);
+    ASSERT(got_it == false);
+}
+
 
 
 

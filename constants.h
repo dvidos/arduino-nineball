@@ -28,12 +28,11 @@
 #define GAME_MODE_BALL_DONE_NUMBER_1           0
 
 
-#define TIMEOUT_BALL_NINE_MOVING_TARGET  1    // move to the next moving target
-#define TIMEOUT_WOW_MOVING_TARGET        2    // move to the next moving target, skip no 1.
-#define TIMEOUT_RESET_SPINNER_VALUE      3    // spinner stopped spinning, reset its value
-#define TIMEOUT_SPECIAL_MOVING_TARGET    4    // time to move to another target!
-
-
+#define TIMEOUT_BALL_NINE_MOVING_TARGET  0    // move to the next moving target
+#define TIMEOUT_WOW_MOVING_TARGET        1    // move to the next moving target, skip no 1.
+#define TIMEOUT_RESET_SPINNER_VALUE      2    // spinner stopped spinning, reset its value
+#define TIMEOUT_SPECIAL_MOVING_TARGET    3    // time to move to another target!
+#define TIMEOUTS_COUNT                    16   // how many timeouts will be there.
 
 
 #define LAMP_SKILL_SHOT                1

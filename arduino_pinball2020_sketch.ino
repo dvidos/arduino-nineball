@@ -22,7 +22,7 @@
  *
  * Expected hardware: USB cable only
  */
-//#define RUN_SOFTWARE_TESTS
+#define RUN_SOFTWARE_TESTS
 
 /**
  * Hardware tests is a small applet to run various operations,
@@ -47,6 +47,7 @@
 #include "switch_matrix.h"
 #include "coils.h"
 #include "score_display.h"
+#include "time_keeper.h"
 #include "animations.h"
 #include "game_settings.h"
 #include "gameplay.h"
@@ -64,6 +65,7 @@ CSwitchMatrix SwitchMatrix;
 CScoreDisplay ScoreDisplay;
 CGameSettings GameSettings;
 CAnimator Animator;
+CTimeKeeper TimeKeeper;
 CCoils Coils;
 CGameplay Gameplay;
 CAttract Attract;
