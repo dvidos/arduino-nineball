@@ -22,10 +22,6 @@
 
 
 
-#define GAME_MODE_BALL_EJECTING    0
-#define GAME_MODE_BALL_SETTING_UP_NUMBER    0
-#define GAME_MODE_BALL_WAITING_FOR_NUMBER_1    0
-#define GAME_MODE_BALL_DONE_NUMBER_1           0
 
 
 #define TIMEOUT_BALL_NINE_MOVING_TARGET  0    // move to the next moving target
@@ -130,12 +126,14 @@
 #define SW_TOP_LOOP_TARGET            28
 #define SW_LEFT_SLINGSHOT             29
 #define SW_RIGHT_SLINGSHOT            30
-#define SW_DRAIN_HOLE                 31
-#define SW_SHOOTING_LANE              32
-#define SW_START                      33
-#define SW_MENU_LEFT                  34
-#define SW_MENU_RIGHT                 35
-#define SW_TILT                       36
+#define SW_OUTHOLE_RIGHT              31
+#define SW_OUTHOLE_MIDDLE             32
+#define SW_OUTHOLE_LEFT               33
+#define SW_SHOOTING_LANE              34
+#define SW_START                      35
+#define SW_MENU_LEFT                  36
+#define SW_MENU_RIGHT                 37
+#define SW_TILT                       38
 
 
 #define SOUND_FX_1             1

@@ -11,15 +11,18 @@ public:
     BcdNum(unsigned long value);
     
     void copy_from(BcdNum other);
+    void zero();
     void add(BcdNum other);
     void subtract(BcdNum other);
-        
-    void add_tens(dword tens_bcd);
-    void add_hundreds(dword hundreds_bcd);
-    void add_thousands(dword thousands_bcd);
+    
+    void add_bcd(dword bcd);
+    void add_tens(word tens_bcd);
+    void add_hundreds(word hundreds_bcd);
+    void add_thousands(word thousands_bcd);
     
     bool is_zero();
     byte get_nibble(byte location);
+    void set_nibble(byte location, byte value);
     void from_decimal(unsigned long value);
     unsigned long to_decimal();
     void to_string(char *output);
@@ -75,6 +78,14 @@ void BcdNum::copy_from(BcdNum other)
     bcd[3] = other.bcd[3];
 }
 
+void BcdNum::zero()
+{
+    bcd[0] = 0;
+    bcd[1] = 0;
+    bcd[2] = 0;
+    bcd[3] = 0;
+}
+
 void BcdNum::add(BcdNum other)
 {
     math_operation(other.bcd, true);
@@ -85,7 +96,20 @@ void BcdNum::subtract(BcdNum other)
     math_operation(other.bcd, false);
 }
 
-void BcdNum::add_tens(dword tens_bcd)
+void BcdNum::add_bcd(dword bcd_value)
+{
+    byte bcd[4];
+    bcd[0] = (bcd_value >> 24) & 0xFF;
+    bcd[1] = (bcd_value >> 16) & 0xFF;
+    bcd[2] = (bcd_value >>  8) & 0xFF;
+    bcd[3] = (bcd_value >>  0) & 0xFF; 
+    
+    // LOG("buffer prepared to add 0x%04X ones: 0x%02X 0x%02X 0x%02X 0x%02X", tens_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
+    
+    math_operation(bcd, true);
+}
+
+void BcdNum::add_tens(word tens_bcd)
 {
     byte bcd[4];
     bcd[0] = 0x00;
@@ -98,7 +122,7 @@ void BcdNum::add_tens(dword tens_bcd)
     math_operation(bcd, true);
 }
 
-void BcdNum::add_hundreds(dword hundreds_bcd)
+void BcdNum::add_hundreds(word hundreds_bcd)
 {
     byte bcd[4];
     bcd[0] = 0x00;
@@ -111,7 +135,7 @@ void BcdNum::add_hundreds(dword hundreds_bcd)
     math_operation(bcd, true);
 }
 
-void BcdNum::add_thousands(dword thousands_bcd)
+void BcdNum::add_thousands(word thousands_bcd)
 {
     byte bcd[4];
     bcd[0] = (thousands_bcd & 0xF000) >> 12;
@@ -139,9 +163,21 @@ byte BcdNum::get_nibble(byte location)
     // i.e. 0=units, 1=tens, 2=hundreds etc.
     
     if (location & 1)
-        return ((bcd[(location >> 1)]) >> 4);
-    else
         return (bcd[(location >> 1)]) & 0x0F;
+    else
+        return ((bcd[(location >> 1)]) >> 4);
+}
+
+void BcdNum::set_nibble(byte location, byte value)
+{
+    // location should be 0 for the leftmost, 7 for the right most
+    // location / 2 (>>1) is the byte, location & 1 is the nibble
+    // i.e. 0=units, 1=tens, 2=hundreds etc.
+    
+    if (location & 1)
+        bcd[(location >> 1)] = (bcd[(location >> 1)] & 0xF0) | (value & 0x0F); 
+    else
+        bcd[(location >> 1)] = (bcd[(location >> 1)] & 0x0F) | (value << 4); 
 }
 
 void BcdNum::to_string(char *output)

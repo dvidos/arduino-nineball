@@ -33,7 +33,6 @@
 class CGameSettings
 {
 public:
-
     BcdNum highest_score;  // highest score to date
     word balls_served;
     word games_played;

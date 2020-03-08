@@ -240,6 +240,7 @@ extern CSwitchMatrix SwitchMatrix;
 extern CScoreDisplay ScoreDisplay;
 extern CCoils Coils;
 extern CTimeKeeper TimeKeeper; 
+extern CGameplay Gameplay; 
 
 /**
  * Timer 1, currently running every sec
@@ -267,6 +268,7 @@ ISR(TIMER4_COMPA_vect) {
    noInterrupts();
    
    Animator.every_100_msecs_interrupt();
+   Gameplay.every_100_msecs_interrupt();
 }
 
 /**

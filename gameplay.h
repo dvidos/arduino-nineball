@@ -18,24 +18,64 @@
 
 #include "constants.h"
 
-void start_timeout(int timeout_no);
-void start_coil(int coil_no);
-void add_score(word bcd_amount_in_tens);
 
 extern CAudio Audio;
 extern CAnimator Animator;
 extern CSwitchMatrix SwitchMatrix;
+extern CTimeKeeper TimeKeeper;
+extern CCoils Coils;
+extern CScoreDisplay ScoreDisplay;
+
+
+#define GAMEPLAY_MODE_NORMAL       0
+#define GAMEPLAY_MODE_EVA_HAPPY    1
+
+
+
+/**
+ * firing eject coil, waiting for ball to enter in shooting lane and stay there.
+ * start is allowed to be pressed here, to add a player.
+ */
+#define STATE_EJECTING_TO_SHOOTING_LANE  0
+
+/**
+ * happens as soon as the ball is leaving the base of the shooting lane.
+ * stops only when (the last) ball enters outhole
+ */   
+#define STATE_GAME_RUNNING               1
+
+/**
+ * happens when the ball (last if multiball) enters outhole
+ * if we have shoot-agains, we skip assigning bonus and go to shoot-again (preserving objects made)
+ * otherwise, we collect any bonus, wait for score to be assigned,
+ * then we clear objects made and go to next palyer and/or ball. 
+ */
+#define STATE_COLLECTING_BONUS           2
 
 
 class CGameplay
 {
 public:
     
-    void init(byte mode);
+    void start(byte mode);
     void tick();
+    void every_100_msecs_interrupt();
 
 private:
-            
+    int running: 1;               // whether we are running (or merely existing in memory)
+    int mode: 2;                  // mode under which we are running
+    int highest_player: 2;        // highest player number (0..3) (essentially num_players - 1)
+    int current_player: 2;        // current player no
+    int state: 6;
+    
+    struct player_info
+    {
+        int ball_number: 3;       // 1..5 shoot-agains don't increase this.
+        BcdNum score;
+    } player[4];             
+    
+    BcdNum temp_score;             // a place to add score that is slowly moved to player score and display.
+    
     int loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
     int spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
     int bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
@@ -46,20 +86,19 @@ private:
     int left_inlane: 1;            // spots current target when lit
     int right_inlane: 1;           // spots current target when lit
     int top_pop_bumper: 1;         // spots current target when lit
-    
     int extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
     int one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
     
     void handle_timeout(char timeout_no);	
 	void handle_switch_closed(char switch_no);
 	void handle_switch_opened(char switch_no);
-	word get_spinner_score_bcd(byte spinner_value);
+	dword get_spinner_score_bcd(byte spinner_value);
 	void collect_and_reset_loop_target_value();
 	void make_current_target_object();
 	void on_left_bank_drop_target_down(byte number);
 };
 
-void CGameplay::init(byte mode)
+void CGameplay::start(byte mode)
 {
     // start gameplay, in a specific mode.
     // e.g. EVA_HAPPY_MODE (unlimited balls)
@@ -70,7 +109,27 @@ void CGameplay::tick()
 {
 }
 
-    
+
+void CGameplay::every_100_msecs_interrupt()
+{
+    if (running)
+    {
+        // remove one from each order of magnitude, add it to score
+        BcdNum delta = BcdNum();
+        for (byte nibble = 0; nibble < 8; nibble++)
+        {
+			if (temp_score.get_nibble(0)) {
+                delta.zero();
+                delta.set_nibble(nibble, 0x1);
+                temp_score.subtract(delta);
+                player[current_player].score.add(delta);
+            }            
+        }
+        
+        // show on display
+        ScoreDisplay.display_bcd_num(1, player[current_player].score);
+    }        
+}    
 
 void CGameplay::handle_timeout(char timeout_no) {
     switch (timeout_no) {
@@ -99,7 +158,7 @@ void CGameplay::handle_timeout(char timeout_no) {
 void CGameplay::handle_switch_closed(char switch_no) {
     switch (switch_no) {
         case SW_LEFT_OUTLANE:
-            add_score(0x0300);
+            temp_score.add_bcd(0x3000);
             Audio.play(SOUND_FX_1);
             if (left_outlane && next_object_to_make < 8)
                 // spot objects 1-7
@@ -107,7 +166,7 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
        
         case SW_RIGHT_OUTLANE:
-            add_score(0x0300);
+            temp_score.add_bcd(0x3000);
             Audio.play(SOUND_FX_1);
             if (right_outlane && next_object_to_make <= 7)
                 // spot objects 1-7
@@ -115,26 +174,26 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
        
         case SW_LEFT_INLANE:
-            add_score(0x010); // 100
+            temp_score.add_bcd(0x100);
             Audio.play(SOUND_FX_1);
             if (left_inlane)
                 make_current_target_object();
             break;
             
         case SW_RIGHT_INLANE:
-            add_score(0x010); // 100
+            temp_score.add_bcd(0x100);
             Audio.play(SOUND_FX_1);
             if (right_inlane)
                 make_current_target_object();
             break;
         
         case SW_MAIN_POP_BUMPER:
-            add_score(0x0010); // 100
+            temp_score.add_bcd(0x100);
             Audio.play(SOUND_FX_1);
             break;
             
         case SW_TOP_POP_BUMPER:
-            add_score(0x0010); // 100
+            temp_score.add_bcd(0x100);
             Audio.play(SOUND_FX_1);
             if (top_pop_bumper && next_object_to_make <= 7)
                 // spot objects 1-7
@@ -209,28 +268,28 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
             
         case SW_LEFT_LANE_EXIT:
-            add_score(0x0300);
+            temp_score.add_bcd(0x3000);
             Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
             Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
             break;
     
         case SW_SKILL_SHOT_TARGET:
-            add_score(0x700);
+            temp_score.add_bcd(0x7000);
             spinner_value = 4; // maximum
             // adjust lamps
             // should turn off the red arrow lamp? (in the original game it seems to be always on)
             break;
         
         case SW_SPINNER:
-            add_score(get_spinner_score_bcd(spinner_value));
+            temp_score.add_bcd(get_spinner_score_bcd(spinner_value));
             Animator.start(ANIM_SPINNER_COLLECT_VALUE, 0);
-            start_timeout(TIMEOUT_RESET_SPINNER_VALUE); // one second?
+            TimeKeeper.start_timeout(TIMEOUT_RESET_SPINNER_VALUE, 1000);
             Audio.play(SOUND_SPINNER);
             break;
         
         case SW_TOP_LOOP_PASS:
-            add_score(0x0300);
+            temp_score.add_bcd(0x3000);
             Audio.play(SOUND_FX_1);
             loop_target_value = ((loop_target_value + 1) % 5);
             Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
@@ -243,7 +302,7 @@ void CGameplay::handle_switch_closed(char switch_no) {
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
         
-        case SW_DRAIN_HOLE:
+        case SW_OUTHOLE_RIGHT:
             // play sad fx, 
             // fall into state of assigning bonus,
             // etc 
@@ -262,29 +321,25 @@ void CGameplay::handle_switch_opened(char switch_no) {
     }
 }
 
-word CGameplay::get_spinner_score_bcd(byte spinner_value) {
-    if (spinner_value == 0) return 0x0010; //   100
-    if (spinner_value == 1) return 0x0040; //   400
-    if (spinner_value == 2) return 0x0090; //   900
-    if (spinner_value == 3) return 0x0160; // 1,600
-    if (spinner_value == 4) return 0x0250; // 2,500
+dword CGameplay::get_spinner_score_bcd(byte spinner_value) {
+    if (spinner_value == 0) return 0x0100;
+    if (spinner_value == 1) return 0x0400;
+    if (spinner_value == 2) return 0x0900;
+    if (spinner_value == 3) return 0x1600;
+    if (spinner_value == 4) return 0x2500;
     return 0x0010; // 100
 }
 
 void CGameplay::collect_and_reset_loop_target_value() {
-    word score;
+    dword score;
     
-    if (loop_target_value == 4) {
-        // as I want to keep the bcd to tens, 173,000 will be 90,000 + 83,000
-        add_score(0x9000); // 90,000
-        score = 0x8300; // 83,000
-    }
-    else if (loop_target_value == 3) score = 0x4000;   //  40,000
-    else if (loop_target_value == 2) score = 0x3000;   //  30,000
-    else if (loop_target_value == 1) score = 0x2000;   //  20,000
-    else score = 0x1000; // 10,000    
+    if      (loop_target_value == 4) score = 0x173000;
+    else if (loop_target_value == 3) score =  0x40000;
+    else if (loop_target_value == 2) score =  0x30000;
+    else if (loop_target_value == 1) score =  0x20000;
+    else                             score =  0x10000;    
     
-    add_score(score);
+    temp_score.add_bcd(score);
     Audio.play(SOUND_FX_2);
     Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0);
     loop_target_value = 0;
@@ -295,7 +350,7 @@ void CGameplay::make_current_target_object() {
     
     // next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
     // set the according target lamp to on.
-    add_score(0x0100); // 1K
+    temp_score.add_bcd(0x1000);
     Audio.play(SOUND_FX_3);
     
 }
@@ -308,3 +363,4 @@ void CGameplay::on_left_bank_drop_target_down(byte number) {
     // if we are at 9, check if target is the same as the 9 moving target.
     // same for wow and special.
 }
+

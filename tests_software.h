@@ -91,6 +91,52 @@ void run_software_tests()
     test_bcd_math(&n, &expected_value, -99174678);
     
     ASSERT(n.is_zero());
+
+    n.set_nibble(0, 0);
+    n.set_nibble(1, 1);
+    n.set_nibble(2, 2);
+    n.set_nibble(3, 3);
+    n.set_nibble(4, 4);
+    n.set_nibble(5, 5);
+    n.set_nibble(6, 6);
+    n.set_nibble(7, 7);
+    LOG("n is now %lu", n.to_decimal());    
+    
+    ASSERT(n.get_nibble(0) == 0);
+    ASSERT(n.get_nibble(1) == 1);
+    ASSERT(n.get_nibble(2) == 2);
+    ASSERT(n.get_nibble(3) == 3);
+    ASSERT(n.get_nibble(4) == 4);
+    ASSERT(n.get_nibble(5) == 5);
+    ASSERT(n.get_nibble(6) == 6);
+    ASSERT(n.get_nibble(7) == 7);
+    
+    ASSERT(n.to_decimal() == 1234567);
+    
+    n.zero();
+        
+    ASSERT(n.is_zero());
+    
+    LOG("Adding 3 ones...");
+    n.add_bcd(0x0003);
+    ASSERT(n.to_decimal() == 3);
+    
+    LOG("Adding 30 ones...");
+    n.add_bcd(0x0030);
+    LOG("n is now %lu", n.to_decimal());    
+    ASSERT(n.to_decimal() == 33);
+    
+    LOG("Adding 300 ones...");
+    n.add_bcd(0x0300);
+    LOG("n is now %lu", n.to_decimal());    
+    ASSERT(n.to_decimal() == 333);
+    
+    LOG("Adding 3000 ones...");
+    n.add_bcd(0x3000);
+    LOG("n is now %lu", n.to_decimal());    
+    ASSERT(n.to_decimal() == 3333);
+    
+    n.from_decimal(0);
     
     LOG("Adding 2 tens...");
     n.add_tens(0x0002);
