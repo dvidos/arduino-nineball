@@ -77,6 +77,8 @@ void setup() {
     LOG("setup() starting");
     
     #if defined(RUN_SOFTWARE_TESTS)
+    	setup_timers();
+    	
         run_software_tests();
         
     #elif defined(RUN_HARDWARE_TESTS)
