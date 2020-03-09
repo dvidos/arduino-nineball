@@ -11,6 +11,9 @@
 #define MODE_SETTINGS          5
 #define MODE_DIAGNOSTICS       6
 
+#define GAMEPLAY_MODE_NORMAL       0
+#define GAMEPLAY_MODE_EVA_HAPPY    1
+
 
 
 #define ANIM_TOP_LOOP_ADVANCE_VALUE   1    // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)

@@ -60,19 +60,19 @@ public:
     int special_award_type: 2;        // 0=90K, 1=130K, 2=Shoot Again, 3=??? (was replay)
     int unlimited_specials: 1;        // [32] 0=one per ball, 1=many per ball    
         
-    void save_to_flash();
-    void load_from_flash();
+    void save_to_eeprom();
+    void load_from_eeprom();
     
     void on_ball_served(char profile_no = -1);
     void on_game_ended();
     void on_score_achieved(BcdNum score, char profile_no = -1);
 };
 
-void CGameSettings::save_to_flash()
+void CGameSettings::save_to_eeprom()
 {
 }
 
-void CGameSettings::load_from_flash()
+void CGameSettings::load_from_eeprom()
 {
 }
 

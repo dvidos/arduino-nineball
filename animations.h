@@ -87,7 +87,7 @@ public:
     CAnimator();
     void init();
     
-    void start(byte animation_no, byte final_bitmap);
+    void start(byte animation_no, byte final_bitmap = 0);
     void stop_all();
     
     void start_blinking(byte lamp_no);

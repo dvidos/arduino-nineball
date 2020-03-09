@@ -27,9 +27,6 @@ extern CCoils Coils;
 extern CScoreDisplay ScoreDisplay;
 
 
-#define GAMEPLAY_MODE_NORMAL       0
-#define GAMEPLAY_MODE_EVA_HAPPY    1
-
 
 
 /**
