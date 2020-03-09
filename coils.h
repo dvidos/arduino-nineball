@@ -62,6 +62,10 @@ void CCoils::init()
 
 void CCoils::fire_top_bank_reset()
 {
+    // don't fire unless the coil is idle
+    if (top_bank_reset_timeout != 0)
+        return;
+    
     SET_TOP_BANK_RESET_COIL(1);
     
     // starting with 100 msecs, could go up to 200 msecs.
@@ -70,42 +74,70 @@ void CCoils::fire_top_bank_reset()
 
 void CCoils::fire_right_bank_reset()
 {
+    // don't fire unless the coil is idle
+    if (right_bank_reset_timeout != 0)
+        return;
+    
     SET_RIGHT_BANK_RESET_COIL(1);
     right_bank_reset_timeout = 10;
 }
 
 void CCoils::fire_left_bank_reset()
 {
+    // don't fire unless the coil is idle
+    if (left_bank_reset_timeout != 0)
+        return;
+    
     SET_LEFT_BANK_RESET_COIL(1);
     left_bank_reset_timeout = 10;
 }
 
 void CCoils::fire_outhole_eject()
 {
+    // don't fire unless the coil is idle
+    if (outhole_eject_timeout != 0)
+        return;
+    
     SET_OUTHOLE_EJECT_COIL(1);
     outhole_eject_timeout = 10;
 }
 
 void CCoils::fire_capture_lane_eject()
 {
+    // don't fire unless the coil is idle
+    if (capture_lane_eject_timeout != 0)
+        return;
+    
     SET_CAPTURE_LANE_EJECT_COIL(1);
     capture_lane_eject_timeout = 10;
 }
 
 void CCoils::fire_left_slingshot()
 {
+    // don't fire unless the coil is idle
+    if (left_slingshot_timeout != 0)
+        return;
+    
     SET_LEFT_SLINGSHOT_COIL(1);
     left_slingshot_timeout = 10;
 }
 
 void CCoils::fire_right_slingshot()
 {
+    // don't fire unless the coil is idle
+    if (right_slingshot_timeout != 0)
+        return;
+    
     SET_RIGHT_SLINGSHOT_COIL(1);
     right_slingshot_timeout = 10;
 }
 
 void CCoils::fire_knocker()
 {
+    // don't fire unless the coil is idle
+    if (knocker_timeout != 0)
+        return;
+    
     SET_KNOCKER_COIL(1);
     knocker_timeout = 10;
 }

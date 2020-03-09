@@ -35,15 +35,14 @@ extern CScoreDisplay ScoreDisplay;
 /**
  * firing eject coil, waiting for ball to enter in shooting lane and stay there.
  * start is allowed to be pressed here, to add a player.
+ * this state ends when ball is shot through the lane.
  */
 #define STATE_EJECTING_TO_SHOOTING_LANE  0
-
 /**
  * happens as soon as the ball is leaving the base of the shooting lane.
  * stops only when (the last) ball enters outhole
  */   
 #define STATE_GAME_RUNNING               1
-
 /**
  * happens when the ball (last if multiball) enters outhole
  * if we have shoot-agains, we skip assigning bonus and go to shoot-again (preserving objects made)
@@ -58,7 +57,7 @@ class CGameplay
 public:
     
     void start(byte mode);
-    void tick();
+    void handle_event(Event& e);
     void every_100_msecs_interrupt();
 
 private:
@@ -105,7 +104,7 @@ void CGameplay::start(byte mode)
     // or   DIMITRIS_PRACTICE_MODE (if we have space for the code) 
 }
 
-void CGameplay::tick()
+void CGameplay::handle_event(Event& e)
 {
 }
 
@@ -129,7 +128,7 @@ void CGameplay::every_100_msecs_interrupt()
         // show on display
         ScoreDisplay.display_bcd_num(1, player[current_player].score);
     }        
-}    
+}
 
 void CGameplay::handle_timeout(char timeout_no) {
     switch (timeout_no) {
@@ -327,7 +326,7 @@ dword CGameplay::get_spinner_score_bcd(byte spinner_value) {
     if (spinner_value == 2) return 0x0900;
     if (spinner_value == 3) return 0x1600;
     if (spinner_value == 4) return 0x2500;
-    return 0x0010; // 100
+    return 0x100;
 }
 
 void CGameplay::collect_and_reset_loop_target_value() {

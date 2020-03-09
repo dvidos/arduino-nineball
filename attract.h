@@ -9,7 +9,7 @@ public:
     
 //    void handle_switch(byte switch_no)
     void start();
-    void tick();
+    void handle_event(Event& e);
     
 };
 
@@ -17,7 +17,7 @@ void CAttract::start()
 {
 }
 
-void CAttract::tick()
+void CAttract::handle_event(Event& e)
 {
 }
 

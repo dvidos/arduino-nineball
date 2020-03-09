@@ -42,6 +42,7 @@
 #include "constants.h"
 #include "pins.h"
 #include "bcdnum.h"
+#include "event.h"
 #include "audio.h"
 #include "lamp_matrix.h"
 #include "switch_matrix.h"
@@ -112,7 +113,28 @@ void loop() {
     #elif defined(RUN_HARDWARE_TESTS)
         hardware_tests_tick();
     #else
-        Attract.tick();
+        // get event from switch matrix and timeouts
+        // ask attract to handle it.
+        // this way, we can run simulations with streams of events, checking the responses of the software.
+        byte number;
+        byte was_pressed;
+        Event e;
+        
+        if (switch_matrix.get_next_switch_event(&number, &was_pressed))
+        {
+            e.type = was_pressed ? switch_closed : switch_opened;
+            e.number = number;
+            Attract.handle_event(e);
+        }
+        else if (TimeKeeper.get_next_expiration_event(&number))
+        {
+            e.type = timeout_expired;
+            e.number = number;
+            Attract.handle_event(e);
+        }
+        
+        // otherwise nothing, maybe we could set a flag of FATAL_WITHIN_INTERRUPT,
+        // and handle it here, in "user" space.
     #endif
 }
 
