@@ -77,6 +77,28 @@ typedef enum {
         vsprintf(buffer, fmt, args_list);
         Serial.println(buffer);
     }
+    
+    #define LOG_DISPLAY(bytes1, bytes2)   log_display(bytes1, bytes2)  
+    void log_display(byte *bytes1, byte *bytes2) {
+        // show what the display would show on the Serial port.
+        char buffer[64];
+        
+        sprintf(buffer, "Score Display is [%02X%02X%02X%02X]  [%02X%02X%02X%02X]",
+            bytes1[0],
+            bytes1[1],
+            bytes1[2],
+            bytes1[3],
+            bytes2[0],
+            bytes2[1],
+            bytes2[2],
+            bytes2[3]
+        );
+        
+        for (byte i = 0; i < 40; i++)
+            if (buffer[i] == 'F')
+                buffer[i] = '_';
+        Serial.println(buffer);
+    } 
 #else
     #define LOG_INIT()      (void)0
     #define LOG(fmt, ...)   (void)0

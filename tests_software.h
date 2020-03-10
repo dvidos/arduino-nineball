@@ -6,6 +6,8 @@
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
 void test_timeouts();
+void test_bcd();
+void test_score_display();
 int freeMemory();
 
 
@@ -25,7 +27,6 @@ extern CAttract Attract;
 void run_software_tests()
 {
     BcdNum n;
-    unsigned long expected_value = 0;
     
     LOG("free memory (stack - heap) is %d bytes, (total 8 KB or 8192 bytes), %d%%", freeMemory(), (freeMemory() * 100)/8192);
     LOG("size of settings is %d bytes (total 4 KB or 4096 bytes)", sizeof(GameSettings));
@@ -52,6 +53,17 @@ void run_software_tests()
         sizeof(TimeKeeper) +
         sizeof(SwitchMatrix);
     LOG("total size of resident global variables is %d bytes", global_variables_total_memory);
+    
+    test_bcd();
+    test_score_display();
+    test_timeouts();
+}
+
+
+void test_bcd()
+{
+    BcdNum n;
+    unsigned long expected_value = 0;
     
     ASSERT(n.to_decimal() == 0);
   
@@ -177,9 +189,7 @@ void run_software_tests()
     test_bcdnum_comparisons(2000, 1999);
     test_bcdnum_comparisons(3333, 3399);
     
-    test_timeouts();
 }
-
 
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
 {
@@ -277,6 +287,49 @@ void test_timeouts()
 }
 
 
-
+void test_score_display()
+{
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(0, 0);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(1, 1);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(2, 2);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(3, 3);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(4, 4);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(5, 5);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(6, 6);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(7, 7);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(8, 8);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(9, 9);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(10, 0);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(11, 1);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(12, 2);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(13, 3);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(14, 4);
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(15, 5);
+    
+    ScoreDisplay.hide_all();
+    
+    BcdNum n;
+    n.from_decimal(98765);
+    ScoreDisplay.display_bcd_num(0, n);
+    n.from_decimal(54321);
+    ScoreDisplay.display_bcd_num(1, n);
+    
+}
 
 #endif // RUN_TESTS

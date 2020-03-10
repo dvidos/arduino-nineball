@@ -98,13 +98,18 @@ void CGameplay::start(byte mode)
 {
     // start gameplay, in a specific mode.
     // e.g. EVA_HAPPY_MODE (unlimited balls)
-    // or   DIMITRIS_PRACTICE_MODE (if we have space for the code) 
+    
+    this->mode = mode;
+    state = STATE_EJECTING_TO_SHOOTING_LANE;
+    
+    // should also prepare lamps, 
+    // play audios,
+    // fire the coil to throw ball into the shooting lane
 }
 
 void CGameplay::handle_event(Event& e)
 {
 }
-
 
 void CGameplay::every_100_msecs_interrupt()
 {

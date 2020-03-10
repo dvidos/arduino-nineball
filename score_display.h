@@ -169,7 +169,7 @@
 class CScoreDisplay
 {
 public:
-    
+
     void init();
     
     // I think that on the pinled.de displays, 0xA - 0xF means don't show anything
@@ -197,12 +197,15 @@ public:
     // turns off anything at the left that is zero
     void display_bcd_num(byte score_display, BcdNum& num);
     
+    void debug_display();
+    
     // this is called by interrupt handler every msec 
     void ISR_strobe_next_display_digit();
 };
 
 void CScoreDisplay::init()
 {
+    hide_all();
     SET_SCORE_DISPLAY_PINS_MODE();
 }
 
@@ -230,6 +233,8 @@ inline void CScoreDisplay::set_nibble_value(byte display_no, byte digit_no, byte
         displays[display_no].digits[digit_no >> 2] =
             (value << 4) | (displays[display_no].digits[digit_no >> 2] & 0x0F);
     }
+    
+    LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }  
 
 void CScoreDisplay::show_digit(byte digit_no, byte value)
@@ -237,6 +242,8 @@ void CScoreDisplay::show_digit(byte digit_no, byte value)
     register byte display_no = digit_no >> 3; // 0..15 becomes 0..1
     digit_no &= 0x7; // keep it to 0..7 range
     set_nibble_value(display_no, digit_no, value);
+    
+    LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }
 
 void CScoreDisplay::hide_digit(byte digit_no)
@@ -244,12 +251,16 @@ void CScoreDisplay::hide_digit(byte digit_no)
     // the BCD-to-7segments decoder used does not display A-F hexadecimal, 
     // so we use this to "turn off" a specific digit.
     show_digit(digit_no, 0xF);
+    
+    LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }
 
 void CScoreDisplay::hide_all()
 {
-    memset(displays[0].digits, 0xF, 4);
-    memset(displays[1].digits, 0xF, 4);
+    memset(displays[0].digits, 0xFF, 4);
+    memset(displays[1].digits, 0xFF, 4);
+    
+    LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }
 
 void CScoreDisplay::display_bcd_num(byte score_display, BcdNum& num)
@@ -271,6 +282,8 @@ void CScoreDisplay::display_bcd_num(byte score_display, BcdNum& num)
         
         set_nibble_value(score_display, nibble, value);
     }
+    
+    LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }
 
 

@@ -3,19 +3,20 @@
 
 
 
-#define MODE_ATTRACT           0
-#define MODE_HAPPY_HOUR_GAME   1
-#define MODE_PRACTICE_GAME     2
-#define MODE_JUKE_BOX          3
-#define MODE_NORMAL_GAME       4
-#define MODE_SETTINGS          5
-#define MODE_DIAGNOSTICS       6
 
+/**
+ * Gameplay modes for Gameplay.
+ * Selected in Attract mode, launching games in respective modes.
+ */
 #define GAMEPLAY_MODE_NORMAL       0
 #define GAMEPLAY_MODE_EVA_HAPPY    1
 
 
-
+/**
+ * Animations, requested by user code, executed by Animator,
+ * If finishing, will automatically update the lamps used to a final value,
+ * If always on, they will never stop.
+ */
 #define ANIM_TOP_LOOP_ADVANCE_VALUE   1    // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
 #define ANIM_TOP_LOOP_COLLECT_VALUE   2    // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
 #define ANIM_SPINNER_INCREASE_VALUE   3    // on the original game, there is no animation for increasing the value of the spinner
@@ -23,10 +24,10 @@
 #define ANIM_BONUS_MULTIPLIER         5    // fast blink of the new value for 8 times.
 
 
-
-
-
-
+/**
+ * Timeouts, requested by user code, executed by TimeKeeper, 
+ * injected into the "handle_event()" functions, when expired
+ */
 #define TIMEOUT_BALL_NINE_MOVING_TARGET  0    // move to the next moving target
 #define TIMEOUT_WOW_MOVING_TARGET        1    // move to the next moving target, skip no 1.
 #define TIMEOUT_RESET_SPINNER_VALUE      2    // spinner stopped spinning, reset its value
@@ -34,6 +35,11 @@
 #define TIMEOUTS_COUNT                    16   // how many timeouts will be there.
 
 
+/**
+ * Lamp definitions from the lamp matrix.
+ * The number may change, depending on where each lamp is,
+ * But the name should stay the same
+ */
 #define LAMP_SKILL_SHOT                1
 #define LAMP_CAPTURE_BALL              2
 #define LAMP_TOP_BANK_LEFT_TARGET      3
