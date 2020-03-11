@@ -68,7 +68,7 @@ typedef enum {
  * A central way to have LOG() calls in code, without affecting performance in the end.
  */
 #ifdef LOG_ON_SERIAL_MONITOR
-    #define LOG_INIT()      Serial.begin(57600/*9600*/); while (!Serial) { ; } Serial.println("Serial Log initialized");      
+    #define LOG_INIT()      Serial.begin(57600/*9600*/); while (!Serial) { ; } Serial.println("Serial Log initialized");
     #define LOG(...)        log_info(__VA_ARGS__)
     void log_info(const char *fmt, ...) {
         char buffer[128];
@@ -77,28 +77,28 @@ typedef enum {
         vsprintf(buffer, fmt, args_list);
         Serial.println(buffer);
     }
-    
-    #define LOG_DISPLAY(bytes1, bytes2)   log_display(bytes1, bytes2)  
+
+    #define LOG_DISPLAY(bytes1, bytes2)   log_display(bytes1, bytes2)
     void log_display(byte *bytes1, byte *bytes2) {
         // show what the display would show on the Serial port.
         char buffer[64];
-        
-        sprintf(buffer, "Score Display is [%02X%02X%02X%02X]  [%02X%02X%02X%02X]",
-            bytes1[0],
+
+        sprintf(buffer, "Score Display is:  [%01X%02X%02X%02X]  [%01X%02X%02X%02X]",
+            (bytes1[0] & 0xF),
             bytes1[1],
             bytes1[2],
             bytes1[3],
-            bytes2[0],
+            (bytes2[0] & 0xF),
             bytes2[1],
             bytes2[2],
             bytes2[3]
         );
-        
+
         for (byte i = 0; i < 40; i++)
             if (buffer[i] == 'F')
                 buffer[i] = '_';
         Serial.println(buffer);
-    } 
+    }
 #else
     #define LOG_INIT()      (void)0
     #define LOG(fmt, ...)   (void)0
