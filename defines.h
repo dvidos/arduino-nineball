@@ -100,9 +100,11 @@ typedef enum {
         Serial.println(buffer);
     }
 #else
-    #define LOG_INIT()      (void)0
-    #define LOG(fmt, ...)   (void)0
+    #define LOG_INIT()           (void)0
+    #define LOG(fmt, ...)        (void)0
+    #define LOG_DISPLAY(b1, b2)  (void)0
 #endif
 
 
-#endif
+
+#endif // DEFINES_H

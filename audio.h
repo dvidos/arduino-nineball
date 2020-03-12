@@ -2,13 +2,13 @@
 class CAudio
 {
 public:
-    
+
     CAudio();
-    
+
     void init();
     void play(int sound_no);
     void stop_all();
-    
+
 protected:
     wavTrigger trigger;
 };
@@ -17,11 +17,12 @@ protected:
 
 CAudio::CAudio()
 {
-    trigger.start();
 }
 
 void CAudio::init()
 {
+    trigger.start();
+    LOG("Audio initialized");
 }
 
 void CAudio::play(int sound_no)

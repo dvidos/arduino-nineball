@@ -2,13 +2,13 @@
  * Created by Dimitris Vidos, for a custom Stern Nineball pinball machine.
  * All rights reserved.
  *
- * All .ino and .pde files in the sketch folder (shown in the IDE as tabs with no extension) 
- * are concatenated together, starting with the file that matches the folder name followed 
+ * All .ino and .pde files in the sketch folder (shown in the IDE as tabs with no extension)
+ * are concatenated together, starting with the file that matches the folder name followed
  * by the others in alphabetical order, and the .cpp extension is added to the filename.
  *
  * See also: https://github.com/arduino/Arduino/wiki/Build-Process
  */
- 
+
 
 /**
  * Whether we want to LOG() onto the serial monitor.
@@ -22,15 +22,25 @@
  *
  * Expected hardware: USB cable only
  */
-#define RUN_SOFTWARE_TESTS
+//#define RUN_SOFTWARE_TESTS
 
 /**
  * Hardware tests is a small applet to run various operations,
  * mainly verifying the cooperation of software and hardware.
- * 
+ *
  * Expected hardware: A0-A7: buttons to earth, A8-A15: LEDs
  */
-#define RUN_HARDWARE_TESTS
+//#define RUN_HARDWARE_TESTS
+
+/**
+ * Serial emulator is a special mode, where characters from the Serial port
+ * are taken as switches in the switch matrix. Therefore,
+ * the game can be "emulated" to be played, with the messages
+ * appearing on the serial monitor.
+ *
+ * Expected hardware: None, USB cable only.
+ */
+#define RUN_SERIAL_EMULATOR
 
 
 
@@ -70,40 +80,39 @@ CTimeKeeper TimeKeeper;
 CCoils Coils;
 CGameplay Gameplay;
 CAttract Attract;
+char a[1024];
 
 
 
 void setup() {
     LOG_INIT();
     LOG("setup() starting");
-    
+
     #if defined(RUN_SOFTWARE_TESTS)
-    	setup_timers();
-    	
+        setup_timer_interrupts();
+
         run_software_tests();
-        
+
     #elif defined(RUN_HARDWARE_TESTS)
         hardware_tests_init();
-        
+
     #else
-    	noInterrupts();
-    	
-    	setup_timers();
-    	setup_pins();
-    	setup_sounds();
-    	
-    	Audio.init();
-    	LampMatrix.init();
-    	SwitchMatrix.init();
-    	ScoreDisplay.init();
-    	GameSettings.init();
-    	Coils.init();
-    	
-    	interrupts();
-    	
-    	Attract.start();
+        noInterrupts();
+
+        setup_timer_interrupts();
+
+        Audio.init();
+        LampMatrix.init();
+        SwitchMatrix.init();
+        ScoreDisplay.init();
+        Coils.init();
+
+        interrupts();
+
+        GameSettings.load_from_eeprom();
+        Attract.start();
     #endif
-    
+
     LOG("setup() finished");
 }
 
@@ -119,8 +128,8 @@ void loop() {
         byte number;
         byte was_pressed;
         Event e;
-        
-        if (switch_matrix.get_next_switch_event(&number, &was_pressed))
+
+        if (SwitchMatrix.get_next_switch_event(&number, &was_pressed))
         {
             e.type = was_pressed ? switch_closed : switch_opened;
             e.number = number;
@@ -132,14 +141,10 @@ void loop() {
             e.number = number;
             Attract.handle_event(e);
         }
-        
+
         // otherwise nothing, maybe we could set a flag of FATAL_WITHIN_INTERRUPT,
         // and handle it here, in "user" space.
     #endif
 }
-
-
-
-
 
 

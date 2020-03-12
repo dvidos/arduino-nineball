@@ -207,6 +207,7 @@ void CScoreDisplay::init()
 {
     hide_all();
     SET_SCORE_DISPLAY_PINS_MODE();
+    LOG("Score Display initialized");
 }
 
 inline byte CScoreDisplay::get_nibble_value(byte display_no, byte digit_no)
@@ -278,7 +279,8 @@ void CScoreDisplay::display_bcd_num(byte score_display, BcdNum& num)
             first_non_zero_found = 1;
         } else {
             // value is zero. should we display it?
-            if (!first_non_zero_found)
+            // the last nibble should always be displayed.
+            if (!first_non_zero_found && nibble < 7)
                 value = 0xF;
         }
 
