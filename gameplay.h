@@ -58,32 +58,32 @@ public:
     void every_100_msecs_interrupt();
 
 private:
-    int running: 1;               // whether we are running (or merely existing in memory)
-    int mode: 2;                  // mode under which we are running
-    int highest_player: 2;        // highest player number (0..3) (essentially num_players - 1)
-    int current_player: 2;        // current player no
-    int state: 6;
+    word running: 1;               // whether we are running (or merely existing in memory)
+    word mode: 2;                  // mode under which we are running
+    word highest_player: 2;        // highest player number (0..3) (essentially num_players - 1)
+    word current_player: 2;        // current player no
+    word state: 6;
 
     struct player_info
     {
-        int ball_number: 3;       // 1..5 shoot-agains don't increase this.
+        word ball_number: 3;       // 1..5 shoot-agains don't increase this.
         BcdNum score;
     } player[4];
 
     BcdNum temp_score;             // a place to add score that is slowly moved to player score and display.
 
-    int loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
-    int spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
-    int bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
-    int next_object_to_make: 6;    // 0-8 means 1-9. 9=wow, 10=special.
-    int current_moving_target: 3;  // moving target for "9", WOW, Special.
-    int left_outlane: 1;           // collects loop pass value if lit
-    int right_outlane: 1;          // collects loop pass value if lit
-    int left_inlane: 1;            // spots current target when lit
-    int right_inlane: 1;           // spots current target when lit
-    int top_pop_bumper: 1;         // spots current target when lit
-    int extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
-    int one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
+    word loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
+    word spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
+    word bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
+    word next_object_to_make: 6;    // 0-8 means 1-9. 9=wow, 10=special.
+    word current_moving_target: 3;  // moving target for "9", WOW, Special.
+    word left_outlane: 1;           // collects loop pass value if lit
+    word right_outlane: 1;          // collects loop pass value if lit
+    word left_inlane: 1;            // spots current target when lit
+    word right_inlane: 1;           // spots current target when lit
+    word top_pop_bumper: 1;         // spots current target when lit
+    word extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
+    word one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
 
     void handle_timeout(char timeout_no);
     void handle_switch_closed(char switch_no);

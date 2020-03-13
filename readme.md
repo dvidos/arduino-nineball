@@ -122,36 +122,45 @@ machine body) cycles through the options
 
 The menu options are:
 
-* 1 (or pressing start immediately) Start regular game.
-* 2 Start Eva's Happy Hour game (infinite balls)
-* 3 Start Radio / Jukebox mode (play songs)
-* 4 Adjust machine settings
-* 5 Diagnostics
+| No | Title | Comment |
+| -- | ----- | ------- |
+| 1 | Regular game | can also press Start directly |
+| 2 | Eva's Happy Hour | infinite balls game |
+| 3 | Radio / Jukebox | play random songs |
+| 4 | Adjust machine settings | |
+| 5 | Diagnostics | |
 
 The available settings are:
 
-* 01 Highscore 1 threshold (P2 increases score by 10K)
-* 02 Highscore 2 threshold (P2 increases score by 10K)
-* 03 Highscore 3 threshold (P2 increases score by 10K)
-* 04 Highscore to date (pressing P2 three times resets to zero)
-* 05 Games played to date (pressing P2 three times resets to zero)
-* 06 Balls served to date (pressing P2 three times resets to zero)
-* 07 Background sounds (0/1 for off/on)
-* 08 Background music (0/1 for off/on)
-* 09 Balls per game (3 or 5)
-* 10 Spot light strategy (0 for conservative, 1 for liberal)
-* 11 Multiplier step up (0 for both 3-banks, 1 for any 3-bank)
-* 12 Advance spinner value (0 for center target, 1 for any outside target)
-* 13 Eight bank WOW starts (0 on making No 9, 1 on making number 8)
-* 14 Super Bonus lights (0 on making No 9, 1 on making number 8)
-* 15 Three bank WOW starts (0 on 7x multiplier, 1 on 6x and on 7x multiplier)
-* 16 Wow award type (0 70K, 1 shoot again)
-* 17 Special award type (0 90K, 1 130K, 2 shoot again, 3 Nothing)
-* 18 Specials limitation (0 one per ball, 1 unlimited per ball)
-* 19 Save and exit
+| No | Description | Options |
+| -- | ----------- | ------- |
+| 01 | Highscore to date | pressing P2 three times resets to zero |
+| 02 | Profile #1 highscore to date | pressing P2 three times resets to zero |
+| 03 | Profile #2 highscore to date | pressing P2 three times resets to zero |
+| 04 | Profile #3 highscore to date | pressing P2 three times resets to zero |
+| 05 | Balls served to date | pressing P2 three times resets to zero |
+| 06 | Games played to date | pressing P2 three times resets to zero |
+| 07 | Highscore 1 threshold | P2 increases score by 100K |
+| 08 | Highscore 2 threshold | P2 increases score by 100K |
+| 09 | Highscore 3 threshold | P2 increases score by 100K |
+| 10 | Background sounds | 0/1 for off/on |
+| 11 | Background music | 0/1 for off/on |
+| 12 | Balls per game | 3 or 5 |
+| 13 | Spot light strategy | 0 for conservative, 1 for liberal |
+| 14 | Multiplier step up | 0 for both 3-banks, 1 for any 3-bank |
+| 15 | Advance spinner value | 0 for center target, 1 for any outside target |
+| 16 | Eight bank WOW starts | 0 on making No 9, 1 on making number 8 |
+| 17 | Super Bonus lights | 0 on making No 9, 1 on making number 8 |
+| 18 | Three bank WOW starts | 0 on 7x multiplier, 1 on 6x and on 7x multiplier |
+| 19 | Wow award type | 0 70K, 1 shoot again |
+| 20 | Special award type | 0 90K, 1 130K, 2 shoot again, 3 Nothing |
+| 21 | Specials limitation | 0 one per ball, 1 unlimited per ball |
+| 22 | Save and exit | P2 to save and exit |
 
+The available diagnostics are:
 
-
+| No | Description | Options |
+| -- | ----------- | ------- |
 
 
 

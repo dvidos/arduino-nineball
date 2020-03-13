@@ -38,26 +38,29 @@
 #define ATTRACT_MODE_DIAGNOSTICS   4
 
 
-#define SETTINGS_HIGH_SCORE_THRESHOLD_1   0   // P2: increase 10k (hold down must keep increasing) zero is allowed
-#define SETTINGS_HIGH_SCORE_THRESHOLD_2   1   // P2: increase 10k (hold down must keep increasing) zero is allowed
-#define SETTINGS_HIGH_SCORE_THRESHOLD_3   2   // P2: increase 10k (hold down must keep increasing) zero is allowed
-#define SETTINGS_HIGH_SCORE_TO_DATE       3   // P2: Press & release 3 times to reset
-#define SETTINGS_GAMES_PLAYED             4   // P2: Press & release 3 times to reset
-#define SETTINGS_BALLS_SERVED             5   // P2: Press & release 3 times to reset
-#define SETTINGS_BACKGROUND_SOUNDS        6   // P2: 1/0 (on/off)
-#define SETTINGS_BACKGROUND_MUSIC         7   // P2: 1/0 (on/off)
-#define SETTINGS_BALLS_PER_GAME           8   // P2: 3/5
-#define SETTINGS_SPOT_LIGHT_STRATEGY      9   // P2: 0=conservative / 1=liberal
-#define SETTINGS_MULTIPLIER_STEP_UP      10   // P2: 0=both 3 banks / 1=one 3 bank
-#define SETTINGS_SPINNER_ADVANCES        11   // P2: 0=center target / 1=any outside target
-#define SETTINGS_EIGHT_BANK_WOW_STARTS   12   // P2: 0=on making 9 / 1=on making 8
-#define SETTINGS_SUPER_BONUS_LIGHTS      13   // P2: 0=on making 9 / 1=on making 8
-#define SETTINGS_THREE_BANK_WOW_STARTS   14   // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
-#define SETTINGS_WOW_AWARD_TYPE          15   // P2: 0=70K / 1=shoot again
-#define SETTINGS_SPECIAL_AWARD_TYPE      16   // P2: 0=90K / 1=130K / 2=shoot again / 3=???
-#define SETTINGS_UNLIMITED_SPECIALS      17   // P2: 0=one per ball, 1=unlimited
-#define SETTINGS_SAVE_AND_EXIT           18   // P2: save and exit
-#define SETTINGS_OPTIONS_COUNT           19
+#define SETTINGS_HIGH_SCORE_TO_DATE             0   // P2: Press & release 3 times to reset
+#define SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_1  1 // P2: 3 times to reset
+#define SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_2  2 // P2: 3 times to reset
+#define SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_3  3 // P2: 3 times to reset
+#define SETTINGS_BALLS_SERVED                   4   // P2: Press & release 3 times to reset
+#define SETTINGS_GAMES_PLAYED                   5   // P2: Press & release 3 times to reset
+#define SETTINGS_HIGH_SCORE_THRESHOLD_1         6   // P2: increase 10k (hold down must keep increasing) zero is allowed
+#define SETTINGS_HIGH_SCORE_THRESHOLD_2         7   // P2: increase 10k (hold down must keep increasing) zero is allowed
+#define SETTINGS_HIGH_SCORE_THRESHOLD_3         8   // P2: increase 10k (hold down must keep increasing) zero is allowed
+#define SETTINGS_BACKGROUND_SOUNDS              9   // P2: 1/0 (on/off)
+#define SETTINGS_BACKGROUND_MUSIC              10   // P2: 1/0 (on/off)
+#define SETTINGS_BALLS_PER_GAME                11   // P2: 3/5
+#define SETTINGS_SPOT_LIGHT_STRATEGY           12   // P2: 0=conservative / 1=liberal
+#define SETTINGS_MULTIPLIER_STEP_UP            13   // P2: 0=both 3 banks / 1=one 3 bank
+#define SETTINGS_SPINNER_ADVANCES              14   // P2: 0=center target / 1=any outside target
+#define SETTINGS_EIGHT_BANK_WOW_STARTS         15   // P2: 0=on making 9 / 1=on making 8
+#define SETTINGS_SUPER_BONUS_LIGHTS            16   // P2: 0=on making 9 / 1=on making 8
+#define SETTINGS_THREE_BANK_WOW_STARTS         17   // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
+#define SETTINGS_WOW_AWARD_TYPE                18   // P2: 0=70K / 1=shoot again
+#define SETTINGS_SPECIAL_AWARD_TYPE            19   // P2: 0=90K / 1=130K / 2=shoot again / 3=???
+#define SETTINGS_UNLIMITED_SPECIALS            20   // P2: 0=one per ball, 1=unlimited
+#define SETTINGS_SAVE_AND_EXIT                 21   // P2: save and exit
+#define SETTINGS_OPTIONS_COUNT                 22
 
 
 #define DIAGNOSTICS_LAMP_MATRIX_COLUMNS          0 // all lamps in one row. after 1 sec, P2=next row
@@ -93,22 +96,22 @@ private:
     byte item_value;
 
     void start_idle_mode();
-    void start_game_mode(byte mode);
-    void start_radio_mode();
-    void start_diagnostics_mode();
-    void start_settings_mode();
-
     void idle_handle_event(Event& e);
-    void radio_handle_event(Event& e);
-    void diagnostics_handle_event(Event& e);
-    void settings_handle_event(Event& e);
 
-    void diagnostics_show_menu_item();
-    void diagnostics_menu_item_action();
+    void start_game_mode(byte mode);
+
+    void start_radio_mode();
+    void radio_handle_event(Event& e);
+
+    void start_settings_mode();
+    void settings_handle_event(Event& e);
     void settings_show_menu_item_value();
     void settings_change_menu_item_value();
 
-
+    void start_diagnostics_mode();
+    void diagnostics_handle_event(Event& e);
+    void diagnostics_show_menu_item();
+    void diagnostics_menu_item_action();
 };
 
 void CAttract::start()
@@ -144,64 +147,16 @@ void CAttract::start_idle_mode()
 
     mode = ATTRACT_MODE_IDLE;
     menu_item = 0;
+    item_value = 0;
 
-    ScoreDisplay.display_bcd_num(0, GameSettings.highest_score);
-    ScoreDisplay.display_bcd_num(1, GameSettings.highest_score);
+    // we could rotate the personal scores as well.
+    ScoreDisplay.display_bcd_num(0, GameSettings.highest_score_to_date);
+    ScoreDisplay.display_bcd_num(1, GameSettings.highest_score_to_date);
 
     // implement mode to have anumations for ever until we stop them.
     Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE);
     Animator.start(ANIM_SPINNER_INCREASE_VALUE);
     Animator.start(ANIM_BONUS_MULTIPLIER);
-}
-
-void CAttract::start_game_mode(byte game_mode)
-{
-    LOG("Attract starting game mode");
-
-    mode = ATTRACT_MODE_GAME;
-    Gameplay.start(game_mode);
-}
-
-void CAttract::start_radio_mode()
-{
-    LOG("Attract starting radio mode");
-
-    // start first song
-    // start timeouts
-
-    mode = ATTRACT_MODE_RADIO;
-}
-
-void CAttract::start_diagnostics_mode()
-{
-    LOG("Attract starting diagnostics mode");
-
-    // start diagnostics menu
-    mode = ATTRACT_MODE_DIAGNOSTICS;
-
-    // start the menu
-    menu_item = 0;
-
-    // update display
-    ScoreDisplay.hide_display(0);
-    ScoreDisplay.show_digit(1, mode + 1);
-    ScoreDisplay.show_digit(4, menu_item / 10);
-    ScoreDisplay.show_digit(5, menu_item % 10);
-    ScoreDisplay.hide_digit(6);
-    ScoreDisplay.hide_digit(7);
-}
-
-void CAttract::start_settings_mode()
-{
-    LOG("Attract starting settings mode");
-
-    // start settings menu
-    mode = ATTRACT_MODE_SETTINGS;
-    ScoreDisplay.show_digit(1, mode + 1);
-
-    // start the menu
-    menu_item = 0;
-    settings_show_menu_item_value();
 }
 
 void CAttract::idle_handle_event(Event& e)
@@ -240,6 +195,24 @@ void CAttract::idle_handle_event(Event& e)
     }
 }
 
+void CAttract::start_game_mode(byte game_mode)
+{
+    LOG("Attract starting game mode");
+
+    mode = ATTRACT_MODE_GAME;
+    Gameplay.start(game_mode);
+}
+
+void CAttract::start_radio_mode()
+{
+    LOG("Attract starting radio mode");
+
+    // start first song
+    // start timeouts
+
+    mode = ATTRACT_MODE_RADIO;
+}
+
 void CAttract::radio_handle_event(Event& e)
 {
     // timeouts to detect song end,
@@ -263,6 +236,260 @@ void CAttract::radio_handle_event(Event& e)
                 break;
         }
     }
+}
+
+void CAttract::start_settings_mode()
+{
+    LOG("Attract starting settings mode");
+
+    // start settings menu
+    mode = ATTRACT_MODE_SETTINGS;
+    ScoreDisplay.show_digit(1, mode + 1);
+
+    // start the menu
+    menu_item = 0;
+    settings_show_menu_item_value();
+}
+
+void CAttract::settings_handle_event(Event& e)
+{
+    if (e.type == switch_closed)
+    {
+        switch (e.number)
+        {
+            case SW_START:
+                // exit without saving
+                // to avoid messing around without saving,
+                // we reload the eeprom settinsg.
+                GameSettings.load_from_eeprom();
+                start_idle_mode();
+                break;
+            case SW_MENU_LEFT:
+                menu_item += 1;
+                if (menu_item >= SETTINGS_OPTIONS_COUNT)
+                    menu_item = 0;
+                settings_show_menu_item_value();
+                item_value = 0;
+                break;
+            case SW_MENU_RIGHT:
+                settings_change_menu_item_value();
+                // there's a chance we did save-and-exit
+                // which moves to idle mode
+                if (mode == ATTRACT_MODE_SETTINGS)
+                    settings_show_menu_item_value();
+                break;
+        }
+    }
+}
+
+void CAttract::settings_show_menu_item_value()
+{
+    BcdNum n;
+
+    // show one based
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(1, mode);
+    ScoreDisplay.show_digit(4, (menu_item + 1) / 10);
+    ScoreDisplay.show_digit(5, (menu_item + 1) % 10);
+
+    // now show value and/or act on it.
+    switch (menu_item) {
+        case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
+            ScoreDisplay.display_bcd_num(1, GameSettings.highest_score_to_date);
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_1:       // P2: Press & release 3 times to reset
+            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[0]);
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_2:       // P2: Press & release 3 times to reset
+            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[1]);
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_3:       // P2: Press & release 3 times to reset
+            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[2]);
+            break;
+        case SETTINGS_BALLS_SERVED:             // P2: Press & release 3 times to reset
+            n.from_decimal(GameSettings.balls_served);
+            ScoreDisplay.display_bcd_num(1, n);
+            break;
+        case SETTINGS_GAMES_PLAYED:             // P2: Press & release 3 times to reset
+            n.from_decimal(GameSettings.games_played);
+            ScoreDisplay.display_bcd_num(1, n);
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[0]);
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[1]);
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[2]);
+            break;
+        case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
+            ScoreDisplay.show_digit(15, GameSettings.background_sounds);
+            break;
+        case SETTINGS_BACKGROUND_MUSIC:         // P2: 1/0 (on/off)
+            ScoreDisplay.show_digit(15, GameSettings.background_music);
+            break;
+        case SETTINGS_BALLS_PER_GAME:           // P2: 3/5
+            ScoreDisplay.show_digit(15, GameSettings.five_balls_per_game ? 5 : 3);
+            break;
+        case SETTINGS_SPOT_LIGHT_STRATEGY:      // P2: 0=conservative / 1=liberal
+            ScoreDisplay.show_digit(15, GameSettings.spot_light_strategy);
+            break;
+        case SETTINGS_MULTIPLIER_STEP_UP:       // P2: 0=both 3 banks / 1=one 3 bank
+            ScoreDisplay.show_digit(15, GameSettings.multiplier_step_up);
+            break;
+        case SETTINGS_SPINNER_ADVANCES:         // P2: 0=center target / 1=any outside target
+            ScoreDisplay.show_digit(15, GameSettings.spinner_value_advancement);
+            break;
+        case SETTINGS_EIGHT_BANK_WOW_STARTS:    // P2: 0=on making 9 / 1=on making 8
+            ScoreDisplay.show_digit(15, GameSettings.eight_bank_wow_turn_on ? 8 : 9);
+            break;
+        case SETTINGS_SUPER_BONUS_LIGHTS:       // P2: 0=on making 9 / 1=on making 8
+            ScoreDisplay.show_digit(15, GameSettings.when_super_bonus_lights ? 8 : 9);
+            break;
+        case SETTINGS_THREE_BANK_WOW_STARTS:    // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
+            ScoreDisplay.show_digit(15, GameSettings.three_bank_wow_turn_on);
+            break;
+        case SETTINGS_WOW_AWARD_TYPE:           // P2: 0=70K / 1=shoot again
+            ScoreDisplay.show_digit(15, GameSettings.wow_award_type);
+            break;
+        case SETTINGS_SPECIAL_AWARD_TYPE:       // P2: 0=90K / 1=130K / 2=shoot again / 3=???
+            ScoreDisplay.show_digit(15, GameSettings.special_award_type);
+            break;
+        case SETTINGS_UNLIMITED_SPECIALS:       // P2: 0=one per ball, 1=unlimited
+            ScoreDisplay.show_digit(15, GameSettings.unlimited_specials);
+            break;
+        case SETTINGS_SAVE_AND_EXIT:
+            break;
+    }
+}
+
+void CAttract::settings_change_menu_item_value()
+{
+    BcdNum wrap_value;
+
+    wrap_value.from_decimal(9900000UL);
+
+    // change value or perform "enter" action
+    switch (menu_item) {
+        case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.highest_score_to_date.zero();
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_1: // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.personal_high_score[0].zero();
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_2: // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.personal_high_score[1].zero();
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_3: // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.personal_high_score[2].zero();
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_BALLS_SERVED:             // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.balls_served = 0;
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_GAMES_PLAYED:             // P2: Press & release 3 times to reset
+            item_value += 1;
+            if (item_value >= 3) {
+                GameSettings.games_played = 0;
+                item_value = 0;
+            }
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            GameSettings.awards_threshold[0].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[0] > wrap_value)
+                GameSettings.awards_threshold[0].zero();
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            GameSettings.awards_threshold[1].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[1] > wrap_value)
+                GameSettings.awards_threshold[1].zero();
+            break;
+        case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
+            GameSettings.awards_threshold[2].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[2] > wrap_value)
+                GameSettings.awards_threshold[2].zero();
+            break;
+        case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
+            GameSettings.background_sounds ^= 1;
+            break;
+        case SETTINGS_BACKGROUND_MUSIC:         // P2: 1/0 (on/off)
+            GameSettings.background_music ^= 1;
+            break;
+        case SETTINGS_BALLS_PER_GAME:           // P2: 3/5
+            GameSettings.five_balls_per_game ^= 1;
+            break;
+        case SETTINGS_SPOT_LIGHT_STRATEGY:      // P2: 0=conservative / 1=liberal
+            GameSettings.spot_light_strategy ^= 1;
+            break;
+        case SETTINGS_MULTIPLIER_STEP_UP:       // P2: 0=both 3 banks / 1=one 3 bank
+            GameSettings.multiplier_step_up ^= 1;
+            break;
+        case SETTINGS_SPINNER_ADVANCES:         // P2: 0=center target / 1=any outside target
+            GameSettings.spinner_value_advancement ^= 1;
+            break;
+        case SETTINGS_EIGHT_BANK_WOW_STARTS:    // P2: 0=on making 9 / 1=on making 8
+            GameSettings.eight_bank_wow_turn_on ^= 1;
+            break;
+        case SETTINGS_SUPER_BONUS_LIGHTS:       // P2: 0=on making 9 / 1=on making 8
+            GameSettings.when_super_bonus_lights ^= 1;
+            break;
+        case SETTINGS_THREE_BANK_WOW_STARTS:    // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
+            GameSettings.three_bank_wow_turn_on ^= 1;
+            break;
+        case SETTINGS_WOW_AWARD_TYPE:           // P2: 0=70K / 1=shoot again
+            GameSettings.wow_award_type ^= 1;
+            break;
+        case SETTINGS_SPECIAL_AWARD_TYPE:       // P2: 0=90K / 1=130K / 2=shoot again / 3=???
+            GameSettings.special_award_type += 1;
+            GameSettings.special_award_type &= 0x03; // range 0..3
+            break;
+        case SETTINGS_UNLIMITED_SPECIALS:       // P2: 0=one per ball, 1=unlimited
+            GameSettings.unlimited_specials ^= 1;
+            break;
+        case SETTINGS_SAVE_AND_EXIT:
+            GameSettings.save_to_eeprom();
+            start_idle_mode();
+            break;
+    }
+}
+
+void CAttract::start_diagnostics_mode()
+{
+    LOG("Attract starting diagnostics mode");
+
+    // start diagnostics menu
+    mode = ATTRACT_MODE_DIAGNOSTICS;
+
+    // start the menu
+    menu_item = 0;
+
+    // update display
+    ScoreDisplay.hide_display(0);
+    ScoreDisplay.show_digit(1, mode + 1);
+    ScoreDisplay.show_digit(4, menu_item / 10);
+    ScoreDisplay.show_digit(5, menu_item % 10);
+    ScoreDisplay.hide_digit(6);
+    ScoreDisplay.hide_digit(7);
 }
 
 void CAttract::diagnostics_handle_event(Event& e)
@@ -331,187 +558,4 @@ void CAttract::diagnostics_menu_item_action()
     LOG("Supposedly will perform diagnostics menu item action, e.g. next coil or something");
 }
 
-
-void CAttract::settings_handle_event(Event& e)
-{
-    if (e.type == switch_closed)
-    {
-        switch (e.number)
-        {
-            case SW_START:
-                break; // exit without saving?
-            case SW_MENU_LEFT:
-                menu_item += 1;
-                if (menu_item >= SETTINGS_OPTIONS_COUNT)
-                    menu_item = 0;
-                settings_show_menu_item_value();
-                break;
-            case SW_MENU_RIGHT:
-                settings_change_menu_item_value();
-                settings_show_menu_item_value();
-                break;
-        }
-    }
-}
-
-void CAttract::settings_show_menu_item_value()
-{
-    BcdNum n;
-
-    // show one based
-    ScoreDisplay.hide_all();
-    ScoreDisplay.show_digit(1, mode);
-    ScoreDisplay.show_digit(4, (menu_item + 1) / 10);
-    ScoreDisplay.show_digit(5, (menu_item + 1) % 10);
-
-    // now show value and/or act on it.
-    switch (menu_item) {
-        case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[0]);
-            break;
-        case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[1]);
-            break;
-        case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[2]);
-            break;
-        case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
-            ScoreDisplay.display_bcd_num(1, GameSettings.highest_score);
-            break;
-        case SETTINGS_GAMES_PLAYED:             // P2: Press & release 3 times to reset
-            n.from_decimal(GameSettings.games_played);
-            ScoreDisplay.display_bcd_num(1, n);
-            break;
-        case SETTINGS_BALLS_SERVED:             // P2: Press & release 3 times to reset
-            n.from_decimal(GameSettings.balls_served);
-            ScoreDisplay.display_bcd_num(1, n);
-            break;
-        case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
-            ScoreDisplay.show_digit(15, GameSettings.background_sounds);
-            break;
-        case SETTINGS_BACKGROUND_MUSIC:         // P2: 1/0 (on/off)
-            ScoreDisplay.show_digit(15, GameSettings.background_music);
-            break;
-        case SETTINGS_BALLS_PER_GAME:           // P2: 3/5
-            ScoreDisplay.show_digit(15, GameSettings.five_balls_per_game ? 5 : 3);
-            break;
-        case SETTINGS_SPOT_LIGHT_STRATEGY:      // P2: 0=conservative / 1=liberal
-            ScoreDisplay.show_digit(15, GameSettings.spot_light_strategy);
-            break;
-        case SETTINGS_MULTIPLIER_STEP_UP:       // P2: 0=both 3 banks / 1=one 3 bank
-            ScoreDisplay.show_digit(15, GameSettings.multiplier_step_up);
-            break;
-        case SETTINGS_SPINNER_ADVANCES:         // P2: 0=center target / 1=any outside target
-            ScoreDisplay.show_digit(15, GameSettings.spinner_value_advancement);
-            break;
-        case SETTINGS_EIGHT_BANK_WOW_STARTS:    // P2: 0=on making 9 / 1=on making 8
-            ScoreDisplay.show_digit(15, GameSettings.eight_bank_wow_turn_on ? 8 : 9);
-            break;
-        case SETTINGS_SUPER_BONUS_LIGHTS:       // P2: 0=on making 9 / 1=on making 8
-            ScoreDisplay.show_digit(15, GameSettings.when_super_bonus_lights ? 8 : 9);
-            break;
-        case SETTINGS_THREE_BANK_WOW_STARTS:    // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
-            ScoreDisplay.show_digit(15, GameSettings.three_bank_wow_turn_on);
-            break;
-        case SETTINGS_WOW_AWARD_TYPE:           // P2: 0=70K / 1=shoot again
-            ScoreDisplay.show_digit(15, GameSettings.wow_award_type);
-            break;
-        case SETTINGS_SPECIAL_AWARD_TYPE:       // P2: 0=90K / 1=130K / 2=shoot again / 3=???
-            ScoreDisplay.show_digit(15, GameSettings.special_award_type);
-            break;
-        case SETTINGS_UNLIMITED_SPECIALS:       // P2: 0=one per ball, 1=unlimited
-            ScoreDisplay.show_digit(15, GameSettings.unlimited_specials);
-            break;
-        case SETTINGS_SAVE_AND_EXIT:
-            break;
-    }
-}
-
-void CAttract::settings_change_menu_item_value()
-{
-    BcdNum wrap_value;
-
-    wrap_value.from_decimal(9900000UL);
-
-    // change value or perform "enter" action
-    switch (menu_item) {
-        case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[0].add_bcd(0x100000);
-            if (GameSettings.awards_threshold[0] > wrap_value)
-                GameSettings.awards_threshold[0].zero();
-            break;
-        case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[1].add_bcd(0x100000);
-            if (GameSettings.awards_threshold[1] > wrap_value)
-                GameSettings.awards_threshold[1].zero();
-            break;
-        case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[2].add_bcd(0x100000);
-            if (GameSettings.awards_threshold[2] > wrap_value)
-                GameSettings.awards_threshold[2].zero();
-            break;
-        case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
-            item_value += 1;
-            if (item_value > 3) {
-                GameSettings.highest_score.from_decimal(0);
-                item_value = 0;
-            }
-            break;
-        case SETTINGS_GAMES_PLAYED:             // P2: Press & release 3 times to reset
-            item_value += 1;
-            if (item_value > 3) {
-                GameSettings.games_played = 0;
-                item_value = 0;
-            }
-            break;
-        case SETTINGS_BALLS_SERVED:             // P2: Press & release 3 times to reset
-            item_value += 1;
-            if (item_value > 3) {
-                GameSettings.balls_served = 0;
-                item_value = 0;
-            }
-            break;
-        case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
-            GameSettings.background_sounds ^= 1;
-            break;
-        case SETTINGS_BACKGROUND_MUSIC:         // P2: 1/0 (on/off)
-            GameSettings.background_music ^= 1;
-            break;
-        case SETTINGS_BALLS_PER_GAME:           // P2: 3/5
-            GameSettings.five_balls_per_game ^= 1;
-            break;
-        case SETTINGS_SPOT_LIGHT_STRATEGY:      // P2: 0=conservative / 1=liberal
-            GameSettings.spot_light_strategy ^= 1;
-            break;
-        case SETTINGS_MULTIPLIER_STEP_UP:       // P2: 0=both 3 banks / 1=one 3 bank
-            GameSettings.multiplier_step_up ^= 1;
-            break;
-        case SETTINGS_SPINNER_ADVANCES:         // P2: 0=center target / 1=any outside target
-            GameSettings.spinner_value_advancement ^= 1;
-            break;
-        case SETTINGS_EIGHT_BANK_WOW_STARTS:    // P2: 0=on making 9 / 1=on making 8
-            GameSettings.eight_bank_wow_turn_on ^= 1;
-            break;
-        case SETTINGS_SUPER_BONUS_LIGHTS:       // P2: 0=on making 9 / 1=on making 8
-            GameSettings.when_super_bonus_lights ^= 1;
-            break;
-        case SETTINGS_THREE_BANK_WOW_STARTS:    // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
-            GameSettings.three_bank_wow_turn_on ^= 1;
-            break;
-        case SETTINGS_WOW_AWARD_TYPE:           // P2: 0=70K / 1=shoot again
-            GameSettings.wow_award_type ^= 1;
-            break;
-        case SETTINGS_SPECIAL_AWARD_TYPE:       // P2: 0=90K / 1=130K / 2=shoot again / 3=???
-            GameSettings.special_award_type += 1;
-            GameSettings.special_award_type &= 0x03; // range 0..3
-            break;
-        case SETTINGS_UNLIMITED_SPECIALS:       // P2: 0=one per ball, 1=unlimited
-            GameSettings.unlimited_specials ^= 1;
-            break;
-        case SETTINGS_SAVE_AND_EXIT:
-            GameSettings.save_to_eeprom();
-            start_idle_mode();
-            break;
-    }
-}
 

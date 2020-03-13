@@ -7,13 +7,13 @@
    the two bottom corner ones seem to be ground.
    pins 22-53  available, confirmed (50-53 MISO/MOSI/SCK/SS for SPI with the SPI Library?)
    so, if no USB or COMMs are used, we have 54 output pins, all tested!
-   
-   there seem to be 16 analog inputs. 
-   - plenty for 8 returns from switch matrix, 
+
+   there seem to be 16 analog inputs.
+   - plenty for 8 returns from switch matrix,
    - 3 from pinball front user.
    - it takes about 100 nsec (0.1 msec) to read an analog input...
    if they are slow, we could use some of the 54 digital pins, using "pinMode(IN)"
-   
+
    it seems we can also use the Analog pins for general digital I/O: https://www.arduino.cc/en/Tutorial/AnalogInputPins
    tested, it works. In setup():
       pinMode(13, OUTPUT);
@@ -21,39 +21,39 @@
    in loop()
       digitalWrite(13, digitalRead(A0));
    the led is constantly lit (A0 is pulled up) and, if a pushbutton brings it to ground, the led goes out!
-   
-   
-   
+
+
+
    digitalWrite() reaches from a little bit less than 4µs (UNO, non PWM pin) to a little bit less than 6µs (MEGA, PWM pin).
 
    There's also direct port manipulation. Here's a method I use a lot.
    Say you were changing PortB, bit 0 (= D8 on an Uno:
-	
+
    PORTB = PORTB & 0b11111110; // clear bit 0,  leave rest alone
    PORTB = PORTB | 0b00000001; // set bit 0, leave rest alone
-	
+
    Use pinMode in setup as you normally would.
    If you just want to flip an output bit (because you already know what state it is in) you can write to the input port:
-	
+
    PINB = 0b00000001; // toggle bit 0
-  
+
    But definitely see: http://www.billporter.info/2010/08/18/ready-set-oscillate-the-fastest-way-to-change-arduino-pins/
    using direct port, it takes 2 cpu cycles, while digitalWrite takes about 50.
-  	
+
    digitalWrite(pin, LOW);       digitalWrite(pin, HIGH);    7000 nsec
    CLR(PORTB, 0) ;               SET(PORTB, 0);               250 nsec
    PORTB |= _BV(0);              PORTB &= ~(_BV(0));          250 nsec
-	
+
    The macros used:
 
    #define CLR(x,y) (x&=(~(1<<y)))
    #define SET(x,y) (x|=(1<<y))
    #define _BV(bit) (1 << (bit))
-	
+
    we could create preprocessor macros for each pin, as in:
-   #define SET_PIN_STROBE()  SET(PORTC, 3)  	
+   #define SET_PIN_STROBE()  SET(PORTC, 3)
    #define CLR_PIN_STROBE()  CLR(PORTC, 3)
-   
+
    To output, we use PORTx (e.g. PORTF)
    To input, we use PINx (e.g. PINF)
 */
@@ -61,14 +61,14 @@
 /*
    See also https://lynx2015.files.wordpress.com/2015/08/arduino-mega-pinout-diagram.png
    It's good to put the lamps rows and switch returns to a full port each.
-	
+
    Columns:
    - Arduino Pin No
    - CPU Port:Bit
    - Arduino usage
    - CPU Usage
    - My Usage
-   
+
    Pin  P:B  Ard.Usage     CPU Usage      My usage
    ----------------------------------------------------------------
      0  PE0  RX0+USB       U              Software loading + logging
