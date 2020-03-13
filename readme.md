@@ -42,33 +42,33 @@ the second button will cycle the item in that menu
 
 ### watchdog
 
-if the pin is free, have the led being lit every two seconds or so, 
+if the pin is free, have the led being lit every two seconds or so,
 to understand whether we fell in an infinite loop or something.
 
 
 
 ### variables
 
-keep everything in 3-4 large structures with bit fields 
+keep everything in 3-4 large structures with bit fields
 to preserve space and allow for easy reporting of sizeof()
 
 
 ### timing
 
-should keep time in 10 or 100 msecs increments. 
+should keep time in 10 or 100 msecs increments.
 A char would allow up to 2.5 seconds or 25 seconds duration which is good for coils, animations, lamps etc.
 
 Should have a way of keeping some stats, such as max lamps blinking at the time and max switches queue length.
 
 
 I want to find a way to automate lamp animations, even at the application level,
-without having to deal with them in the state machine. We should be able to 
-"launchAnimation(x)" and it should work to completion, upon which completion, 
+without having to deal with them in the state machine. We should be able to
+"launchAnimation(x)" and it should work to completion, upon which completion,
 we could be notified (similar to a timeout) and we would update the lamps as should be.
 
 Sameway, we might be able to be notified when a sound has finished.
 Maybe we will do this for long songs, set a long timer, having hardcoded the number of seconds
-the song is long. 
+the song is long.
 
 
 ### Sound
@@ -93,8 +93,8 @@ The program can run on three modes:
 ## Maintenability
 
 Unfortunately, this is prey to the shallow entry curve of Arduino. Yes, it worked well since the first time I plugged it in.
-But now I cannot add the WavLibrary to the source control. I cannot modify the makefile. 
-I cannot build using custom or open source tools. 
+But now I cannot add the WavLibrary to the source control. I cannot modify the makefile.
+I cannot build using custom or open source tools.
 So, I guess, this is the price to pay for so easy to get-started platform.
 
 I may try to find a way to build from makefile.
@@ -108,14 +108,58 @@ I may try to find a way to build from makefile.
 * Implement 4-player game.
 * Implement Eva Happy Hour mode
 * Implement score display and updates in increments every 100 msec.
-* Write documentation for hardware, as we go. 
+* Write documentation for hardware, as we go.
 * Create connectors for the various pieces.
-*   
+*
+
+# The menu
+
+When the machine is booted up, we can start a new game using the Start button.
+But we can also enter the menu system via the P1 button (left button under the
+machine body). The selected option is displayed on the score display. Pressing
+Start takes us inside the menu. Inside a menu, P2 (the right button under the
+machine body) cycles through the options
+
+The menu options are:
+
+* 1 (or pressing start immediately) Start regular game.
+* 2 Start Eva's Happy Hour game (infinite balls)
+* 3 Start Radio / Jukebox mode (play songs)
+* 4 Adjust machine settings
+* 5 Diagnostics
+
+The available settings are:
+
+* 01 Highscore 1 threshold (P2 increases score by 10K)
+* 02 Highscore 2 threshold (P2 increases score by 10K)
+* 03 Highscore 3 threshold (P2 increases score by 10K)
+* 04 Highscore to date (pressing P2 three times resets to zero)
+* 05 Games played to date (pressing P2 three times resets to zero)
+* 06 Balls served to date (pressing P2 three times resets to zero)
+* 07 Background sounds (0/1 for off/on)
+* 08 Background music (0/1 for off/on)
+* 09 Balls per game (3 or 5)
+* 10 Spot light strategy (0 for conservative, 1 for liberal)
+* 11 Multiplier step up (0 for both 3-banks, 1 for any 3-bank)
+* 12 Advance spinner value (0 for center target, 1 for any outside target)
+* 13 Eight bank WOW starts (0 on making No 9, 1 on making number 8)
+* 14 Super Bonus lights (0 on making No 9, 1 on making number 8)
+* 15 Three bank WOW starts (0 on 7x multiplier, 1 on 6x and on 7x multiplier)
+* 16 Wow award type (0 70K, 1 shoot again)
+* 17 Special award type (0 90K, 1 130K, 2 shoot again, 3 Nothing)
+* 18 Specials limitation (0 one per ball, 1 unlimited per ball)
+* 19 Save and exit
+
+
+
+
+
+
 
 
 
 [1]: https://www.ipdb.org/machine.cgi?id=1678
 [2]: https://www.ipdb.org/images/1678/image-4.jpg
 [3]: https://www.ipdb.org/files/1678/Stern_1980_Nine_Ball_Manual.pdf
-  
+
 

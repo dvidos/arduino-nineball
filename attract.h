@@ -34,8 +34,8 @@
 #define ATTRACT_MODE_IDLE          0
 #define ATTRACT_MODE_GAME          1
 #define ATTRACT_MODE_RADIO         2
-#define ATTRACT_MODE_DIAGNOSTICS   3
-#define ATTRACT_MODE_SETTINGS      4
+#define ATTRACT_MODE_SETTINGS      3
+#define ATTRACT_MODE_DIAGNOSTICS   4
 
 
 #define SETTINGS_HIGH_SCORE_THRESHOLD_1   0   // P2: increase 10k (hold down must keep increasing) zero is allowed
@@ -114,7 +114,6 @@ private:
 void CAttract::start()
 {
     start_idle_mode();
-    LOG("Attract mode started");
 }
 
 void CAttract::handle_event(Event& e)
@@ -136,7 +135,6 @@ void CAttract::handle_event(Event& e)
         case ATTRACT_MODE_SETTINGS:
             settings_handle_event(e);
             break;
-
     }
 }
 
@@ -146,6 +144,7 @@ void CAttract::start_idle_mode()
 
     mode = ATTRACT_MODE_IDLE;
     menu_item = 0;
+
     ScoreDisplay.display_bcd_num(0, GameSettings.highest_score);
     ScoreDisplay.display_bcd_num(1, GameSettings.highest_score);
 
@@ -169,6 +168,8 @@ void CAttract::start_radio_mode()
 
     // start first song
     // start timeouts
+
+    mode = ATTRACT_MODE_RADIO;
 }
 
 void CAttract::start_diagnostics_mode()
@@ -177,12 +178,17 @@ void CAttract::start_diagnostics_mode()
 
     // start diagnostics menu
     mode = ATTRACT_MODE_DIAGNOSTICS;
-    ScoreDisplay.show_digit(1, mode);
 
     // start the menu
     menu_item = 0;
+
+    // update display
+    ScoreDisplay.hide_display(0);
+    ScoreDisplay.show_digit(1, mode + 1);
     ScoreDisplay.show_digit(4, menu_item / 10);
     ScoreDisplay.show_digit(5, menu_item % 10);
+    ScoreDisplay.hide_digit(6);
+    ScoreDisplay.hide_digit(7);
 }
 
 void CAttract::start_settings_mode()
@@ -191,7 +197,7 @@ void CAttract::start_settings_mode()
 
     // start settings menu
     mode = ATTRACT_MODE_SETTINGS;
-    ScoreDisplay.show_digit(1, mode);
+    ScoreDisplay.show_digit(1, mode + 1);
 
     // start the menu
     menu_item = 0;
@@ -211,7 +217,8 @@ void CAttract::idle_handle_event(Event& e)
                 menu_item++;
                 if (menu_item >= ATTRACT_MENU_ITEMS_COUNT)
                     menu_item = 0;
-                ScoreDisplay.show_digit(1, menu_item);
+                ScoreDisplay.hide_display(0);
+                ScoreDisplay.show_digit(1, menu_item + 1);
                 break;
 
             case SW_START:
@@ -245,11 +252,14 @@ void CAttract::radio_handle_event(Event& e)
         switch (e.number)
         {
             case SW_START:
+                LOG("stopping all sounds");
                 start_idle_mode();
                 break;
             case SW_MENU_LEFT:
+                LOG("can rewind or go to previous played song");
                 break;
             case SW_MENU_RIGHT:
+                LOG("can skip to next (random) song");
                 break;
         }
     }
@@ -318,6 +328,7 @@ void CAttract::diagnostics_menu_item_action()
 {
     // switch diagnostics objective (e.g. column or coild number)
     // some do need timeouts to function.
+    LOG("Supposedly will perform diagnostics menu item action, e.g. next coil or something");
 }
 
 
@@ -328,7 +339,7 @@ void CAttract::settings_handle_event(Event& e)
         switch (e.number)
         {
             case SW_START:
-                break;
+                break; // exit without saving?
             case SW_MENU_LEFT:
                 menu_item += 1;
                 if (menu_item >= SETTINGS_OPTIONS_COUNT)
@@ -348,17 +359,10 @@ void CAttract::settings_show_menu_item_value()
     BcdNum n;
 
     // show one based
+    ScoreDisplay.hide_all();
+    ScoreDisplay.show_digit(1, mode);
     ScoreDisplay.show_digit(4, (menu_item + 1) / 10);
     ScoreDisplay.show_digit(5, (menu_item + 1) % 10);
-
-    // clear right display
-    ScoreDisplay.hide_digit(9);
-    ScoreDisplay.hide_digit(10);
-    ScoreDisplay.hide_digit(11);
-    ScoreDisplay.hide_digit(12);
-    ScoreDisplay.hide_digit(13);
-    ScoreDisplay.hide_digit(14);
-    ScoreDisplay.hide_digit(15);
 
     // now show value and/or act on it.
     switch (menu_item) {
@@ -425,16 +429,26 @@ void CAttract::settings_show_menu_item_value()
 
 void CAttract::settings_change_menu_item_value()
 {
+    BcdNum wrap_value;
+
+    wrap_value.from_decimal(9900000UL);
+
     // change value or perform "enter" action
     switch (menu_item) {
         case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[0].add_bcd(0x10000);
+            GameSettings.awards_threshold[0].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[0] > wrap_value)
+                GameSettings.awards_threshold[0].zero();
             break;
         case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[1].add_bcd(0x10000);
+            GameSettings.awards_threshold[1].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[1] > wrap_value)
+                GameSettings.awards_threshold[1].zero();
             break;
         case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            GameSettings.awards_threshold[2].add_bcd(0x10000);
+            GameSettings.awards_threshold[2].add_bcd(0x100000);
+            if (GameSettings.awards_threshold[2] > wrap_value)
+                GameSettings.awards_threshold[2].zero();
             break;
         case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
             item_value += 1;
@@ -458,41 +472,41 @@ void CAttract::settings_change_menu_item_value()
             }
             break;
         case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
-            GameSettings.background_sounds = !GameSettings.background_sounds;
+            GameSettings.background_sounds ^= 1;
             break;
         case SETTINGS_BACKGROUND_MUSIC:         // P2: 1/0 (on/off)
-            GameSettings.background_music = !GameSettings.background_music;
+            GameSettings.background_music ^= 1;
             break;
         case SETTINGS_BALLS_PER_GAME:           // P2: 3/5
-            GameSettings.five_balls_per_game = !GameSettings.five_balls_per_game;
+            GameSettings.five_balls_per_game ^= 1;
             break;
         case SETTINGS_SPOT_LIGHT_STRATEGY:      // P2: 0=conservative / 1=liberal
-            GameSettings.five_balls_per_game = !GameSettings.five_balls_per_game;
+            GameSettings.spot_light_strategy ^= 1;
             break;
         case SETTINGS_MULTIPLIER_STEP_UP:       // P2: 0=both 3 banks / 1=one 3 bank
-            GameSettings.multiplier_step_up = !GameSettings.multiplier_step_up;
+            GameSettings.multiplier_step_up ^= 1;
             break;
         case SETTINGS_SPINNER_ADVANCES:         // P2: 0=center target / 1=any outside target
-            GameSettings.spinner_value_advancement = !GameSettings.spinner_value_advancement;
+            GameSettings.spinner_value_advancement ^= 1;
             break;
         case SETTINGS_EIGHT_BANK_WOW_STARTS:    // P2: 0=on making 9 / 1=on making 8
-            GameSettings.eight_bank_wow_turn_on = !GameSettings.eight_bank_wow_turn_on;
+            GameSettings.eight_bank_wow_turn_on ^= 1;
             break;
         case SETTINGS_SUPER_BONUS_LIGHTS:       // P2: 0=on making 9 / 1=on making 8
-            GameSettings.when_super_bonus_lights = !GameSettings.when_super_bonus_lights;
+            GameSettings.when_super_bonus_lights ^= 1;
             break;
         case SETTINGS_THREE_BANK_WOW_STARTS:    // P2: 0=on 7x multiplier / 1=on 6x and 7x multiplier achieved
-            GameSettings.three_bank_wow_turn_on = !GameSettings.three_bank_wow_turn_on;
+            GameSettings.three_bank_wow_turn_on ^= 1;
             break;
         case SETTINGS_WOW_AWARD_TYPE:           // P2: 0=70K / 1=shoot again
-            GameSettings.wow_award_type = !GameSettings.wow_award_type;
+            GameSettings.wow_award_type ^= 1;
             break;
         case SETTINGS_SPECIAL_AWARD_TYPE:       // P2: 0=90K / 1=130K / 2=shoot again / 3=???
-            GameSettings.special_award_type++;
+            GameSettings.special_award_type += 1;
             GameSettings.special_award_type &= 0x03; // range 0..3
             break;
         case SETTINGS_UNLIMITED_SPECIALS:       // P2: 0=one per ball, 1=unlimited
-            GameSettings.unlimited_specials = !GameSettings.unlimited_specials;
+            GameSettings.unlimited_specials ^= 1;
             break;
         case SETTINGS_SAVE_AND_EXIT:
             GameSettings.save_to_eeprom();
