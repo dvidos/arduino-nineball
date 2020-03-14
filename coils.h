@@ -27,9 +27,9 @@ public:
     void fire_knocker();
 
     void init();
+    void fire_coil_by_number(byte coil_no);
 
     void set_flippers_relay(bool on);
-
     void every_10_msecs_interrupt();
 };
 
@@ -68,9 +68,8 @@ void CCoils::fire_top_bank_reset()
         return;
 
     SET_TOP_BANK_RESET_COIL(1);
-
-    // starting with 100 msecs, could go up to 200 msecs.
     top_bank_reset_timeout = 10;
+    LOG("Top Bank coil fired");
 }
 
 void CCoils::fire_right_bank_reset()
@@ -81,6 +80,7 @@ void CCoils::fire_right_bank_reset()
 
     SET_RIGHT_BANK_RESET_COIL(1);
     right_bank_reset_timeout = 10;
+    LOG("Right Bank coil fired");
 }
 
 void CCoils::fire_left_bank_reset()
@@ -91,6 +91,7 @@ void CCoils::fire_left_bank_reset()
 
     SET_LEFT_BANK_RESET_COIL(1);
     left_bank_reset_timeout = 10;
+    LOG("Left (8) Bank coil fired");
 }
 
 void CCoils::fire_outhole_eject()
@@ -101,6 +102,7 @@ void CCoils::fire_outhole_eject()
 
     SET_OUTHOLE_EJECT_COIL(1);
     outhole_eject_timeout = 10;
+    LOG("Outhole Eject coil fired");
 }
 
 void CCoils::fire_capture_lane_eject()
@@ -111,6 +113,7 @@ void CCoils::fire_capture_lane_eject()
 
     SET_CAPTURE_LANE_EJECT_COIL(1);
     capture_lane_eject_timeout = 10;
+    LOG("Capture Lane Eject coil fired");
 }
 
 void CCoils::fire_left_slingshot()
@@ -121,6 +124,7 @@ void CCoils::fire_left_slingshot()
 
     SET_LEFT_SLINGSHOT_COIL(1);
     left_slingshot_timeout = 10;
+    LOG("Left Slingshot coil fired");
 }
 
 void CCoils::fire_right_slingshot()
@@ -131,6 +135,7 @@ void CCoils::fire_right_slingshot()
 
     SET_RIGHT_SLINGSHOT_COIL(1);
     right_slingshot_timeout = 10;
+    LOG("Right Slingshot coil fired");
 }
 
 void CCoils::fire_knocker()
@@ -141,11 +146,13 @@ void CCoils::fire_knocker()
 
     SET_KNOCKER_COIL(1);
     knocker_timeout = 10;
+    LOG("Knocker coil fired");
 }
 
 void CCoils::set_flippers_relay(bool on)
 {
     SET_FLIPPERS_RELAY(on ? 1 : 0);
+    LOG("Flippers relay set to %d", on);
 }
 
 void CCoils::every_10_msecs_interrupt()
@@ -204,5 +211,36 @@ void CCoils::every_10_msecs_interrupt()
         knocker_timeout -= 1;
         if (knocker_timeout == 0)
             SET_KNOCKER_COIL(0);
+    }
+}
+
+void CCoils::fire_coil_by_number(byte coil_no)
+{
+    switch (coil_no)
+    {
+        case COIL_KNOCKER:
+            fire_knocker();
+            break;
+        case COIL_LEFT_SLINGSHOT:
+            fire_left_slingshot();
+            break;
+        case COIL_RIGHT_SLINGSHOT:
+            fire_right_slingshot();
+            break;
+        case COIL_TOP_BANK_RESET:
+            fire_top_bank_reset();
+            break;
+        case COIL_RIGHT_BANK_RESET:
+            fire_right_bank_reset();
+            break;
+        case COIL_LEFT_BANK_RESET:
+            fire_left_bank_reset();
+            break;
+        case COIL_OUTHOLE_EJECT:
+            fire_outhole_eject();
+            break;
+        case COIL_CAPTURE_LANE_EJECT:
+            fire_capture_lane_eject();
+            break;
     }
 }

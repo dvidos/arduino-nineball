@@ -27,7 +27,7 @@ void CAudio::init()
 
 void CAudio::play(int sound_no)
 {
-    LOG("Audio %d launched");
+    LOG("Audio %d launched", sound_no);
     trigger.trackPlayPoly(sound_no);
 }
 

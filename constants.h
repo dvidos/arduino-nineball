@@ -25,14 +25,18 @@
 
 
 /**
- * Timeouts, requested by user code, executed by TimeKeeper, 
+ * Timeouts, requested by user code, executed by TimeKeeper,
  * injected into the "handle_event()" functions, when expired
  */
 #define TIMEOUT_BALL_NINE_MOVING_TARGET  0    // move to the next moving target
 #define TIMEOUT_WOW_MOVING_TARGET        1    // move to the next moving target, skip no 1.
 #define TIMEOUT_RESET_SPINNER_VALUE      2    // spinner stopped spinning, reset its value
 #define TIMEOUT_SPECIAL_MOVING_TARGET    3    // time to move to another target!
-#define TIMEOUTS_COUNT                    16   // how many timeouts will be there.
+#define TIMEOUTS_COUNT                  16    // how many timeouts will be there.
+#define TIMEOUT_EVERY_HALF_SECOND_ODD  101    // recurring timeout every half second
+#define TIMEOUT_EVERY_HALF_SECOND_EVEN 102    // recurring timeout every half second
+#define TIMEOUT_EVERY_SECOND_ODD       103    // recurring timeout every second
+#define TIMEOUT_EVERY_SECOND_EVEN      104    // recurring timeout every second
 
 
 /**
@@ -79,7 +83,7 @@
 #define LAMP_OBJECT_7_SPECIAL         37
 #define LAMP_OBJECT_8_SPECIAL         38
 #define LAMP_OBJECT_9                 39
-#define LAMP_ALL_TARGETS_DOWN_SPECIAL 40                  
+#define LAMP_ALL_TARGETS_DOWN_SPECIAL 40
 #define LAMP_BONUS_MULTIPLIER_X1      41
 #define LAMP_BONUS_MULTIPLIER_X2      42
 #define LAMP_BONUS_MULTIPLIER_X4      43
@@ -97,10 +101,10 @@
 #define LAMP_BONUS_MADE_7             55
 #define LAMP_BONUS_MADE_8             56
 #define LAMP_BONUS_MADE_9             57
-#define LAMP_LEFT_OUTLANE             58 
-#define LAMP_LEFT_INLANE              59 
-#define LAMP_RIGHT_INLANE             60 
-#define LAMP_RIGHT_OUTLANE            61 
+#define LAMP_LEFT_OUTLANE             58
+#define LAMP_LEFT_INLANE              59
+#define LAMP_RIGHT_INLANE             60
+#define LAMP_RIGHT_OUTLANE            61
 #define LAMP_SHOOT_AGAIN              62
 #define LAMP_START                    63
 
@@ -167,6 +171,7 @@
 #define SOUND_FAST_PHASERS    21
 #define SOUND_ANTICIPATION    22
 #define SOUND_EXPLOSION       23
+#define SOUNDS_COUNT          24
 
 #define SOUND_EFFECT_FIRST     1
 #define SOUND_EFFECT_LAST     23
@@ -174,7 +179,15 @@
 #define SOUND_SONG_LAST      110
 
 
-
+#define COIL_KNOCKER             0
+#define COIL_LEFT_SLINGSHOT      1
+#define COIL_RIGHT_SLINGSHOT     2
+#define COIL_TOP_BANK_RESET      3
+#define COIL_RIGHT_BANK_RESET    4
+#define COIL_LEFT_BANK_RESET     5
+#define COIL_OUTHOLE_EJECT       6
+#define COIL_CAPTURE_LANE_EJECT  7
+#define COILS_COUNT              8
 
 
 #endif // CONSTANTS_H

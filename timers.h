@@ -269,6 +269,7 @@ ISR(TIMER4_COMPA_vect) {
 
    Animator.every_100_msecs_interrupt();
    Gameplay.every_100_msecs_interrupt();
+   TimeKeeper.every_100_milliseconds_interrupt();
 }
 
 /**

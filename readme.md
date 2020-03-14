@@ -161,6 +161,15 @@ The available diagnostics are:
 
 | No | Description | Options |
 | -- | ----------- | ------- |
+| 01 | Blink lamp matrix columns | P2 selects the column number |
+| 02 | Blink lamp matrix rows | P2 selects the row number |
+| 03 | Blink on lamp only | P2 selects the lamp. Number of lamp is displayed |
+| 04 | All score displays show same number | P2 selects which digit [0-9] |
+| 05 | Each score display shows no 8 | P2 selects which display [0-15] |
+| 06 | Show closed switch | Display shows no of first closed switch |
+| 07 | Fire coils | P2 selects, diszplays and fires the next coil |
+| 08 | Set flippers relay | P2 selects state of flippers relay 0/1 for off/on |
+| 09 | Trigger sounds | P2 selects, displays and triggers the next sound |
 
 
 

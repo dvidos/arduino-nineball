@@ -21,7 +21,7 @@ class CSwitchMatrix
 public:
 
     byte switches[5];
-    byte current_send:3;
+    byte current_row:3;
 
     // make sure this structure is on a byte boundary.
     // our queue operations depend on it.
@@ -38,6 +38,7 @@ public:
 
     void intercept_next_row();
     bool is_switch_closed(byte switch_no);
+    bool get_first_closed_switch(byte *switch_no);
     bool get_next_switch_event(byte *switch_no, byte *was_pressed);
 };
 
@@ -50,7 +51,7 @@ CSwitchMatrix::CSwitchMatrix()
     // we do not know the status of all switches,
     // and there's a very good chance that some will be closed (e.g. outhole)
     memset(switches, 0, sizeof(switches));
-    current_send = 0;
+    current_row = 0;
     memset(events_queue, 0, sizeof(events_queue));
     events_queue_length = 0;
 }
@@ -68,44 +69,81 @@ bool CSwitchMatrix::is_switch_closed(byte switch_no)
     return (switches[switch_no >> 3] >> (switch_no & 0x7)) & 0x01;
 }
 
+bool CSwitchMatrix::get_first_closed_switch(byte *switch_no)
+{
+    // maybe we should disable interrupts here,
+    // but this function is for diagnostics, so...
+    for (byte row = 0; row < 5; row++)
+    {
+        if (switches[row] == 0)
+            continue;
+
+        for (byte offset = 0; offset <= 8; offset++)
+        {
+            if ((switches[row] >> offset) & 0x1)
+                *switch_no = (row * 8) + offset;
+                return true;
+        }
+    }
+
+    return false;
+}
+
 void CSwitchMatrix::intercept_next_row()
 {
     // called from an interrupt.
-    // let's move to the next send (0..4)
-
-    current_send++;
-    if (current_send > 4)
-        current_send = 0;
+    // let's move and read the next row (0..4)
+    current_row++;
+    if (current_row > 4)
+        current_row = 0;
 
     // move this to the pins
-    SET_SWITCH_MATRIX_DEMUX_A(current_send >> 2);
-    SET_SWITCH_MATRIX_DEMUX_B(current_send >> 1);
-    SET_SWITCH_MATRIX_DEMUX_C(current_send >> 0);
+    SET_SWITCH_MATRIX_DEMUX_A(current_row >> 2);
+    SET_SWITCH_MATRIX_DEMUX_B(current_row >> 1);
+    SET_SWITCH_MATRIX_DEMUX_C(current_row >> 0);
 
     // give it a moment...
     NOP();
+    NOP();
+    NOP();
 
     // now read the 8 returns (hopefully a whole port, for speed)
-    byte current_returns = GET_SWITCH_MATRIX_RETURNS_OCTET();
-    if (current_returns != switches[current_send])
+    byte new_state = GET_SWITCH_MATRIX_RETURNS_OCTET();
+
+    byte toggled = new_state ^ switches[current_row];
+    if (toggled != 0)
     {
         // detect changes and put in a queue
-        // hopefully, we'll find a way of debouncing (maybe 3 consec scans?)
-        // if so, add new switch event, number and whether it was pressed or released.
+        // hopefully, we'll find a way of debouncing
+        // let's say that for now, we'll set this on the first toggle,
+        // and hope that the 8 msecs it will take to come back to this row,
+        // the bouncing will have stopped.
 
         // to add to the events queue:
         // disable interrupts (they should already be disabled, this is called by an ISR)
         // noInterrupts();
 
-        // we can detect queue overflow here
-        if (events_queue_length >= SWITCH_MATRIX_EVENTS_QUEUE_SIZE) {
-            FATAL(3); // this will stop Arduino and will repeatedly flash the embedded LED
-        }
+        for (byte offset = 0; offset <= 8; offset++)
+        {
+            if (((toggled >> offset) & 0x1) == 0)
+                continue;
 
-        events_queue[events_queue_length].switch_no = 12;
-        events_queue[events_queue_length].is_closed = 1;
-        events_queue_length++;
+            byte switch_no = (current_row << 3) + offset; // (row * 8) + offset
+            byte is_closed = (new_state >> offset) & 0x1;
+
+            // we can detect queue overflow here
+            if (events_queue_length >= SWITCH_MATRIX_EVENTS_QUEUE_SIZE) {
+                FATAL(3); // this will stop Arduino and will repeatedly flash the embedded LED
+            }
+
+            events_queue[events_queue_length].switch_no = switch_no;
+            events_queue[events_queue_length].is_closed = is_closed;
+            events_queue_length++;
+        }
     }
+
+    // now keep this to detect toggles on next time
+    switches[current_row] = new_state;
 }
 
 bool CSwitchMatrix::get_next_switch_event(byte *switch_no, byte *is_closed)
@@ -152,6 +190,22 @@ bool CSwitchMatrix::get_next_switch_event(byte *switch_no, byte *is_closed)
         case 's':
             *switch_no = SW_START;
             LOG("SW_START");
+            return true;
+        case '[':
+            *switch_no = SW_LEFT_INLANE;
+            LOG("SW_LEFT_INLANE");
+            return true;
+        case '{':
+            *switch_no = SW_LEFT_OUTLANE;
+            LOG("SW_LEFT_OUTLANE");
+            return true;
+        case ']':
+            *switch_no = SW_RIGHT_INLANE;
+            LOG("SW_RIGHT_INLANE");
+            return true;
+        case '}':
+            *switch_no = SW_RIGHT_OUTLANE;
+            LOG("SW_RIGHT_OUTLANE");
             return true;
     }
 

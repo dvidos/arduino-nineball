@@ -6,8 +6,8 @@ class CLampMatrix
 public:
 
     // 8 bytes of 8 bits => 64 lamps
-    byte lamps[8];
-    byte current_send: 3;
+    byte lamp_rows[8];
+    byte current_row: 3;
 
     CLampMatrix();
     void init();
@@ -16,6 +16,9 @@ public:
     void lamp_off(byte lamp_no);
     void set_lamp(byte lamp_no, bool value);
     bool is_on(byte lamp_no);
+    void all_off();
+    void column_on(byte column_no);
+    void row_on(byte row_no);
 
     void output_next_column();
 };
@@ -26,8 +29,8 @@ public:
 
 CLampMatrix::CLampMatrix()
 {
-    memset(lamps, 0, 8);
-    current_send = 0;
+    memset(lamp_rows, 0, 8);
+    current_row = 0;
 }
 
 void CLampMatrix::init()
@@ -41,7 +44,7 @@ void inline CLampMatrix::lamp_on(byte lamp_no)
     // lamp_no / 8 is the byte to store
     // lamp_no % 8 is the bit to turn on
 
-    lamps[lamp_no >> 3] |= (1 << (lamp_no & 0x7));
+    lamp_rows[lamp_no >> 3] |= (1 << (lamp_no & 0x7));
 }
 
 void inline CLampMatrix::lamp_off(byte lamp_no)
@@ -49,7 +52,7 @@ void inline CLampMatrix::lamp_off(byte lamp_no)
     // lamp_no / 8 is the byte to store
     // lamp_no % 8 is the bit to turn off
 
-    lamps[lamp_no >> 3] &= ~(1 << (lamp_no & 0x7));
+    lamp_rows[lamp_no >> 3] &= ~(1 << (lamp_no & 0x7));
 }
 
 void inline CLampMatrix::set_lamp(byte lamp_no, bool value)
@@ -65,8 +68,26 @@ bool CLampMatrix::is_on(byte lamp_no)
     // lamp_no / 8 is the byte to store
     // lamp_no % 8 is the bit to check
 
-    return (lamps[lamp_no >> 3] >> (lamp_no & 0x7)) & 0x01;
+    return (lamp_rows[lamp_no >> 3] >> (lamp_no & 0x7)) & 0x01;
 }
+
+void CLampMatrix::all_off()
+{
+    memset(lamp_rows, 0, 8);
+    LOG("Lamps all off");
+}
+void CLampMatrix::column_on(byte column_no)
+{
+    memset(lamp_rows, (1 << column_no), 8);
+    LOG("Lamps column %d ON", column_no);
+}
+void CLampMatrix::row_on(byte row_no)
+{
+    lamp_rows[(row_no & 0x07)] = 0xFF;
+    LOG("Lamps row %d ON", row_no);
+}
+
+
 
 void CLampMatrix::output_next_column()
 {
@@ -77,13 +98,13 @@ void CLampMatrix::output_next_column()
     SET_LAMP_MATRIX_RETURNS_OCTET(0);
 
     // change the 3 bits that dictate the column
-    current_send = (current_send + 1) & 0x7;
+    current_row = (current_row + 1) & 0x7;
 
     SET_LAMP_MATRIX_DEMUX_A(currenr_send >> 2);
     SET_LAMP_MATRIX_DEMUX_B(currenr_send >> 1);
     SET_LAMP_MATRIX_DEMUX_C(currenr_send >> 0);
 
     // set all outputs for the new column
-    SET_LAMP_MATRIX_RETURNS_OCTET(lamps[current_send]);
+    SET_LAMP_MATRIX_RETURNS_OCTET(lamp_rows[current_row]);
 }
 

@@ -65,7 +65,7 @@
 
 #define DIAGNOSTICS_LAMP_MATRIX_COLUMNS          0 // all lamps in one row. after 1 sec, P2=next row
 #define DIAGNOSTICS_LAMP_MATRIX_ROWS             1 // all lamps in one col. after 1 sec, P2=next col
-#define DIAGNOSTICS_LAMP_MATRIX_ALL              2 // all lamps blink on-off every second
+#define DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP      2 // one lamp blink on-off , P2=select lamp
 #define DIAGNOSTICS_SCORE_DISPLAY_SINGLE_NUMBER  3 // display num 0 in all displays.     P2=2,3,4 etc
 #define DIAGNOSTICS_SCORE_DISPLAY_SINGLE_DIGIT   4 // display num 8 in one digit         P2=next digit etc
 #define DIAGNOSTICS_SWITCH_MATRIX                5 // display num of switch closed.
@@ -274,9 +274,9 @@ void CAttract::settings_handle_event(Event& e)
             case SW_MENU_RIGHT:
                 settings_change_menu_item_value();
                 // there's a chance we did save-and-exit
-                // which moves to idle mode
-                if (mode == ATTRACT_MODE_SETTINGS)
-                    settings_show_menu_item_value();
+                if (mode != ATTRACT_MODE_SETTINGS)
+                    return;
+                settings_show_menu_item_value();
                 break;
         }
     }
@@ -482,14 +482,13 @@ void CAttract::start_diagnostics_mode()
 
     // start the menu
     menu_item = 0;
+    item_value = 0;
 
     // update display
     ScoreDisplay.hide_display(0);
     ScoreDisplay.show_digit(1, mode + 1);
     ScoreDisplay.show_digit(4, menu_item / 10);
     ScoreDisplay.show_digit(5, menu_item % 10);
-    ScoreDisplay.hide_digit(6);
-    ScoreDisplay.hide_digit(7);
 }
 
 void CAttract::diagnostics_handle_event(Event& e)
@@ -499,23 +498,74 @@ void CAttract::diagnostics_handle_event(Event& e)
         switch (e.number)
         {
             case SW_START:
+                // exit
+                start_idle_mode();
                 break;
             case SW_MENU_LEFT:
                 menu_item += 1;
                 if (menu_item >= DIAGNOSTICS_OPTIONS_COUNT)
                     menu_item = 0;
+                item_value = 0;
                 diagnostics_show_menu_item();
                 break;
             case SW_MENU_RIGHT:
                 diagnostics_menu_item_action();
+                // there's a chance we did save-and-exit
+                if (mode != ATTRACT_MODE_DIAGNOSTICS)
+                    return;
+                diagnostics_show_menu_item();
+                break;
+            default:
+                if (menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
+                    // show any switch pressed on the display.
+                    ScoreDisplay.show_digit(14, e.number / 10);
+                    ScoreDisplay.show_digit(15, e.number % 10);
+                }
                 break;
         }
     }
+    else if (e.type == switch_opened)
+    {
+        if (menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
+            // clear display if switch is up
+            ScoreDisplay.hide_display(1);
+        }
+    }
+    else if (e.type == timeout_expired)
+    {
+        // toggle lamps etc, show switch pressed etc.
+        if (menu_item == DIAGNOSTICS_LAMP_MATRIX_COLUMNS) {
+            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
+                LampMatrix.all_off();
+                LampMatrix.column_on(item_value);
+            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
+                LampMatrix.all_off();
+            }
+        } else if (menu_item == DIAGNOSTICS_LAMP_MATRIX_ROWS) {
+            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
+                LampMatrix.all_off();
+                LampMatrix.row_on(item_value);
+            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
+                LampMatrix.all_off();
+            }
+        } else if (menu_item == DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP) {
+            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
+                LampMatrix.all_off();
+                LampMatrix.lamp_on(item_value);
+            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
+                LampMatrix.all_off();
+            }
+        }
+    }
+
 }
 
 void CAttract::diagnostics_show_menu_item()
 {
-    // show one based
+    // we refresh the whole display, as we include display tests
+    ScoreDisplay.hide_display(0);
+    ScoreDisplay.hide_display(1);
+    ScoreDisplay.show_digit(1, mode + 1);
     ScoreDisplay.show_digit(4, (menu_item + 1) / 10);
     ScoreDisplay.show_digit(5, (menu_item + 1) % 10);
 
@@ -528,34 +578,97 @@ void CAttract::diagnostics_show_menu_item()
         case DIAGNOSTICS_LAMP_MATRIX_ROWS:              // all lamps in one col. after 1 sec, P2=next col
             ScoreDisplay.show_digit(15, item_value);
             break;
-        case DIAGNOSTICS_LAMP_MATRIX_ALL:               // all lamps blink on-off every second
+        case DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP:               // all lamps blink on-off every second
+            ScoreDisplay.show_digit(14, item_value / 10);
+            ScoreDisplay.show_digit(15, item_value % 10);
             break;
         case DIAGNOSTICS_SCORE_DISPLAY_SINGLE_NUMBER:   // display num 0 in all displays.     P2=2,3,4 etc
+            for (byte i = 0; i < 16; i++)
+                ScoreDisplay.show_digit(i, item_value);
             break;
         case DIAGNOSTICS_SCORE_DISPLAY_SINGLE_DIGIT:    // display num 8 in one digit         P2=next digit etc
+            ScoreDisplay.hide_display(0);
+            ScoreDisplay.hide_display(1);
+            ScoreDisplay.show_digit(item_value, 8);
             break;
         case DIAGNOSTICS_SWITCH_MATRIX:                 // display num of switch closed.
+            // should discover first closed switch
+            // this is done on the event handling function.
             break;
         case DIAGNOSTICS_COILS:                         // fire a coil every second.          P2=start & next coil
-            ScoreDisplay.show_digit(15, item_value);
+            ScoreDisplay.show_digit(14, item_value / 10);
+            ScoreDisplay.show_digit(15, item_value % 10);
             break;
         case DIAGNOSTICS_Q_RELAY:                       // turn Q relay on off                P2=toggle
             ScoreDisplay.show_digit(15, item_value);
             break;
         case DIAGNOSTICS_SOUND:                         // play sound                         P2=next sound
-            ScoreDisplay.show_digit(15, item_value);
+            ScoreDisplay.show_digit(14, item_value / 10);
+            ScoreDisplay.show_digit(15, item_value % 10);
             break;
         case DIAGNOSTICS_EXIT:
-            start_idle_mode();
+            // no update
             break;
     }
 }
 
 void CAttract::diagnostics_menu_item_action()
 {
-    // switch diagnostics objective (e.g. column or coild number)
-    // some do need timeouts to function.
-    LOG("Supposedly will perform diagnostics menu item action, e.g. next coil or something");
+    switch (menu_item)
+    {
+        case DIAGNOSTICS_LAMP_MATRIX_COLUMNS:           // all lamps in one row. after 1 sec, P2=next row
+            // fall through on purpose
+        case DIAGNOSTICS_LAMP_MATRIX_ROWS:              // all lamps in one col. after 1 sec, P2=next col
+            item_value += 1;
+            item_value &= 0x07; // allow values 0..7
+            // blinking happens on the timed events received.
+            break;
+        case DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP:       // single lamp blink, number shows lamp number
+            item_value += 1;
+            item_value &= 0x3F; // allow values 0..63
+            // blinking happens on the timed events received.
+            break;
+        case DIAGNOSTICS_SCORE_DISPLAY_SINGLE_NUMBER:   // display num 0 in all displays.     P2=2,3,4 etc
+            item_value += 1;
+            if (item_value > 9)
+                item_value = 0;
+            break;
+        case DIAGNOSTICS_SCORE_DISPLAY_SINGLE_DIGIT:    // display num 8 in one digit         P2=next digit etc
+            item_value += 1;
+            if (item_value > 15)
+                item_value = 0;
+            break;
+        case DIAGNOSTICS_SWITCH_MATRIX:                 // display num of switch closed.
+            // nothing. taken care on the handle_event() function
+            break;
+        case DIAGNOSTICS_COILS:                         // fire a coil every second.          P2=start & next coil
+            // original game fires coils in a row, automatically.
+            // move to next, display and fire coil.
+            item_value += 1;
+            if (item_value > COILS_COUNT)
+                item_value = 0;
+            ScoreDisplay.show_digit(15, item_value);
+            Coils.fire_coil_by_number(item_value);
+            break;
+        case DIAGNOSTICS_Q_RELAY:                       // turn Q relay on off                P2=toggle
+            item_value ^= 1;
+            Coils.set_flippers_relay(item_value);
+            break;
+        case DIAGNOSTICS_SOUND:                         // play sound                         P2=next sound
+            // move to next, display and fire sound
+            item_value += 1;
+            if (item_value > SOUNDS_COUNT)
+                item_value = 0;
+            ScoreDisplay.show_digit(13, item_value / 100);
+            ScoreDisplay.show_digit(14, (item_value % 100) / 10);
+            ScoreDisplay.show_digit(15, item_value % 10);
+            Audio.play(item_value);
+            break;
+        case DIAGNOSTICS_EXIT:
+            start_idle_mode();
+            break;
+    }
+
 }
 
 
