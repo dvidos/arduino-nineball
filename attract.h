@@ -208,32 +208,66 @@ void CAttract::start_radio_mode()
     LOG("Attract starting radio mode");
 
     // start first song
-    // start timeouts
-
     mode = ATTRACT_MODE_RADIO;
+
+    // in this mode
+    menu_item = 0;  // previous song
+    item_value = 0; // song playing
+
+    // we don't have a clock, use number of microseconds since we booted.
+    randomSeed((byte)micros());
+    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
+    Audio.stop_all();
+    Audio.play(item_value);
 }
 
 void CAttract::radio_handle_event(Event& e)
 {
-    // timeouts to detect song end,
-    // start next random song
-    // start or P1 can exit this mode
-    // SW_MENU_RIGHT could be "skip"
-
     if (e.type == switch_closed)
     {
         switch (e.number)
         {
             case SW_START:
-                LOG("stopping all sounds");
+                LOG("stopping radio mode");
+                Audio.stop_all();
                 start_idle_mode();
                 break;
             case SW_MENU_LEFT:
-                LOG("can rewind or go to previous played song");
+                LOG("going back to previous song");
+                // if we have the prev song, use it.
+                // else, repeat the current
+                if (menu_item) {
+                    item_value = menu_item;
+                    menu_item = 0; // that's the end of our history
+                }
+                Audio.stop_all();
+                Audio.play(item_value);
                 break;
             case SW_MENU_RIGHT:
-                LOG("can skip to next (random) song");
+                LOG("skipping to next (random) song");
+                menu_item = item_value;
+                for (byte i = 0; menu_item == item_value && i < 10; i++)
+                    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
+                Audio.stop_all();
+                Audio.play(item_value);
                 break;
+        }
+    }
+    else if (e.type == timeout_expired)
+    {
+        if (e.number == TIMEOUT_EVERY_SECOND_ODD)
+        {
+            // see if song has ended, start a new one.
+            if (!Audio.is_playing(item_value))
+            {
+                // we consider this track stopped, moving to the next
+                LOG("Track %d is not playing, skipping to next (random) song", item_value);
+                menu_item = item_value;
+                for (byte i = 0; menu_item == item_value && i < 10; i++)
+                    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
+                Audio.stop_all();
+                Audio.play(item_value);
+            }
         }
     }
 }
@@ -248,6 +282,7 @@ void CAttract::start_settings_mode()
 
     // start the menu
     menu_item = 0;
+    item_value = 0;
     settings_show_menu_item_value();
 }
 
@@ -261,6 +296,7 @@ void CAttract::settings_handle_event(Event& e)
                 // exit without saving
                 // to avoid messing around without saving,
                 // we reload the eeprom settinsg.
+                LOG("Exiting without saving");
                 GameSettings.load_from_eeprom();
                 start_idle_mode();
                 break;
@@ -658,9 +694,8 @@ void CAttract::diagnostics_menu_item_action()
             // move to next, display and fire sound
             item_value += 1;
             if (item_value > SOUNDS_COUNT)
-                item_value = 0;
-            ScoreDisplay.show_digit(13, item_value / 100);
-            ScoreDisplay.show_digit(14, (item_value % 100) / 10);
+                item_value = 1; // sounds start at 1 - remember?
+            ScoreDisplay.show_digit(14, item_value / 10);
             ScoreDisplay.show_digit(15, item_value % 10);
             Audio.play(item_value);
             break;

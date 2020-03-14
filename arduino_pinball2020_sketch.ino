@@ -80,7 +80,6 @@ CTimeKeeper TimeKeeper;
 CCoils Coils;
 CGameplay Gameplay;
 CAttract Attract;
-char a[1024];
 
 
 
@@ -90,7 +89,6 @@ void setup() {
 
     #if defined(RUN_SOFTWARE_TESTS)
         setup_timer_interrupts();
-
         run_software_tests();
 
     #elif defined(RUN_HARDWARE_TESTS)

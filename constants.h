@@ -173,8 +173,7 @@
 #define SOUND_EXPLOSION       23
 #define SOUNDS_COUNT          24
 
-#define SOUND_EFFECT_FIRST     1
-#define SOUND_EFFECT_LAST     23
+// see files in SD card, this is the range of random songs to play in radio mode.
 #define SOUND_SONG_FIRST     101
 #define SOUND_SONG_LAST      110
 

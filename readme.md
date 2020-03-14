@@ -110,7 +110,8 @@ I may try to find a way to build from makefile.
 * Implement score display and updates in increments every 100 msec.
 * Write documentation for hardware, as we go.
 * Create connectors for the various pieces.
-*
+* pressing P2 for "normal" game will select (and display) profile number.
+* make the display digits be 0..13, not 1..7 and 9..15.
 
 # The menu
 
@@ -167,7 +168,7 @@ The available diagnostics are:
 | 04 | All score displays show same number | P2 selects which digit [0-9] |
 | 05 | Each score display shows no 8 | P2 selects which display [0-15] |
 | 06 | Show closed switch | Display shows no of first closed switch |
-| 07 | Fire coils | P2 selects, diszplays and fires the next coil |
+| 07 | Fire coils | P2 selects, displays and fires the next coil |
 | 08 | Set flippers relay | P2 selects state of flippers relay 0/1 for off/on |
 | 09 | Trigger sounds | P2 selects, displays and triggers the next sound |
 

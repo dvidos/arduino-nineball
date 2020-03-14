@@ -41,6 +41,7 @@ typedef enum {
  * A sort of exception handler or core dump.
  * Will freeze processing, but would allow the user to see what caused the fatal.
  * Use wisely.
+ * Should use a global variable from inside interrupts.
  */
 #define FATAL(flashes)                                                                    \
         pinMode(13, OUTPUT);                                                              \
