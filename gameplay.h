@@ -29,26 +29,6 @@ extern CScoreDisplay ScoreDisplay;
 
 
 
-/**
- * firing eject coil, waiting for ball to enter in shooting lane and stay there.
- * start is allowed to be pressed here, to add a player.
- * this state ends when ball is shot through the lane.
- */
-#define STATE_EJECTING_TO_SHOOTING_LANE  0
-/**
- * happens as soon as the ball is leaving the base of the shooting lane.
- * stops only when (the last) ball enters outhole
- */
-#define STATE_GAME_RUNNING               1
-/**
- * happens when the ball (last if multiball) enters outhole
- * if we have shoot-agains, we skip assigning bonus and go to shoot-again (preserving objects made)
- * otherwise, we collect any bonus, wait for score to be assigned,
- * then we clear objects made and go to next palyer and/or ball.
- */
-#define STATE_COLLECTING_BONUS           2
-
-
 class CGameplay
 {
 public:
@@ -58,25 +38,24 @@ public:
     void every_100_msecs_interrupt();
 
 private:
-    word running: 1;               // whether we are running (or merely existing in memory)
     word mode: 2;                  // mode under which we are running
     word highest_player: 2;        // highest player number (0..3) (essentially num_players - 1)
     word current_player: 2;        // current player no
-    word state: 6;
 
     struct player_info
     {
         word ball_number: 3;       // 1..5 shoot-agains don't increase this.
         BcdNum score;
-    } player[4];
-
+    } player_info[4];
     BcdNum temp_score;             // a place to add score that is slowly moved to player score and display.
+
+    word running: 1;               // whether we are running (or merely existing in memory)
+    word waiting_for_ball_in_eject_lane: 1;
+    word collecting_bonuses: 1;
 
     word loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
     word spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
     word bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
-    word next_object_to_make: 6;    // 0-8 means 1-9. 9=wow, 10=special.
-    word current_moving_target: 3;  // moving target for "9", WOW, Special.
     word left_outlane: 1;           // collects loop pass value if lit
     word right_outlane: 1;          // collects loop pass value if lit
     word left_inlane: 1;            // spots current target when lit
@@ -85,13 +64,63 @@ private:
     word extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
     word one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
 
+    word next_object_to_make: 4;            // 1-8 and 9 means number 9.
+    word current_number_nine_target: 3;     // moving target for "9"
+    word current_8_bank_wow_target: 3;      // moving target for the 8-bank wow
+    word current_3_banks_wow_target: 2;     // moving target for the 3-bank wow
+    word current_8_bank_special_target: 3;  // moving target for 8 bank special.
+
     void handle_timeout(char timeout_no);
     void handle_switch_closed(char switch_no);
-    void handle_switch_opened(char switch_no);
+
+    void prepare_game(byte player_no, byte ball_no);
     dword get_spinner_score_bcd(byte spinner_value);
     void collect_and_reset_loop_target_value();
     void make_current_target_object();
     void on_left_bank_drop_target_down(byte number);
+
+    class LoopTargetClass
+    {
+    public:
+        byte value: 4; // 0=10k, 1=20k, 2=30k, 3=40k, 4=173k
+        void init();
+        void on_passed_loop();
+        void on_target_hit();
+    } LoopTarget;
+
+    class SpinnerClass
+    {
+    public:
+        byte value: 4; // 0=100, 1=400, 2=900, 3=1600, 4=2500
+        void init();
+        void on_value_increased();
+        void on_spinner_spun();
+        void on_reset_timeout_expired();
+    } Spinner;
+
+    class BonusMultiplerClass
+    {
+    public:
+        byte value:3; // 1=1x, 2=2x..7=7x
+        void init();
+        void on_multipler_increased();
+    } BonusMultipler;
+
+    class ThreeBankTargetsClass
+    {
+    public:
+        void init();
+        void on_target_hit(byte switch_no);
+
+    } ThreeBankTargets;
+
+    class EightBankTargetsClass
+    {
+    public:
+        byte object_made: 4; // 0=none, 1..9=1..9
+        void init();
+        void on_target_hit(byte switch_no);
+    } EightBankTargets;
 };
 
 void CGameplay::start(byte mode)
@@ -100,17 +129,22 @@ void CGameplay::start(byte mode)
     // e.g. EVA_HAPPY_MODE (unlimited balls)
 
     this->mode = mode;
-    state = STATE_EJECTING_TO_SHOOTING_LANE;
+    highest_player = 0;
+    memset(player_info, 0, sizeof(player_info));
 
-    // should also prepare lamps,
-    // play audios,
-    // fire the coil to throw ball into the shooting lane
+    this->prepare_game(0, 0);
+    running = 1;
 
     LOG("Gameplay started in mode %d", mode);
 }
 
 void CGameplay::handle_event(Event& e)
 {
+    if (e.type == timeout_expired) {
+        handle_timeout(e.number);
+    } else if (e.type == switch_closed) {
+        handle_switch_closed(e.number);
+    }
 }
 
 void CGameplay::every_100_msecs_interrupt()
@@ -125,12 +159,12 @@ void CGameplay::every_100_msecs_interrupt()
                 delta.zero();
                 delta.set_nibble(nibble, 0x1);
                 temp_score.subtract(delta);
-                player[current_player].score.add(delta);
+                player_info[current_player].score.add(delta);
             }
         }
 
         // show on display
-        ScoreDisplay.display_bcd_num(1, player[current_player].score);
+        ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
     }
 }
 
@@ -155,6 +189,7 @@ void CGameplay::handle_timeout(char timeout_no) {
             // make spinner_value zero,
             // adjust lamps accordingly
             break;
+
     }
 }
 
@@ -316,14 +351,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
     }
 }
 
-void CGameplay::handle_switch_opened(char switch_no) {
-    switch (switch_no) {
-        case SW_SHOOTING_LANE:
-            // game on, no more players, start audio etc.
-            break;
-    }
-}
-
 dword CGameplay::get_spinner_score_bcd(byte spinner_value) {
     if (spinner_value == 0) return 0x0100;
     if (spinner_value == 1) return 0x0400;
@@ -365,5 +392,129 @@ void CGameplay::on_left_bank_drop_target_down(byte number) {
     // possibly make the current target object
     // if we are at 9, check if target is the same as the 9 moving target.
     // same for wow and special.
+}
+
+void CGameplay::prepare_game(byte player_no, byte ball_no)
+{
+    // set current player and ball no.
+    current_player = player_no;
+    player_info[current_player].ball_number = ball_no;
+    temp_score.zero();
+
+    // show player, ball, score
+    ScoreDisplay.hide_display(0);
+    ScoreDisplay.hide_display(1);
+    ScoreDisplay.show_digit(2, current_player);
+    ScoreDisplay.show_digit(6, player_info[current_player].ball_number);
+    ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
+
+    Audio.play(SOUND_START);
+    Coils.set_flippers_relay(1);
+
+    // state
+    waiting_for_ball_in_eject_lane = 1;
+    collecting_bonuses = 0;
+
+    Spinner.init();
+    LoopTarget.init();
+    BonusMultipler.init();
+    ThreeBankTargets.init();
+    EightBankTargets.init();
+}
+
+
+
+void CGameplay::LoopTargetClass::init()
+{
+    value = 1; // 10K
+
+    LampMatrix.lamp_on(LAMP_LOOP_VALUE_10K);
+    LampMatrix.lamp_off(LAMP_LOOP_VALUE_20K);
+    LampMatrix.lamp_off(LAMP_LOOP_VALUE_30K);
+    LampMatrix.lamp_off(LAMP_LOOP_VALUE_40K);
+    LampMatrix.lamp_off(LAMP_LOOP_VALUE_173K);
+}
+
+void CGameplay::LoopTargetClass::on_passed_loop()
+{
+    // increase value
+    value += 1;
+    if (value > 5)
+        value = 1;
+
+    // start animation with the bitmap to display afterwards
+    byte bitmap = 0;
+    if (value >= 1) bitmap |= 0x01;
+    if (value >= 2) bitmap |= 0x02;
+    if (value >= 3) bitmap |= 0x04;
+    if (value >= 4) bitmap |= 0x08;
+    if (value >= 5) bitmap |= 0x10;
+    Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, bitmap);
+
+    // assign 3k
+    temp_score.add_bcd(0x3000);
+
+    // play an FX
+    Audio.play(SOUND_FX_6);
+}
+
+void CGameplay::LoopTargetClass::on_target_hit()
+{
+
+}
+
+void CGameplay::SpinnerClass::init()
+{
+}
+
+void CGameplay::SpinnerClass::on_value_increased()
+{
+}
+
+void CGameplay::SpinnerClass::on_spinner_spun()
+{
+}
+
+void CGameplay::SpinnerClass::on_reset_timeout_expired()
+{
+}
+
+void CGameplay::BonusMultiplerClass::init()
+{
+    value = 1; // 1x
+    LampMatrix.lamp_on(LAMP_BONUS_MULTIPLIER_X1);
+    LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X2);
+    LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X4);
+}
+
+void CGameplay::BonusMultiplerClass::on_multipler_increased()
+{
+    value = (value + 1) & 0x7;
+    // start animation
+    Animator.start(ANIM_BONUS_MULTIPLIER, value);
+}
+
+void CGameplay::ThreeBankTargetsClass::init()
+{
+    // set lamps, status etc.
+}
+
+void CGameplay::ThreeBankTargetsClass::on_target_hit(byte switch_no)
+{
+    // if a whole bank is down (and settings allow it) increase bonus multiplier
+    // if outside or inside targets (depending on settings) increase spinner value
+}
+
+void CGameplay::EightBankTargetsClass::init()
+{
+    // set object to make, set lamps etc.
+}
+
+void CGameplay::EightBankTargetsClass::on_target_hit(byte switch_no)
+{
+    // if object made move to the next.
+    // if 8/9 was made (depending on the settings) start WOWs and Specials.
+    // if 5 was made, start the ball keeping feature
+    // etc.
 }
 

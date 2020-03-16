@@ -150,8 +150,8 @@ void CAttract::start_idle_mode()
     item_value = 0;
 
     // we could rotate the personal scores as well.
-    ScoreDisplay.display_bcd_num(0, GameSettings.highest_score_to_date);
-    ScoreDisplay.display_bcd_num(1, GameSettings.highest_score_to_date);
+    ScoreDisplay.show_bcd_num(0, GameSettings.highest_score_to_date);
+    ScoreDisplay.show_bcd_num(1, GameSettings.highest_score_to_date);
 
     // implement mode to have anumations for ever until we stop them.
     Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE);
@@ -331,33 +331,33 @@ void CAttract::settings_show_menu_item_value()
     // now show value and/or act on it.
     switch (menu_item) {
         case SETTINGS_HIGH_SCORE_TO_DATE:       // P2: Press & release 3 times to reset
-            ScoreDisplay.display_bcd_num(1, GameSettings.highest_score_to_date);
+            ScoreDisplay.show_bcd_num(1, GameSettings.highest_score_to_date);
             break;
         case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_1:       // P2: Press & release 3 times to reset
-            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[0]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.personal_high_score[0]);
             break;
         case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_2:       // P2: Press & release 3 times to reset
-            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[1]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.personal_high_score[1]);
             break;
         case SETTINGS_PERSONAL_HIGH_SCORE_TO_DATE_3:       // P2: Press & release 3 times to reset
-            ScoreDisplay.display_bcd_num(1, GameSettings.personal_high_score[2]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.personal_high_score[2]);
             break;
         case SETTINGS_BALLS_SERVED:             // P2: Press & release 3 times to reset
             n.from_decimal(GameSettings.balls_served);
-            ScoreDisplay.display_bcd_num(1, n);
+            ScoreDisplay.show_bcd_num(1, n);
             break;
         case SETTINGS_GAMES_PLAYED:             // P2: Press & release 3 times to reset
             n.from_decimal(GameSettings.games_played);
-            ScoreDisplay.display_bcd_num(1, n);
+            ScoreDisplay.show_bcd_num(1, n);
             break;
         case SETTINGS_HIGH_SCORE_THRESHOLD_1:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[0]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.awards_threshold[0]);
             break;
         case SETTINGS_HIGH_SCORE_THRESHOLD_2:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[1]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.awards_threshold[1]);
             break;
         case SETTINGS_HIGH_SCORE_THRESHOLD_3:   // P2: increase 10k (hold down must keep increasing) zero is allowed
-            ScoreDisplay.display_bcd_num(1, GameSettings.awards_threshold[2]);
+            ScoreDisplay.show_bcd_num(1, GameSettings.awards_threshold[2]);
             break;
         case SETTINGS_BACKGROUND_SOUNDS:        // P2: 1/0 (on/off)
             ScoreDisplay.show_digit(15, GameSettings.background_sounds);

@@ -311,13 +311,13 @@ void test_score_display()
 
     BcdNum n;
     n.from_decimal(12);
-    ScoreDisplay.display_bcd_num(0, n);
+    ScoreDisplay.show_bcd_num(0, n);
     n.from_decimal(98765);
-    ScoreDisplay.display_bcd_num(0, n);
+    ScoreDisplay.show_bcd_num(0, n);
     n.from_decimal(54321);
-    ScoreDisplay.display_bcd_num(1, n);
+    ScoreDisplay.show_bcd_num(1, n);
     n.from_decimal(4999888);
-    ScoreDisplay.display_bcd_num(1, n);
+    ScoreDisplay.show_bcd_num(1, n);
 
 }
 

@@ -196,7 +196,7 @@ public:
     // score_display can be: 0=for left, 1=for right.
     // turns off anything at the left that is zero
     void hide_display(byte display_no);
-    void display_bcd_num(byte display_no, BcdNum& num);
+    void show_bcd_num(byte display_no, BcdNum& num);
 
     // this is called by interrupt handler every msec
     void ISR_strobe_next_display_digit();
@@ -272,7 +272,7 @@ void CScoreDisplay::hide_display(byte display_no)
     LOG_DISPLAY(displays[0].digits, displays[1].digits);
 }
 
-void CScoreDisplay::display_bcd_num(byte display_no, BcdNum& num)
+void CScoreDisplay::show_bcd_num(byte display_no, BcdNum& num)
 {
     register byte first_non_zero_found = 0;
     register byte value;
