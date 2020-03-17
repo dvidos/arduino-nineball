@@ -55,7 +55,7 @@ public:
             word eight_bank_wow_turn_on: 1;    // [29] 0=on making no 9, 1=on making no 8.
             word when_super_bonus_lights: 1;   // [30] 0=on making no 9, 1=on making no 8.
             word three_bank_wow_turn_on: 1;    // [31] 0=7x multiplier, 1=6x multiplier.
-            word wow_award_type: 1;            // 0=70K, 1=Shoot Again.  (maybe also add 40K option?)
+            word wow_award_type: 1;            // 0=70K, 1=Shoot Again.
             word special_award_type: 2;        // 0=90K, 1=130K, 2=Shoot Again, 3=??? (was replay)
             word unlimited_specials: 1;        // [32] 0=one per ball, 1=many per ball
         };

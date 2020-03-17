@@ -25,17 +25,85 @@ extern CSwitchMatrix SwitchMatrix;
 extern CTimeKeeper TimeKeeper;
 extern CCoils Coils;
 extern CScoreDisplay ScoreDisplay;
+extern CGameSettings GameSettings;
 
 
+
+class CGameplay;
+
+class LoopTargetClass
+{
+public:
+    CGameplay *gameplay;
+    byte value: 4; // 0=10k, 1=20k, 2=30k, 3=40k, 4=173k
+    byte left_outlane: 1;  // 1=on, 0=off
+    byte right_outlane: 1; // 1=on, 0=off
+    void init();
+    void advance_value();
+    void collect_value();
+    void flip_lit_outlane();
+};
+
+class SpinnerClass
+{
+public:
+    CGameplay *gameplay;
+    byte value: 4; // 0=100, 1=400, 2=900, 3=1600, 4=2500
+    void init();
+    void advance_value();
+    void advance_to_top_value();
+    void on_spinner_spun();
+    void on_reset_timeout_expired();
+};
+
+class BonusMultiplerClass
+{
+public:
+    CGameplay *gameplay;
+    byte value:3; // 1=1x, 2=2x..7=7x
+    void init();
+    void increase_multiplier();
+};
+
+class ThreeBankTargetsClass
+{
+public:
+    CGameplay *gameplay;
+    byte lit_center_target: 1; // 0=top, 1=right.
+    byte lit_wow_target: 3;    // 0=none, 1..4 specific target.
+    void init();
+    void on_target_hit(byte switch_no);
+    void flip_lit_7k_target();
+    void move_lit_wow_target();
+    void start_wow();
+};
+
+class EightBankTargetsClass
+{
+public:
+    CGameplay *gameplay;
+    byte object_made: 4; // 0=none, 1..9=1..9
+    void init();
+    void on_target_hit(byte switch_no);
+};
 
 
 class CGameplay
 {
 public:
-
+    CGameplay();
     void start(byte mode);
     void handle_event(Event& e);
     void every_100_msecs_interrupt();
+
+    void add_score_bcd(dword bcd);
+    void add_shoot_again();
+
+    SpinnerClass Spinner;
+    LoopTargetClass LoopTarget;
+    BonusMultiplerClass BonusMultiplier;
+    ThreeBankTargetsClass ThreeBankTargets;
+    EightBankTargetsClass EightBankTargets;
 
 private:
     word mode: 2;                  // mode under which we are running
@@ -48,6 +116,7 @@ private:
         BcdNum score;
     } player_info[4];
     BcdNum temp_score;             // a place to add score that is slowly moved to player score and display.
+
 
     word running: 1;               // whether we are running (or merely existing in memory)
     word waiting_for_ball_in_eject_lane: 1;
@@ -74,54 +143,17 @@ private:
     void handle_switch_closed(char switch_no);
 
     void prepare_game(byte player_no, byte ball_no);
-    dword get_spinner_score_bcd(byte spinner_value);
-    void collect_and_reset_loop_target_value();
     void make_current_target_object();
-    void on_left_bank_drop_target_down(byte number);
-
-    class LoopTargetClass
-    {
-    public:
-        byte value: 4; // 0=10k, 1=20k, 2=30k, 3=40k, 4=173k
-        void init();
-        void on_passed_loop();
-        void on_target_hit();
-    } LoopTarget;
-
-    class SpinnerClass
-    {
-    public:
-        byte value: 4; // 0=100, 1=400, 2=900, 3=1600, 4=2500
-        void init();
-        void on_value_increased();
-        void on_spinner_spun();
-        void on_reset_timeout_expired();
-    } Spinner;
-
-    class BonusMultiplerClass
-    {
-    public:
-        byte value:3; // 1=1x, 2=2x..7=7x
-        void init();
-        void on_multipler_increased();
-    } BonusMultipler;
-
-    class ThreeBankTargetsClass
-    {
-    public:
-        void init();
-        void on_target_hit(byte switch_no);
-
-    } ThreeBankTargets;
-
-    class EightBankTargetsClass
-    {
-    public:
-        byte object_made: 4; // 0=none, 1..9=1..9
-        void init();
-        void on_target_hit(byte switch_no);
-    } EightBankTargets;
 };
+
+CGameplay::CGameplay()
+{
+    Spinner.gameplay = this;
+    LoopTarget.gameplay = this;
+    BonusMultiplier.gameplay = this;
+    ThreeBankTargets.gameplay = this;
+    EightBankTargets.gameplay = this;
+}
 
 void CGameplay::start(byte mode)
 {
@@ -168,6 +200,11 @@ void CGameplay::every_100_msecs_interrupt()
     }
 }
 
+void CGameplay::add_score_bcd(dword bcd)
+{
+    temp_score.add_bcd(bcd);
+}
+
 void CGameplay::handle_timeout(char timeout_no) {
     switch (timeout_no) {
         case TIMEOUT_BALL_NINE_MOVING_TARGET:
@@ -200,7 +237,7 @@ void CGameplay::handle_switch_closed(char switch_no) {
             Audio.play(SOUND_FX_1);
             if (left_outlane && next_object_to_make < 8)
                 // spot objects 1-7
-                collect_and_reset_loop_target_value();
+                LoopTarget.collect_value();
             break;
 
         case SW_RIGHT_OUTLANE:
@@ -208,7 +245,7 @@ void CGameplay::handle_switch_closed(char switch_no) {
             Audio.play(SOUND_FX_1);
             if (right_outlane && next_object_to_make <= 7)
                 // spot objects 1-7
-                collect_and_reset_loop_target_value();
+                LoopTarget.collect_value();
             break;
 
         case SW_LEFT_INLANE:
@@ -253,35 +290,35 @@ void CGameplay::handle_switch_closed(char switch_no) {
             // when all 3 drop targets down, increase bonus multiplier
 
         case SW_LEFT_BANK_TARGET_1:
-            on_left_bank_drop_target_down(1);
+            EightBankTargets.on_target_hit(1);
             break;
 
         case SW_LEFT_BANK_TARGET_2:
-            on_left_bank_drop_target_down(2);
+            EightBankTargets.on_target_hit(2);
             break;
 
         case SW_LEFT_BANK_TARGET_3:
-            on_left_bank_drop_target_down(3);
+            EightBankTargets.on_target_hit(3);
             break;
 
         case SW_LEFT_BANK_TARGET_4:
-            on_left_bank_drop_target_down(4);
+            EightBankTargets.on_target_hit(4);
             break;
 
         case SW_LEFT_BANK_TARGET_5:
-            on_left_bank_drop_target_down(5);
+            EightBankTargets.on_target_hit(5);
             break;
 
         case SW_LEFT_BANK_TARGET_6:
-            on_left_bank_drop_target_down(6);
+            EightBankTargets.on_target_hit(6);
             break;
 
         case SW_LEFT_BANK_TARGET_7:
-            on_left_bank_drop_target_down(7);
+            EightBankTargets.on_target_hit(7);
             break;
 
         case SW_LEFT_BANK_TARGET_8:
-            on_left_bank_drop_target_down(8);
+            EightBankTargets.on_target_hit(8);
             break;
 
         case SW_LEFT_LANE_THIRD_BALL:
@@ -320,10 +357,9 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
 
         case SW_SPINNER:
-            temp_score.add_bcd(get_spinner_score_bcd(spinner_value));
-            Animator.start(ANIM_SPINNER_COLLECT_VALUE, 0);
-            TimeKeeper.start_timeout(TIMEOUT_RESET_SPINNER_VALUE, 1000);
-            Audio.play(SOUND_SPINNER);
+            Spinner.on_spinner_spun();
+            ThreeBankTargets.flip_lit_7k_target();
+            LoopTarget.flip_lit_outlane();
             break;
 
         case SW_TOP_LOOP_PASS:
@@ -334,7 +370,7 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
 
         case SW_TOP_LOOP_TARGET:
-            collect_and_reset_loop_target_value();
+            LoopTarget.collect_value();
             break;
 
         case SW_LEFT_SLINGSHOT:
@@ -351,30 +387,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
     }
 }
 
-dword CGameplay::get_spinner_score_bcd(byte spinner_value) {
-    if (spinner_value == 0) return 0x0100;
-    if (spinner_value == 1) return 0x0400;
-    if (spinner_value == 2) return 0x0900;
-    if (spinner_value == 3) return 0x1600;
-    if (spinner_value == 4) return 0x2500;
-    return 0x100;
-}
-
-void CGameplay::collect_and_reset_loop_target_value() {
-    dword score;
-
-    if      (loop_target_value == 4) score = 0x173000;
-    else if (loop_target_value == 3) score =  0x40000;
-    else if (loop_target_value == 2) score =  0x30000;
-    else if (loop_target_value == 1) score =  0x20000;
-    else                             score =  0x10000;
-
-    temp_score.add_bcd(score);
-    Audio.play(SOUND_FX_2);
-    Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0);
-    loop_target_value = 0;
-}
-
 void CGameplay::make_current_target_object() {
     // update status, bonus, start animations, kick up the drop targets etc.
 
@@ -383,15 +395,6 @@ void CGameplay::make_current_target_object() {
     temp_score.add_bcd(0x1000);
     Audio.play(SOUND_FX_3);
 
-}
-
-void CGameplay::on_left_bank_drop_target_down(byte number) {
-    // number is from 1..8, not 0-7
-    // I think we must raise the 8 drop targets whenever target 8 is hit,
-    // to avoid having a ball stuck on the gap that 8 leaves.
-    // possibly make the current target object
-    // if we are at 9, check if target is the same as the 9 moving target.
-    // same for wow and special.
 }
 
 void CGameplay::prepare_game(byte player_no, byte ball_no)
@@ -417,17 +420,16 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
 
     Spinner.init();
     LoopTarget.init();
-    BonusMultipler.init();
+    BonusMultiplier.init();
     ThreeBankTargets.init();
     EightBankTargets.init();
 }
 
 
 
-void CGameplay::LoopTargetClass::init()
+void LoopTargetClass::init()
 {
     value = 1; // 10K
-
     LampMatrix.lamp_on(LAMP_LOOP_VALUE_10K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_20K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_30K);
@@ -435,14 +437,13 @@ void CGameplay::LoopTargetClass::init()
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_173K);
 }
 
-void CGameplay::LoopTargetClass::on_passed_loop()
+void LoopTargetClass::advance_value()
 {
     // increase value
     value += 1;
     if (value > 5)
-        value = 1;
+        value = 1; // loop target increase wraps around
 
-    // start animation with the bitmap to display afterwards
     byte bitmap = 0;
     if (value >= 1) bitmap |= 0x01;
     if (value >= 2) bitmap |= 0x02;
@@ -451,35 +452,94 @@ void CGameplay::LoopTargetClass::on_passed_loop()
     if (value >= 5) bitmap |= 0x10;
     Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, bitmap);
 
-    // assign 3k
-    temp_score.add_bcd(0x3000);
-
-    // play an FX
+    gameplay->add_score_bcd(0x3000);
     Audio.play(SOUND_FX_6);
 }
 
-void CGameplay::LoopTargetClass::on_target_hit()
+void LoopTargetClass::collect_value()
 {
+    dword score = 0;
+    if      (value == 5) score = 0x173000ul;
+    else if (value == 4) score =  0x40000ul;
+    else if (value == 3) score =  0x30000ul;
+    else if (value == 2) score =  0x20000ul;
+    else if (value == 1) score =  0x10000ul;
+    gameplay->add_score_bcd(score);
 
+    Audio.play(SOUND_FX_5);
+
+    value = 1;
+    Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0x01);
 }
 
-void CGameplay::SpinnerClass::init()
+void LoopTargetClass::flip_lit_outlane()
 {
+    //
 }
 
-void CGameplay::SpinnerClass::on_value_increased()
+void SpinnerClass::init()
 {
+    value = 0; // 100
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_400);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_900);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_1600);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
 }
 
-void CGameplay::SpinnerClass::on_spinner_spun()
+void SpinnerClass::advance_to_top_value()
 {
+    gameplay->add_score_bcd(0x7000);
+    value = 4; // 2500
+    Animator.start(ANIM_SPINNER_INCREASE_VALUE, 0x0F);
+    Audio.play(SOUND_FX_5);
 }
 
-void CGameplay::SpinnerClass::on_reset_timeout_expired()
+void SpinnerClass::advance_value()
 {
+    if (value >= 4) // we don't reset like loop target
+        return;
+
+    byte bitmap;
+    if (value >= 1) bitmap |= 0x01;
+    if (value >= 2) bitmap |= 0x02;
+    if (value >= 3) bitmap |= 0x04;
+    if (value >= 4) bitmap |= 0x08;
+    Animator.start(ANIM_SPINNER_INCREASE_VALUE, bitmap);
+
+    Audio.play(SOUND_FX_5);
 }
 
-void CGameplay::BonusMultiplerClass::init()
+void SpinnerClass::on_spinner_spun()
+{
+    dword score = 0x100;
+    if      (value == 4) score = 0x2500ul;
+    else if (value == 3) score = 0x1600ul;
+    else if (value == 2) score = 0x0900ul;
+    else if (value == 1) score = 0x0400ul;
+    gameplay->add_score_bcd(score);
+
+    byte bitmap = 0;
+    if (value >= 1) bitmap |= 0x01;
+    if (value >= 2) bitmap |= 0x02;
+    if (value >= 3) bitmap |= 0x04;
+    if (value >= 4) bitmap |= 0x08;
+    Animator.start(ANIM_SPINNER_COLLECT_VALUE, bitmap);
+
+    Audio.play(SOUND_SPINNER);
+    TimeKeeper.start_timeout(TIMEOUT_RESET_SPINNER_VALUE, 2000);
+}
+
+void SpinnerClass::on_reset_timeout_expired()
+{
+    // no frills this time.
+    value = 0;
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_400);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_900);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_1600);
+    LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
+}
+
+void BonusMultiplerClass::init()
 {
     value = 1; // 1x
     LampMatrix.lamp_on(LAMP_BONUS_MULTIPLIER_X1);
@@ -487,30 +547,149 @@ void CGameplay::BonusMultiplerClass::init()
     LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X4);
 }
 
-void CGameplay::BonusMultiplerClass::on_multipler_increased()
+void BonusMultiplerClass::increase_multiplier()
 {
     value = (value + 1) & 0x7;
-    // start animation
     Animator.start(ANIM_BONUS_MULTIPLIER, value);
+    Audio.play(SOUND_FX_3);
+
+    if ((value == 6 && GameSettings.three_bank_wow_turn_on == 1) ||
+        (value == 7))
+        gameplay->ThreeBankTargets.start_wow();
 }
 
-void CGameplay::ThreeBankTargetsClass::init()
+void ThreeBankTargetsClass::init()
 {
+    lit_center_target = 0;
+
     // set lamps, status etc.
+    LampMatrix.lamp_off(LAMP_TOP_BANK_LEFT_TARGET);
+    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, (lit_center_target == 0));
+    LampMatrix.lamp_off(LAMP_TOP_BANK_RIGHT_TARGET);
+
+    LampMatrix.lamp_off(LAMP_RIGHT_BANK_LEFT_TARGET);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, (lit_center_target == 1));
+    LampMatrix.lamp_off(LAMP_RIGHT_BANK_RIGHT_TARGET);
+
+    if (SwitchMatrix.is_switch_closed(SW_TOP_BANK_LEFT_TARGET) ||
+        SwitchMatrix.is_switch_closed(SW_TOP_BANK_CENTER_TARGET) ||
+        SwitchMatrix.is_switch_closed(SW_TOP_BANK_RIGHT_TARGET)) {
+        // we hope we will not need retries
+        Coils.fire_top_bank_reset();
+    }
+
+    if (SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_LEFT_TARGET) ||
+        SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_CENTER_TARGET) ||
+        SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_RIGHT_TARGET)) {
+        // we hope we will not need retries
+        Coils.fire_right_bank_reset();
+    }
 }
 
-void CGameplay::ThreeBankTargetsClass::on_target_hit(byte switch_no)
+void ThreeBankTargetsClass::flip_lit_7k_target()
 {
-    // if a whole bank is down (and settings allow it) increase bonus multiplier
-    // if outside or inside targets (depending on settings) increase spinner value
+    // called at least when spinner is spinning
+    lit_center_target ^= 1;
+
+    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, lit_center_target == 0);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, lit_center_target == 1);
 }
 
-void CGameplay::EightBankTargetsClass::init()
+void ThreeBankTargetsClass::move_lit_wow_target()
+{
+    // maybe on 1sec timer
+
+    // moving to the next
+    lit_wow_target += 1;
+    if (lit_wow_target > 4)
+        lit_wow_target = 1; // remember 0=off
+
+    LampMatrix.set_lamp(LAMP_TOP_BANK_LEFT_TARGET, lit_wow_target == 1);
+    LampMatrix.set_lamp(LAMP_TOP_BANK_RIGHT_TARGET, lit_wow_target == 2);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_LEFT_TARGET, lit_wow_target == 3);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_RIGHT_TARGET, lit_wow_target == 4);
+}
+
+void ThreeBankTargetsClass::on_target_hit(byte switch_no)
+{
+    // see if a wow is awarded
+    if ((lit_wow_target == 1 && switch_no == SW_TOP_BANK_LEFT_TARGET) ||
+        (lit_wow_target == 2 && switch_no == SW_TOP_BANK_RIGHT_TARGET) ||
+        (lit_wow_target == 3 && switch_no == SW_RIGHT_BANK_LEFT_TARGET) ||
+        (lit_wow_target == 4 && switch_no == SW_RIGHT_BANK_RIGHT_TARGET)) {
+        if (GameSettings.wow_award_type == 0) {
+            gameplay->add_score_bcd(0x7000);
+        } else if (GameSettings.wow_award_type == 1) {
+            gameplay->add_shoot_again();
+        }
+
+        // we could have an animation of it blinking for a while.
+
+        Audio.play(SOUND_FX_4);
+
+        lit_wow_target = 0;
+        LampMatrix.lamp_off(LAMP_TOP_BANK_LEFT_TARGET);
+        LampMatrix.lamp_off(LAMP_TOP_BANK_RIGHT_TARGET);
+        LampMatrix.lamp_off(LAMP_RIGHT_BANK_LEFT_TARGET);
+        LampMatrix.lamp_off(LAMP_RIGHT_BANK_RIGHT_TARGET);
+    }
+
+    // see if we have a 7K award
+    if ((lit_center_target == 0 && switch_no == SW_TOP_BANK_CENTER_TARGET) ||
+        (lit_center_target == 1 && switch_no == SW_RIGHT_BANK_CENTER_TARGET)) {
+        gameplay->add_score_bcd(0x7000);
+        // we could have an animation of it blinking for a while.
+        Audio.play(SOUND_FAST_PHASERS);
+    }
+
+    if (GameSettings.spinner_value_advancement == 1) { // outer targets
+        if (switch_no == SW_TOP_BANK_LEFT_TARGET ||
+            switch_no == SW_TOP_BANK_RIGHT_TARGET ||
+            switch_no == SW_RIGHT_BANK_LEFT_TARGET ||
+            switch_no == SW_RIGHT_BANK_RIGHT_TARGET) {
+            gameplay->Spinner.advance_value();
+        }
+    } else { // center targets
+        if (switch_no == SW_TOP_BANK_CENTER_TARGET ||
+            switch_no == SW_RIGHT_BANK_CENTER_TARGET) {
+            gameplay->Spinner.advance_value();
+        }
+    }
+
+    // see if we up bonus multiplier
+    byte top_bank_down =
+        SwitchMatrix.is_switch_closed(SW_TOP_BANK_LEFT_TARGET) &&
+        SwitchMatrix.is_switch_closed(SW_TOP_BANK_CENTER_TARGET) &&
+        SwitchMatrix.is_switch_closed(SW_TOP_BANK_RIGHT_TARGET);
+
+    byte right_bank_down =
+        SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_LEFT_TARGET) &&
+        SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_CENTER_TARGET) &&
+        SwitchMatrix.is_switch_closed(SW_RIGHT_BANK_RIGHT_TARGET);
+
+    if (GameSettings.multiplier_step_up == 0) { // both 3-banks
+        if (top_bank_down && right_bank_down) {
+            gameplay->BonusMultiplier.increase_multiplier();
+        }
+    }
+    else if (GameSettings.multiplier_step_up == 1) { // both 3-banks
+        if (top_bank_down || right_bank_down) {
+            gameplay->BonusMultiplier.increase_multiplier();
+        }
+    }
+
+    // see if we reset a bank
+
+}
+
+
+
+void EightBankTargetsClass::init()
 {
     // set object to make, set lamps etc.
 }
 
-void CGameplay::EightBankTargetsClass::on_target_hit(byte switch_no)
+void EightBankTargetsClass::on_target_hit(byte switch_no)
 {
     // if object made move to the next.
     // if 8/9 was made (depending on the settings) start WOWs and Specials.
