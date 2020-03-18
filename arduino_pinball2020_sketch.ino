@@ -22,7 +22,7 @@
  *
  * Expected hardware: USB cable only
  */
-//#define RUN_SOFTWARE_TESTS
+#define RUN_SOFTWARE_TESTS
 
 /**
  * Hardware tests is a small applet to run various operations,
@@ -40,7 +40,7 @@
  *
  * Expected hardware: None, USB cable only.
  */
-#define RUN_SERIAL_EMULATOR
+//#define RUN_SERIAL_EMULATOR
 
 
 
@@ -84,8 +84,11 @@ CAttract Attract;
 
 
 void setup() {
+    FATAL_INIT();
     LOG_INIT();
     LOG("setup() starting");
+    LED13_INIT();
+
 
     #if defined(RUN_SOFTWARE_TESTS)
         setup_timer_interrupts();
@@ -115,7 +118,15 @@ void setup() {
 }
 
 void loop() {
+    CHECK_FATAL_IN_ISR();
+
     #if defined(RUN_SOFTWARE_TESTS)
+        // we need to keep consuming timeout events,
+        // because we are auto-generating recurring timing events (e.g. every second)
+        // and we'll run out of space to store them.
+        byte timeout_no;
+        TimeKeeper.get_next_expiration_event(&timeout_no);
+
         ; // nothing
     #elif defined(RUN_HARDWARE_TESTS)
         hardware_tests_tick();

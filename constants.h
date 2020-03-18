@@ -33,6 +33,7 @@
 #define TIMEOUT_RESET_SPINNER_VALUE      2    // spinner stopped spinning, reset its value
 #define TIMEOUT_SPECIAL_MOVING_TARGET    3    // time to move to another target!
 #define TIMEOUTS_COUNT                  16    // how many timeouts will be there.
+
 #define TIMEOUT_EVERY_HALF_SECOND_ODD  101    // recurring timeout every half second
 #define TIMEOUT_EVERY_HALF_SECOND_EVEN 102    // recurring timeout every half second
 #define TIMEOUT_EVERY_SECOND_ODD       103    // recurring timeout every second

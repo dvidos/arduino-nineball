@@ -12,8 +12,9 @@ typedef enum {
     timeout_expired,
 } event_type;
 
+typedef void (*func_ptr)();
 
-
+byte isr_fatal_number = 0;
 
 
 /**
@@ -31,24 +32,42 @@ typedef enum {
 #define TIME_KEEPER_EVENTS_QUEUE_SIZE     8
 
 
+#define TIME_KEEPER_CALLBACKS_SIZE       16
+
 /**
  * An instruction that does nothing, but burn a few electrons for a while.
  */
 #define NOP()      __asm__("nop\n\t")  // every nop is one CPU cycle, 62.5 nsec
 
 
+#define LED13_INIT()     pinMode(13,1)
+#define LED13_TOGGLE()   digitalWrite(13, digitalRead(13) ^ 1)
+
+
+
 /**
  * A sort of exception handler or core dump.
  * Will freeze processing, but would allow the user to see what caused the fatal.
- * Use wisely.
- * Should use a global variable from inside interrupts.
+ *
+ * Using a global variable to store a fatal happening in an ISR
+ * If/When the user code will run, outside the interrupt, it will CHECK
+ * and maybe it will flash then.
+ *
+ * Inside interrupt: call FATAL_IN_ISR(<num>)
+ * In user mode    : call FATAL(<num>)
+ *
+ * Use wisely. Have fun too.
  */
+#define FATAL_INIT()                      (isr_fatal_number = 0)
+#define FATAL_IN_ISR(flashes)             (isr_fatal_number = flashes)
+#define CHECK_FATAL_IN_ISR()              if (isr_fatal_number) { FATAL(isr_fatal_number); }
 #define FATAL(flashes)                                                                    \
+        LOG("*** FATAL %d ***", flashes);                                                  \
         pinMode(13, OUTPUT);                                                              \
         while (1) {                                                                       \
             for (byte fatal_flashes = 0; fatal_flashes < (flashes); fatal_flashes++) {    \
-                digitalWrite(13, HIGH); delay(175);                                       \
-                digitalWrite(13, LOW);  delay(175);                                       \
+                digitalWrite(13, HIGH); delay(150);                                       \
+                digitalWrite(13, LOW);  delay(150);                                       \
             }                                                                             \
             delay(1000);                                                                  \
         }

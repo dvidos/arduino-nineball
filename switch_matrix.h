@@ -133,7 +133,7 @@ void CSwitchMatrix::intercept_next_row()
 
             // we can detect queue overflow here
             if (events_queue_length >= SWITCH_MATRIX_EVENTS_QUEUE_SIZE) {
-                FATAL(3); // this will stop Arduino and will repeatedly flash the embedded LED
+                FATAL_IN_ISR(3); // this will stop Arduino and will repeatedly flash the embedded LED
             }
 
             events_queue[events_queue_length].switch_no = switch_no;

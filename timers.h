@@ -249,6 +249,8 @@ ISR(TIMER1_COMPA_vect) {
    noInterrupts();
 
    TimeKeeper.every_second_interrupt();
+
+   interrupts();
 }
 
 /**
@@ -259,6 +261,9 @@ ISR(TIMER3_COMPA_vect) {
 
    ScoreDisplay.ISR_strobe_next_display_digit();
    LampMatrix.output_next_column();
+   SwitchMatrix.intercept_next_row();
+
+   interrupts();
 }
 
 /**
@@ -270,6 +275,8 @@ ISR(TIMER4_COMPA_vect) {
    Animator.every_100_msecs_interrupt();
    Gameplay.every_100_msecs_interrupt();
    TimeKeeper.every_100_milliseconds_interrupt();
+
+   interrupts();
 }
 
 /**
@@ -279,7 +286,8 @@ ISR(TIMER5_COMPA_vect) {
    noInterrupts();
 
    Coils.every_10_msecs_interrupt();
-   SwitchMatrix.intercept_next_row();
    TimeKeeper.every_10_milliseconds_interrupt();
+
+   interrupts();
 }
 
