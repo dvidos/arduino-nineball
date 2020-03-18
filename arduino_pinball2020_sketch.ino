@@ -78,8 +78,8 @@ CGameSettings GameSettings;
 CAnimator Animator;
 CTimeKeeper TimeKeeper;
 CCoils Coils;
-CGameplay Gameplay;
 CAttract Attract;
+CGameplay Gameplay;
 
 
 

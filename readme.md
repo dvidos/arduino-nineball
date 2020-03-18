@@ -81,6 +81,34 @@ It seems I can use one of the internal I/O ports of the Mega, like 18/19.
 https://github.com/robertsonics/WAV-Trigger-Arduino-Serial-Library/blob/master/wavTrigger.h#L38
 Uncomment the desired one. One cable sound! Woot!
 
+### Timed quirks
+
+Initially, I went with the timer interrupts, every 1 msec, 10 msecs, 100 msecs, and one second.
+They would be calling the various hardware subsystems (switch matrix, lamp matrix etc)
+to keep them in sync.
+
+Now, for user space manipulations (i.e. outside of interrupts),
+I initially went with something similar to switches events queue.
+The user code would request a timeout and, when expired, that would
+show up on an events queue.
+
+Then I experimented with auto-generated timed events, every half and one
+second. They were very useful in the Attract mode, that just needed repeated
+patterns, but not so useful in user mode, where something needs to be e.g.
+250 msecs after a specific event.
+
+Then, as I was creating the various gameplay subsystems (LoopTarget, Spinner, ThreeBankTargets etc)
+I realized that simple callbacks would be much less painfull than
+distributing an event through a series of switch() statements based on
+current state.
+
+Then I realized that this is not so easy with C++, as the methods are virtual
+and the `this` pointer needs to be resolved as well. So, currently thinking
+of making all gameplay objects global and have static callback functions
+referring to those global objects.
+
+And when I migrate Attract to callbacks, I will kill the auto-generated
+timed events, as they are flooding the events queue and make software testing difficult.
 
 ## Run Modes
 

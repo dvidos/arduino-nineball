@@ -27,14 +27,13 @@ extern CCoils Coils;
 extern CScoreDisplay ScoreDisplay;
 extern CGameSettings GameSettings;
 
-
-
 class CGameplay;
+extern CGameplay Gameplay;
+
 
 class LoopTargetClass
 {
 public:
-    CGameplay *gameplay;
     byte value: 4; // 0=10k, 1=20k, 2=30k, 3=40k, 4=173k
     byte left_outlane: 1;  // 1=on, 0=off
     byte right_outlane: 1; // 1=on, 0=off
@@ -47,7 +46,6 @@ public:
 class SpinnerClass
 {
 public:
-    CGameplay *gameplay;
     byte value: 4; // 0=100, 1=400, 2=900, 3=1600, 4=2500
     void init();
     void advance_value();
@@ -59,7 +57,6 @@ public:
 class BonusMultiplerClass
 {
 public:
-    CGameplay *gameplay;
     byte value:3; // 1=1x, 2=2x..7=7x
     void init();
     void increase_multiplier();
@@ -68,7 +65,6 @@ public:
 class ThreeBankTargetsClass
 {
 public:
-    CGameplay *gameplay;
     byte lit_center_target: 1; // 0=top, 1=right.
     byte lit_wow_target: 3;    // 0=none, 1..4 specific target.
     void init();
@@ -81,11 +77,18 @@ public:
 class EightBankTargetsClass
 {
 public:
-    CGameplay *gameplay;
     byte object_made: 4; // 0=none, 1..9=1..9
     void init();
     void on_target_hit(byte switch_no);
 };
+
+
+LoopTargetClass LoopTarget;
+SpinnerClass Spinner;
+BonusMultiplerClass BonusMultiplier;
+ThreeBankTargetsClass ThreeBankTargets;
+EightBankTargetsClass EightBankTargets;
+
 
 
 class CGameplay
@@ -98,12 +101,6 @@ public:
 
     void add_score_bcd(dword bcd);
     void add_shoot_again();
-
-    SpinnerClass Spinner;
-    LoopTargetClass LoopTarget;
-    BonusMultiplerClass BonusMultiplier;
-    ThreeBankTargetsClass ThreeBankTargets;
-    EightBankTargetsClass EightBankTargets;
 
 private:
     word mode: 2;                  // mode under which we are running
@@ -148,11 +145,6 @@ private:
 
 CGameplay::CGameplay()
 {
-    Spinner.gameplay = this;
-    LoopTarget.gameplay = this;
-    BonusMultiplier.gameplay = this;
-    ThreeBankTargets.gameplay = this;
-    EightBankTargets.gameplay = this;
 }
 
 void CGameplay::start(byte mode)
@@ -425,8 +417,6 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
     EightBankTargets.init();
 }
 
-
-
 void LoopTargetClass::init()
 {
     value = 1; // 10K
@@ -452,7 +442,7 @@ void LoopTargetClass::advance_value()
     if (value >= 5) bitmap |= 0x10;
     Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, bitmap);
 
-    gameplay->add_score_bcd(0x3000);
+    Gameplay.add_score_bcd(0x3000);
     Audio.play(SOUND_FX_6);
 }
 
@@ -464,7 +454,7 @@ void LoopTargetClass::collect_value()
     else if (value == 3) score =  0x30000ul;
     else if (value == 2) score =  0x20000ul;
     else if (value == 1) score =  0x10000ul;
-    gameplay->add_score_bcd(score);
+    Gameplay.add_score_bcd(score);
 
     Audio.play(SOUND_FX_5);
 
@@ -488,7 +478,7 @@ void SpinnerClass::init()
 
 void SpinnerClass::advance_to_top_value()
 {
-    gameplay->add_score_bcd(0x7000);
+    Gameplay.add_score_bcd(0x7000);
     value = 4; // 2500
     Animator.start(ANIM_SPINNER_INCREASE_VALUE, 0x0F);
     Audio.play(SOUND_FX_5);
@@ -516,7 +506,7 @@ void SpinnerClass::on_spinner_spun()
     else if (value == 3) score = 0x1600ul;
     else if (value == 2) score = 0x0900ul;
     else if (value == 1) score = 0x0400ul;
-    gameplay->add_score_bcd(score);
+    Gameplay.add_score_bcd(score);
 
     byte bitmap = 0;
     if (value >= 1) bitmap |= 0x01;
@@ -555,7 +545,7 @@ void BonusMultiplerClass::increase_multiplier()
 
     if ((value == 6 && GameSettings.three_bank_wow_turn_on == 1) ||
         (value == 7))
-        gameplay->ThreeBankTargets.start_wow();
+        ThreeBankTargets.start_wow();
 }
 
 void ThreeBankTargetsClass::init()
@@ -618,9 +608,9 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
         (lit_wow_target == 3 && switch_no == SW_RIGHT_BANK_LEFT_TARGET) ||
         (lit_wow_target == 4 && switch_no == SW_RIGHT_BANK_RIGHT_TARGET)) {
         if (GameSettings.wow_award_type == 0) {
-            gameplay->add_score_bcd(0x7000);
+            Gameplay.add_score_bcd(0x7000);
         } else if (GameSettings.wow_award_type == 1) {
-            gameplay->add_shoot_again();
+            Gameplay.add_shoot_again();
         }
 
         // we could have an animation of it blinking for a while.
@@ -637,7 +627,7 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
     // see if we have a 7K award
     if ((lit_center_target == 0 && switch_no == SW_TOP_BANK_CENTER_TARGET) ||
         (lit_center_target == 1 && switch_no == SW_RIGHT_BANK_CENTER_TARGET)) {
-        gameplay->add_score_bcd(0x7000);
+        Gameplay.add_score_bcd(0x7000);
         // we could have an animation of it blinking for a while.
         Audio.play(SOUND_FAST_PHASERS);
     }
@@ -647,12 +637,12 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
             switch_no == SW_TOP_BANK_RIGHT_TARGET ||
             switch_no == SW_RIGHT_BANK_LEFT_TARGET ||
             switch_no == SW_RIGHT_BANK_RIGHT_TARGET) {
-            gameplay->Spinner.advance_value();
+            Spinner.advance_value();
         }
     } else { // center targets
         if (switch_no == SW_TOP_BANK_CENTER_TARGET ||
             switch_no == SW_RIGHT_BANK_CENTER_TARGET) {
-            gameplay->Spinner.advance_value();
+            Spinner.advance_value();
         }
     }
 
@@ -669,20 +659,18 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
 
     if (GameSettings.multiplier_step_up == 0) { // both 3-banks
         if (top_bank_down && right_bank_down) {
-            gameplay->BonusMultiplier.increase_multiplier();
+            BonusMultiplier.increase_multiplier();
         }
     }
     else if (GameSettings.multiplier_step_up == 1) { // both 3-banks
         if (top_bank_down || right_bank_down) {
-            gameplay->BonusMultiplier.increase_multiplier();
+            BonusMultiplier.increase_multiplier();
         }
     }
 
     // see if we reset a bank
 
 }
-
-
 
 void EightBankTargetsClass::init()
 {
