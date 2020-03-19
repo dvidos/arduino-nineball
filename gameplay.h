@@ -56,7 +56,7 @@ public:
     static void reset_spinner_value();
 };
 
-class BonusMultiplerClass
+class BonusMultiplierClass
 {
 public:
     byte value: 3; // 1=1x, 2=2x..7=7x
@@ -80,18 +80,48 @@ public:
 class EightBankTargetsClass
 {
 public:
-    byte object_made: 4; // 0=none, 1..9=1..9
+    byte object_made: 4;     // 0=none, 1..9=1..9
+    byte wow_number: 4;      // 0=none, 1..8=1..8
+    byte special_number: 4;  // 0=none, 2..8=2..8 (1 is missing)
+    byte spot_number_enabled: 1;  // this is a timed mode
+    byte special_made: 1;         // to allow at most one
+    byte super_bonus_made: 1;
+
     void init();
     void on_target_hit(byte switch_no);
+    void start_spot_number_timeout()
+    static void spot_number_timed_out()
+    static void advance_wow_target()
+    static void advance_special_target()
 };
+
+class BallKeeperClass
+{
+public:
+    byte shoot_agains: 2; // up to 3 shoot agains may be awarded
+    byte ball_capture_enabled: 1; // the yellow arrow light
+
+    void init();
+    void enable_ball_capturing();
+    void on_switch_closed(switch_no);
+    bool has_captured_balls();
+    bool are_all_balls_in_outhole();
+    void grant_shoot_again();
+    void consume_shoot_again();
+    void eject_outhole_ball();       // get ball in shooting lane
+    void release_captured_balls(); // eject all captured balls
+    static void eject_outhole_timeout_expired();     // to see if successul
+    static void release_captured_timeout_expired();  // to see if other balls still there
+}
+
 
 
 LoopTargetClass LoopTarget;
 SpinnerClass Spinner;
-BonusMultiplerClass BonusMultiplier;
+BonusMultiplierClass BonusMultiplier;
 ThreeBankTargetsClass ThreeBankTargets;
 EightBankTargetsClass EightBankTargets;
-
+BallKeeperClass BallKeeper;
 
 
 class CGameplay
@@ -254,11 +284,12 @@ void CGameplay::handle_switch_closed(char switch_no) {
             break;
 
         case SW_SKILL_SHOT_TARGET:
-            temp_score.add_bcd(0x7000);
-            spinner_value = 4; // maximum
-            // adjust lamps
-            // should turn off the red arrow lamp? (in the original game it seems to be always on)
+            Spinner.advance_to_top_value();
             break;
+
+        // -------------------------------------------
+        //  Things "written" above this line.
+        // -------------------------------------------
 
 
 
@@ -360,15 +391,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
     }
 }
 
-void CGameplay::make_current_target_object() {
-    // update status, bonus, start animations, kick up the drop targets etc.
-
-    // next_object_to_make: 3;  // 0-8 means 1-9. 9=wow, 10=special.
-    // set the according target lamp to on.
-    temp_score.add_bcd(0x1000);
-    Audio.play(SOUND_FX_3);
-
-}
 
 void CGameplay::prepare_game(byte player_no, byte ball_no)
 {
@@ -549,7 +571,7 @@ void SpinnerClass::reset_spinner_value()
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
 }
 
-void BonusMultiplerClass::init(bool was_6_or_higher)
+void BonusMultiplierClass::init(bool was_6_or_higher)
 {
     value = was_6_or_higher ? 2 : 1; // 1x or 2x if previous was at least 6x.
     LampMatrix.lamp_on(LAMP_BONUS_MULTIPLIER_X1);
@@ -557,7 +579,7 @@ void BonusMultiplerClass::init(bool was_6_or_higher)
     LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X4);
 }
 
-void BonusMultiplerClass::increase_multiplier()
+void BonusMultiplierClass::increase_multiplier()
 {
     value = (value + 1) & 0x7;
     Animator.start(ANIM_BONUS_MULTIPLIER, value);
@@ -742,7 +764,57 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
 
 void EightBankTargetsClass::init()
 {
-    // set object to make, set lamps etc.
+    object_made = 0;
+    wow_number = 0;
+    special_number = 0;
+    spot_number_enabled = 0;
+    special_made = 0;
+    super_bonus_made = 0;
+
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_1);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_2);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_3);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_4);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_5);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_6);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_7);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_8);
+    LampMatrix.lamp_off(LAMP_BONUS_MADE_9);
+
+    LampMatrix.lamp_on(LAMP_OBJECT_1_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_2_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_3_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_4_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_5_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_6_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_7_DROP_TARGET);
+    LampMatrix.lamp_on(LAMP_OBJECT_8_DROP_TARGET);
+
+    LampMatrix.lamp_on(LAMP_OBJECT_1_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_2_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_3_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_4_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_5_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_6_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_7_WOW);
+    LampMatrix.lamp_on(LAMP_OBJECT_8_WOW);
+
+    LampMatrix.lamp_on(LAMP_OBJECT_2_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_3_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_4_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_5_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_6_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_7_SPECIAL);
+    LampMatrix.lamp_on(LAMP_OBJECT_8_SPECIAL);
+
+    LampMatrix.lamp_off(LAMP_OBJECT_9);
+    LampMatrix.lamp_off(LAMP_TOP_POP_BUMPER);
+    LampMatrix.lamp_off(LAMP_SUPER_BONUS_77K);
+    LampMatrix.lamp_off(LAMP_ALL_TARGETS_DOWN_SPECIAL);
+
+    LampMatrix.lamp_on(LAMP_LEFT_INLANE);
+    LampMatrix.lamp_on(LAMP_RIGHT_INLANE);
+
 }
 
 void EightBankTargetsClass::on_target_hit(byte switch_no)
@@ -757,4 +829,28 @@ void EightBankTargetsClass::on_target_hit(byte switch_no)
     // and 3 bank lites are on.
 
 }
+
+void EightBankTargetsClass::start_spot_number_timeout()
+{
+    // start of extend the spot number timeout.
+
+
+    TimeKeeper.callback_later(spot_number_timed_out, GameSettings.spot_light_strategy ? 10000 : 5000);
+}
+
+void EightBankTargetsClass::spot_number_timed_out()
+{
+    // static function to turn off pop bumper etc.
+}
+
+void EightBankTargetsClass::advance_wow_target()
+{
+    // static function to advance wow target
+}
+
+void EightBankTargetsClass::advance_special_target()
+{
+    // static function to advance the special target
+}
+
 
