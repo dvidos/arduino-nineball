@@ -45,7 +45,7 @@
  * The number may change, depending on where each lamp is,
  * But the name should stay the same
  */
-#define LAMP_SKILL_SHOT                1
+#define LAMP_SPINNER_TOP_VALUE         1
 #define LAMP_CAPTURE_BALL              2
 #define LAMP_TOP_BANK_LEFT_TARGET      3
 #define LAMP_TOP_BANK_CENTER_TARGET    4

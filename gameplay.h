@@ -40,7 +40,9 @@ public:
     void init();
     void advance_value();
     void collect_value();
-    void flip_lit_outlane();
+    void enable_or_flip_outlanes();
+    void on_passed_outlane(byte switch_no);
+    static void turn_off_outlanes();
 };
 
 class SpinnerClass
@@ -51,27 +53,28 @@ public:
     void advance_value();
     void advance_to_top_value();
     void on_spinner_spun();
-    void on_reset_timeout_expired();
+    static void reset_spinner_value();
 };
 
 class BonusMultiplerClass
 {
 public:
-    byte value:3; // 1=1x, 2=2x..7=7x
-    void init();
+    byte value: 3; // 1=1x, 2=2x..7=7x
+    void init(bool was_6_or_higher);
     void increase_multiplier();
 };
 
 class ThreeBankTargetsClass
 {
 public:
-    byte lit_center_target: 1; // 0=top, 1=right.
-    byte lit_wow_target: 3;    // 0=none, 1..4 specific target.
+    byte lit_center_target: 2; // 0=off, 1=top, 2=right.
+    byte lit_wow_target: 3;    // 0=none, 1,2=top ones, 3,4 right ones
     void init();
     void on_target_hit(byte switch_no);
-    void flip_lit_7k_target();
-    void move_lit_wow_target();
+    void enable_or_flip_pink_target();
+    static void turn_off_pink_target();
     void start_wow();
+    static void move_lit_wow_target();
 };
 
 class EightBankTargetsClass
@@ -223,22 +226,44 @@ void CGameplay::handle_timeout(char timeout_no) {
 }
 
 void CGameplay::handle_switch_closed(char switch_no) {
-    switch (switch_no) {
-        case SW_LEFT_OUTLANE:
-            temp_score.add_bcd(0x3000);
-            Audio.play(SOUND_FX_1);
-            if (left_outlane && next_object_to_make < 8)
-                // spot objects 1-7
-                LoopTarget.collect_value();
+    switch (switch_no)
+    {
+        case SW_TOP_LOOP_PASS:  // fallthrough
+        case SW_LEFT_LANE_EXIT:
+            LoopTarget.advance_value();
+            break;
+        case SW_TOP_LOOP_TARGET:
+            LoopTarget.collect_value();
+            break;
+        case SW_LEFT_OUTLANE:  // fallthrough
+        case SW_RIGHT_OUTLANE:
+            LoopTarget.on_passed_outlane(switch_no);
             break;
 
-        case SW_RIGHT_OUTLANE:
-            temp_score.add_bcd(0x3000);
-            Audio.play(SOUND_FX_1);
-            if (right_outlane && next_object_to_make <= 7)
-                // spot objects 1-7
-                LoopTarget.collect_value();
+        case SW_TOP_BANK_LEFT_TARGET:   // fallthrough, all of them
+        case SW_TOP_BANK_CENTER_TARGET:
+        case SW_TOP_BANK_RIGHT_TARGET:
+        case SW_RIGHT_BANK_LEFT_TARGET:
+        case SW_RIGHT_BANK_CENTER_TARGET:
+        case SW_RIGHT_BANK_RIGHT_TARGET:
+            ThreeBankTargets.on_target_hit(switch_no);
             break;
+
+        case SW_SPINNER:
+            Spinner.on_spinner_spun();
+            break;
+
+        case SW_SKILL_SHOT_TARGET:
+            temp_score.add_bcd(0x7000);
+            spinner_value = 4; // maximum
+            // adjust lamps
+            // should turn off the red arrow lamp? (in the original game it seems to be always on)
+            break;
+
+
+
+
+
 
         case SW_LEFT_INLANE:
             temp_score.add_bcd(0x100);
@@ -267,19 +292,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
                 make_current_target_object();
             break;
 
-        case SW_TOP_BANK_LEFT_TARGET:
-        case SW_TOP_BANK_CENTER_TARGET:
-        case SW_TOP_BANK_RIGHT_TARGET:
-            // depending on settings, outside or center target advances spinner.
-            // if it's the middle target and wow is lit, collect it
-            // when all 3 drop targets down, increase bonus multiplier
-            // if multiplier entered 6x or 7x (depending on setting) start top banks WOW
-            //
-
-        case SW_RIGHT_BANK_LEFT_TARGET:
-        case SW_RIGHT_BANK_CENTER_TARGET:
-        case SW_RIGHT_BANK_RIGHT_TARGET:
-            // when all 3 drop targets down, increase bonus multiplier
 
         case SW_LEFT_BANK_TARGET_1:
             EightBankTargets.on_target_hit(1);
@@ -334,37 +346,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
             // if not object 5 is made, we should start kicking this out...
             break;
 
-        case SW_LEFT_LANE_EXIT:
-            temp_score.add_bcd(0x3000);
-            Audio.play(SOUND_FX_1);
-            loop_target_value = ((loop_target_value + 1) % 5);
-            Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
-            break;
-
-        case SW_SKILL_SHOT_TARGET:
-            temp_score.add_bcd(0x7000);
-            spinner_value = 4; // maximum
-            // adjust lamps
-            // should turn off the red arrow lamp? (in the original game it seems to be always on)
-            break;
-
-        case SW_SPINNER:
-            Spinner.on_spinner_spun();
-            ThreeBankTargets.flip_lit_7k_target();
-            LoopTarget.flip_lit_outlane();
-            break;
-
-        case SW_TOP_LOOP_PASS:
-            temp_score.add_bcd(0x3000);
-            Audio.play(SOUND_FX_1);
-            loop_target_value = ((loop_target_value + 1) % 5);
-            Animator.start(ANIM_TOP_LOOP_ADVANCE_VALUE, 0);
-            break;
-
-        case SW_TOP_LOOP_TARGET:
-            LoopTarget.collect_value();
-            break;
-
         case SW_LEFT_SLINGSHOT:
         case SW_RIGHT_SLINGSHOT:
 
@@ -412,7 +393,7 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
 
     Spinner.init();
     LoopTarget.init();
-    BonusMultiplier.init();
+    BonusMultiplier.init(false);
     ThreeBankTargets.init();
     EightBankTargets.init();
 }
@@ -420,11 +401,16 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
 void LoopTargetClass::init()
 {
     value = 1; // 10K
+    left_outlane = 0;
+    right_outlane = 0;
+
     LampMatrix.lamp_on(LAMP_LOOP_VALUE_10K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_20K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_30K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_40K);
     LampMatrix.lamp_off(LAMP_LOOP_VALUE_173K);
+    LampMatrix.lamp_off(LAMP_LEFT_OUTLANE);
+    LampMatrix.lamp_off(LAMP_RIGHT_OUTLANE);
 }
 
 void LoopTargetClass::advance_value()
@@ -462,9 +448,38 @@ void LoopTargetClass::collect_value()
     Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0x01);
 }
 
-void LoopTargetClass::flip_lit_outlane()
+void LoopTargetClass::enable_or_flip_outlanes()
 {
-    //
+    left_outlane ^= 1;
+    right_outlane ^= 1;
+
+    // if both on, select one
+    if (left_outlane && right_outlane)
+        right_outlane = false;
+
+    LampMatrix.set_lamp(LAMP_LEFT_OUTLANE, left_outlane);
+    LampMatrix.set_lamp(LAMP_RIGHT_OUTLANE, right_outlane);
+
+    TimeKeeper.callback_later(turn_off_outlanes, GameSettings.spot_light_strategy ? 10000 : 5000);
+}
+
+void LoopTargetClass::on_passed_outlane(byte switch_no)
+{
+    Gameplay.add_score_bcd(0x3000);
+
+    if ((switch_no == SW_LEFT_OUTLANE && left_outlane) ||
+        (switch_no == SW_RIGHT_OUTLANE && right_outlane))
+        collect_value();
+}
+
+void LoopTargetClass::turn_off_outlanes()
+{
+    // remember this is a static function called by an interrupt
+    LoopTarget.left_outlane = 0;
+    LoopTarget.right_outlane = 0;
+
+    LampMatrix.lamp_off(LAMP_LEFT_OUTLANE);
+    LampMatrix.lamp_off(LAMP_RIGHT_OUTLANE);
 }
 
 void SpinnerClass::init()
@@ -474,10 +489,12 @@ void SpinnerClass::init()
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_900);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_1600);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
+    LampMatrix.lamp_on(LAMP_SPINNER_TOP_VALUE);
 }
 
 void SpinnerClass::advance_to_top_value()
 {
+    LampMatrix.lamp_off(LAMP_SPINNER_TOP_VALUE);
     Gameplay.add_score_bcd(0x7000);
     value = 4; // 2500
     Animator.start(ANIM_SPINNER_INCREASE_VALUE, 0x0F);
@@ -516,22 +533,25 @@ void SpinnerClass::on_spinner_spun()
     Animator.start(ANIM_SPINNER_COLLECT_VALUE, bitmap);
 
     Audio.play(SOUND_SPINNER);
-    TimeKeeper.start_timeout(TIMEOUT_RESET_SPINNER_VALUE, 2000);
+    TimeKeeper.callback_later(reset_spinner_value, 2000);
+
+    ThreeBankTargets.enable_or_flip_pink_target();
+    LoopTarget.enable_or_flip_outlanes();
 }
 
-void SpinnerClass::on_reset_timeout_expired()
+void SpinnerClass::reset_spinner_value()
 {
-    // no frills this time.
-    value = 0;
+    // remember this is a static function called by an interrupt
+    Spinner.value = 0;
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_400);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_900);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_1600);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
 }
 
-void BonusMultiplerClass::init()
+void BonusMultiplerClass::init(bool was_6_or_higher)
 {
-    value = 1; // 1x
+    value = was_6_or_higher ? 2 : 1; // 1x or 2x if previous was at least 6x.
     LampMatrix.lamp_on(LAMP_BONUS_MULTIPLIER_X1);
     LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X2);
     LampMatrix.lamp_off(LAMP_BONUS_MULTIPLIER_X4);
@@ -551,6 +571,7 @@ void BonusMultiplerClass::increase_multiplier()
 void ThreeBankTargetsClass::init()
 {
     lit_center_target = 0;
+    lit_wow_target = 0;
 
     // set lamps, status etc.
     LampMatrix.lamp_off(LAMP_TOP_BANK_LEFT_TARGET);
@@ -576,28 +597,57 @@ void ThreeBankTargetsClass::init()
     }
 }
 
-void ThreeBankTargetsClass::flip_lit_7k_target()
+void ThreeBankTargetsClass::enable_or_flip_pink_target()
 {
     // called at least when spinner is spinning
-    lit_center_target ^= 1;
+    lit_center_target += 1;
+    if (lit_center_target >= 3)
+        lit_center_target = 1;
 
-    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, lit_center_target == 0);
-    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, lit_center_target == 1);
+    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, lit_center_target == 1);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, lit_center_target == 2);
+
+    TimeKeeper.callback_later(turn_off_pink_target, GameSettings.spot_light_strategy ? 10000 : 5000);
 }
 
-void ThreeBankTargetsClass::move_lit_wow_target()
+void ThreeBankTargetsClass::turn_off_pink_target()
 {
-    // maybe on 1sec timer
+    // remember this is a static function
+    ThreeBankTargets.lit_center_target = 0;
 
-    // moving to the next
-    lit_wow_target += 1;
-    if (lit_wow_target > 4)
-        lit_wow_target = 1; // remember 0=off
+    LampMatrix.lamp_off(LAMP_TOP_BANK_CENTER_TARGET);
+    LampMatrix.lamp_off(LAMP_RIGHT_BANK_CENTER_TARGET);
+}
+
+void ThreeBankTargetsClass::start_wow()
+{
+    lit_wow_target = 1;
 
     LampMatrix.set_lamp(LAMP_TOP_BANK_LEFT_TARGET, lit_wow_target == 1);
     LampMatrix.set_lamp(LAMP_TOP_BANK_RIGHT_TARGET, lit_wow_target == 2);
     LampMatrix.set_lamp(LAMP_RIGHT_BANK_LEFT_TARGET, lit_wow_target == 3);
     LampMatrix.set_lamp(LAMP_RIGHT_BANK_RIGHT_TARGET, lit_wow_target == 4);
+
+    TimeKeeper.callback_later(move_lit_wow_target, 1000);
+}
+
+void ThreeBankTargetsClass::move_lit_wow_target()
+{
+    // remember this is a static function
+    if (ThreeBankTargets.lit_wow_target == 0) // maybe it was made while we were waiting.
+        return;
+
+    // moving to the next
+    ThreeBankTargets.lit_wow_target += 1;
+    if (ThreeBankTargets.lit_wow_target > 4)
+        ThreeBankTargets.lit_wow_target = 1; // remember 0=off
+
+    LampMatrix.set_lamp(LAMP_TOP_BANK_LEFT_TARGET, ThreeBankTargets.lit_wow_target == 1);
+    LampMatrix.set_lamp(LAMP_TOP_BANK_RIGHT_TARGET, ThreeBankTargets.lit_wow_target == 2);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_LEFT_TARGET, ThreeBankTargets.lit_wow_target == 3);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_RIGHT_TARGET, ThreeBankTargets.lit_wow_target == 4);
+
+    TimeKeeper.callback_later(move_lit_wow_target, 1000);
 }
 
 void ThreeBankTargetsClass::on_target_hit(byte switch_no)
@@ -624,13 +674,16 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
         LampMatrix.lamp_off(LAMP_RIGHT_BANK_RIGHT_TARGET);
     }
 
-    // see if we have a 7K award
+    // "each target scores 1,000 or 7,000 when pink lite is lit"
     if ((lit_center_target == 0 && switch_no == SW_TOP_BANK_CENTER_TARGET) ||
         (lit_center_target == 1 && switch_no == SW_RIGHT_BANK_CENTER_TARGET)) {
-        Gameplay.add_score_bcd(0x7000);
         // we could have an animation of it blinking for a while.
-        Audio.play(SOUND_FAST_PHASERS);
+        Gameplay.add_score_bcd(0x7000);
+    } else {
+        Gameplay.add_score_bcd(0x1000);
     }
+    Audio.play(SOUND_FAST_PHASERS);
+
 
     if (GameSettings.spinner_value_advancement == 1) { // outer targets
         if (switch_no == SW_TOP_BANK_LEFT_TARGET ||
@@ -668,8 +721,23 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
         }
     }
 
-    // see if we reset a bank
+    // "" 3 banks reset only after all targets in both 3 banks have been hit.
+    // when "multiplier_step_up" is 1, only one 3 bank resets at random.
+    // when "multiplier_step_up" is 0, both 3 banks reset.
 
+    if (top_bank_down && right_bank_down) {
+        if (GameSettings.multiplier_step_up == 0) { // both 3-banks
+            // if there is loss of power to reset both banks together,
+            // we can change our strategy
+            Coils.fire_top_bank_reset();
+            Coils.fire_right_bank_reset();
+        } else { // only one bank resets at random
+            if (random(0, 100) >= 50)
+                Coils.fire_top_bank_reset();
+            else
+                Coils.fire_right_bank_reset();
+        }
+    }
 }
 
 void EightBankTargetsClass::init()
@@ -683,5 +751,10 @@ void EightBankTargetsClass::on_target_hit(byte switch_no)
     // if 8/9 was made (depending on the settings) start WOWs and Specials.
     // if 5 was made, start the ball keeping feature
     // etc.
+
+    // "" slingshots, spinner and pop bumpers control
+    // the percentage of time dead bumper, two return lanes, two outlanes
+    // and 3 bank lites are on.
+
 }
 

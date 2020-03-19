@@ -119,6 +119,9 @@ void CTimeKeeper::update_timeouts(bool is_slow_tick)
         // diminish, see if done
         callbacks[i].ticks_left -= 1;
         if (callbacks[i].ticks_left == 0) {
+            // it's important to do this last,
+            // and not touch the ticks afterwards,
+            // as the function may reset itself.
             (callbacks[i].function)();
         }
     }
@@ -193,9 +196,12 @@ void CTimeKeeper::add_to_timeout_events_queue(byte timeout_no)
 void CTimeKeeper::callback_later(func_ptr function, word milliseconds)
 {
     // find the first non used slot
+    // or the slot that points to the same function.
+    // it's important for a function to be able to prolong its timeout.
     byte slot = 255;
     for (byte i = 0; i < TIME_KEEPER_CALLBACKS_SIZE; i++) {
-        if (callbacks[i].ticks_left == 0) {
+        if ((callbacks[i].function == function) ||
+            (callbacks[i].ticks_left == 0)) {
             slot = i;
             break;
         }
