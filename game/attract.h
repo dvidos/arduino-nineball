@@ -76,7 +76,6 @@
 #define DIAGNOSTICS_OPTIONS_COUNT               10
 
 
-#include "defines.h"
 
 extern CGameplay Gameplay;
 extern CGameSettings GameSettings;

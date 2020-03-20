@@ -16,7 +16,6 @@
 
 */
 
-#include "constants.h"
 
 
 extern CAudio Audio;
@@ -160,29 +159,9 @@ private:
     } player_info[4];
     BcdNum temp_score;             // a place to add score that is slowly moved to player score and display.
 
-
     word running: 1;               // whether we are running (or merely existing in memory)
-    word waiting_for_ball_in_eject_lane: 1;
     word collecting_bonuses: 1;
 
-    word loop_target_value: 3;      // 0..4 for 10k, 20k, 30k, 40k, 173k
-    word spinner_value: 3;          // 0..4 for 100, 400, 900, 1600, 2500.
-    word bonus_multiplier: 3;       // 1..7 for x1 .. x7 (minimum is 1, not zero)
-    word left_outlane: 1;           // collects loop pass value if lit
-    word right_outlane: 1;          // collects loop pass value if lit
-    word left_inlane: 1;            // spots current target when lit
-    word right_inlane: 1;           // spots current target when lit
-    word top_pop_bumper: 1;         // spots current target when lit
-    word extra_balls_awarded: 2;    // up to 3 extra balls can be awarded. shoot again will lite for them.
-    word one_special_achieved: 1;   // whether one special is achieved, to avoid giving more, if not allowed.
-
-    word next_object_to_make: 4;            // 1-8 and 9 means number 9.
-    word current_number_nine_target: 3;     // moving target for "9"
-    word current_8_bank_wow_target: 3;      // moving target for the 8-bank wow
-    word current_3_banks_wow_target: 2;     // moving target for the 3-bank wow
-    word current_8_bank_special_target: 3;  // moving target for 8 bank special.
-
-    void handle_timeout(char timeout_no);
     void handle_switch_closed(char switch_no);
 
     void prepare_game(byte player_no, byte ball_no);
@@ -210,9 +189,7 @@ void CGameplay::start(byte mode)
 
 void CGameplay::handle_event(Event& e)
 {
-    if (e.type == timeout_expired) {
-        handle_timeout(e.number);
-    } else if (e.type == switch_closed) {
+    if (e.type == switch_closed) {
         handle_switch_closed(e.number);
     }
 }
@@ -241,31 +218,6 @@ void CGameplay::every_100_msecs_interrupt()
 void CGameplay::add_score_bcd(dword bcd)
 {
     temp_score.add_bcd(bcd);
-}
-
-void CGameplay::handle_timeout(char timeout_no) {
-    switch (timeout_no) {
-        case TIMEOUT_BALL_NINE_MOVING_TARGET:
-            // move to the next moving target
-            // adjust lamps accordingly
-            break;
-
-        case TIMEOUT_WOW_MOVING_TARGET:
-            // move to the next wow target
-            // adjust lamps accordingly
-            break;
-
-        case TIMEOUT_SPECIAL_MOVING_TARGET:
-            // move to the next moving special, skip no 1.
-            // adjust lamps accordingly
-            break;
-
-        case TIMEOUT_RESET_SPINNER_VALUE:
-            // make spinner_value zero,
-            // adjust lamps accordingly
-            break;
-
-    }
 }
 
 void CGameplay::handle_switch_closed(char switch_no) {
@@ -310,84 +262,26 @@ void CGameplay::handle_switch_closed(char switch_no) {
 
 
         case SW_LEFT_INLANE:
-            temp_score.add_bcd(0x100);
-            Audio.play(SOUND_FX_1);
-            if (left_inlane)
-                make_current_target_object();
-            break;
-
         case SW_RIGHT_INLANE:
-            temp_score.add_bcd(0x100);
-            Audio.play(SOUND_FX_1);
-            if (right_inlane)
-                make_current_target_object();
-            break;
-
         case SW_MAIN_POP_BUMPER:
-            temp_score.add_bcd(0x100);
-            Audio.play(SOUND_FX_1);
-            break;
-
         case SW_TOP_POP_BUMPER:
-            temp_score.add_bcd(0x100);
-            Audio.play(SOUND_FX_1);
-            if (top_pop_bumper && next_object_to_make <= 7)
-                // spot objects 1-7
-                make_current_target_object();
-            break;
-
-
         case SW_LEFT_BANK_TARGET_1:
-            EightBankTargets.on_target_hit(1);
-            break;
-
         case SW_LEFT_BANK_TARGET_2:
-            EightBankTargets.on_target_hit(2);
-            break;
-
         case SW_LEFT_BANK_TARGET_3:
-            EightBankTargets.on_target_hit(3);
-            break;
-
         case SW_LEFT_BANK_TARGET_4:
-            EightBankTargets.on_target_hit(4);
-            break;
-
         case SW_LEFT_BANK_TARGET_5:
-            EightBankTargets.on_target_hit(5);
-            break;
-
         case SW_LEFT_BANK_TARGET_6:
-            EightBankTargets.on_target_hit(6);
-            break;
-
         case SW_LEFT_BANK_TARGET_7:
-            EightBankTargets.on_target_hit(7);
-            break;
-
         case SW_LEFT_BANK_TARGET_8:
-            EightBankTargets.on_target_hit(8);
             break;
 
         case SW_LEFT_LANE_THIRD_BALL:
-            if (SwitchMatrix.is_switch_closed(SW_LEFT_LANE_SECOND_BALL)) {
-                if (next_object_to_make >= 6 && next_object_to_make <= 8)  // spot objects 6-8
-                    make_current_target_object();
-                // we should also release all balls for multiplay
-            }
             break;
 
         case SW_LEFT_LANE_SECOND_BALL:
-            if (SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL)) {
-                if (next_object_to_make >= 6 && next_object_to_make <= 8) // spot objects 6-8
-                    make_current_target_object();
-            }
             break;
 
         case SW_LEFT_LANE_CAPTURED_BALL:
-            if (next_object_to_make < 9) // spot objects 1-8
-                make_current_target_object();
-            // if not object 5 is made, we should start kicking this out...
             break;
 
         case SW_LEFT_SLINGSHOT:
@@ -423,7 +317,6 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
     Coils.set_flippers_relay(1);
 
     // state
-    waiting_for_ball_in_eject_lane = 1;
     collecting_bonuses = 0;
 
     Spinner.init();
