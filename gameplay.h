@@ -67,7 +67,7 @@ public:
 class ThreeBankTargetsClass
 {
 public:
-    byte lit_center_target: 2; // 0=off, 1=top, 2=right.
+    byte lit_pink_target: 2; // 0=off, 1=top, 2=right.
     byte lit_wow_target: 3;    // 0=none, 1,2=top ones, 3,4 right ones
     void init();
     void on_target_hit(byte switch_no);
@@ -80,19 +80,32 @@ public:
 class EightBankTargetsClass
 {
 public:
-    byte object_made: 4;     // 0=none, 1..9=1..9
-    byte wow_number: 4;      // 0=none, 1..8=1..8
-    byte special_number: 4;  // 0=none, 2..8=2..8 (1 is missing)
+    byte object_made: 4;          // 0=none, 1..9=1..9
+    byte number_nine_number: 4;   // 0=none, 1..8=1..9
+    byte wow_number: 4;           // 0=none, 1..8=1..8
+    byte special_number: 4;       // 0=none, 2..8=2..8 (1 is missing)
     byte spot_number_enabled: 1;  // this is a timed mode
     byte special_made: 1;         // to allow at most one
     byte super_bonus_made: 1;
+    byte sequence[8] = { 2, 4, 6, 8, 7, 5, 3, 1 };
 
     void init();
     void on_target_hit(byte switch_no);
-    void start_spot_number_timeout()
-    static void spot_number_timed_out()
-    static void advance_wow_target()
-    static void advance_special_target()
+
+    void award_current_number();
+    void award_number_nine();
+    void award_wow();
+    void award_special();
+
+    void start_number_nine_sequence();
+    void start_wow_sequence();
+    void start_special_sequence();
+    void start_spot_number_timeout();
+
+    static void spot_number_timed_out();
+    static void advance_number_nine_target();
+    static void advance_wow_target();
+    static void advance_special_target();
 };
 
 class BallKeeperClass
@@ -103,7 +116,7 @@ public:
 
     void init();
     void enable_ball_capturing();
-    void on_switch_closed(switch_no);
+    void on_switch_closed(byte switch_no);
     bool has_captured_balls();
     bool are_all_balls_in_outhole();
     void grant_shoot_again();
@@ -112,7 +125,7 @@ public:
     void release_captured_balls(); // eject all captured balls
     static void eject_outhole_timeout_expired();     // to see if successul
     static void release_captured_timeout_expired();  // to see if other balls still there
-}
+};
 
 
 
@@ -592,16 +605,16 @@ void BonusMultiplierClass::increase_multiplier()
 
 void ThreeBankTargetsClass::init()
 {
-    lit_center_target = 0;
+    lit_pink_target = 0;
     lit_wow_target = 0;
 
     // set lamps, status etc.
     LampMatrix.lamp_off(LAMP_TOP_BANK_LEFT_TARGET);
-    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, (lit_center_target == 0));
+    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, (lit_pink_target == 1));
     LampMatrix.lamp_off(LAMP_TOP_BANK_RIGHT_TARGET);
 
     LampMatrix.lamp_off(LAMP_RIGHT_BANK_LEFT_TARGET);
-    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, (lit_center_target == 1));
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, (lit_pink_target == 2));
     LampMatrix.lamp_off(LAMP_RIGHT_BANK_RIGHT_TARGET);
 
     if (SwitchMatrix.is_switch_closed(SW_TOP_BANK_LEFT_TARGET) ||
@@ -622,12 +635,12 @@ void ThreeBankTargetsClass::init()
 void ThreeBankTargetsClass::enable_or_flip_pink_target()
 {
     // called at least when spinner is spinning
-    lit_center_target += 1;
-    if (lit_center_target >= 3)
-        lit_center_target = 1;
+    lit_pink_target += 1;
+    if (lit_pink_target >= 3)
+        lit_pink_target = 1;
 
-    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, lit_center_target == 1);
-    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, lit_center_target == 2);
+    LampMatrix.set_lamp(LAMP_TOP_BANK_CENTER_TARGET, lit_pink_target == 1);
+    LampMatrix.set_lamp(LAMP_RIGHT_BANK_CENTER_TARGET, lit_pink_target == 2);
 
     TimeKeeper.callback_later(turn_off_pink_target, GameSettings.spot_light_strategy ? 10000 : 5000);
 }
@@ -635,7 +648,7 @@ void ThreeBankTargetsClass::enable_or_flip_pink_target()
 void ThreeBankTargetsClass::turn_off_pink_target()
 {
     // remember this is a static function
-    ThreeBankTargets.lit_center_target = 0;
+    ThreeBankTargets.lit_pink_target = 0;
 
     LampMatrix.lamp_off(LAMP_TOP_BANK_CENTER_TARGET);
     LampMatrix.lamp_off(LAMP_RIGHT_BANK_CENTER_TARGET);
@@ -697,8 +710,8 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
     }
 
     // "each target scores 1,000 or 7,000 when pink lite is lit"
-    if ((lit_center_target == 0 && switch_no == SW_TOP_BANK_CENTER_TARGET) ||
-        (lit_center_target == 1 && switch_no == SW_RIGHT_BANK_CENTER_TARGET)) {
+    if ((lit_pink_target == 1 && switch_no == SW_TOP_BANK_CENTER_TARGET) ||
+        (lit_pink_target == 2 && switch_no == SW_RIGHT_BANK_CENTER_TARGET)) {
         // we could have an animation of it blinking for a while.
         Gameplay.add_score_bcd(0x7000);
     } else {
@@ -790,50 +803,160 @@ void EightBankTargetsClass::init()
     LampMatrix.lamp_on(LAMP_OBJECT_7_DROP_TARGET);
     LampMatrix.lamp_on(LAMP_OBJECT_8_DROP_TARGET);
 
-    LampMatrix.lamp_on(LAMP_OBJECT_1_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_2_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_3_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_4_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_5_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_6_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_7_WOW);
-    LampMatrix.lamp_on(LAMP_OBJECT_8_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_1_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_2_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_3_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_4_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_5_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_6_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_7_WOW);
+    LampMatrix.lamp_off(LAMP_OBJECT_8_WOW);
 
-    LampMatrix.lamp_on(LAMP_OBJECT_2_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_3_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_4_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_5_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_6_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_7_SPECIAL);
-    LampMatrix.lamp_on(LAMP_OBJECT_8_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_2_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_3_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_4_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_5_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_6_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_7_SPECIAL);
+    LampMatrix.lamp_off(LAMP_OBJECT_8_SPECIAL);
 
     LampMatrix.lamp_off(LAMP_OBJECT_9);
     LampMatrix.lamp_off(LAMP_TOP_POP_BUMPER);
     LampMatrix.lamp_off(LAMP_SUPER_BONUS_77K);
     LampMatrix.lamp_off(LAMP_ALL_TARGETS_DOWN_SPECIAL);
 
-    LampMatrix.lamp_on(LAMP_LEFT_INLANE);
-    LampMatrix.lamp_on(LAMP_RIGHT_INLANE);
-
+    LampMatrix.lamp_off(LAMP_LEFT_INLANE);
+    LampMatrix.lamp_off(LAMP_RIGHT_INLANE);
 }
 
 void EightBankTargetsClass::on_target_hit(byte switch_no)
 {
+    // let's deduce the number hit, so we can programmatically
+    // calculate things without a ton of conditions
+    byte target_no;
+    byte target_switches[] = {
+        SW_LEFT_BANK_TARGET_1,
+        SW_LEFT_BANK_TARGET_2,
+        SW_LEFT_BANK_TARGET_3,
+        SW_LEFT_BANK_TARGET_4,
+        SW_LEFT_BANK_TARGET_5,
+        SW_LEFT_BANK_TARGET_6,
+        SW_LEFT_BANK_TARGET_7,
+        SW_LEFT_BANK_TARGET_8,
+    };
+    for (target_no = 0; target_no < 8; target_no++) {
+        if (switch_no == target_switches[target_no])
+            break;
+    }
+    target_no++; // convert from 0..7 into 1..8, if not found it'll be 9.
+
+    if (target_no <= 8)
+    {
+        if (target_no == special_number) {
+            // award special
+            Audio.play(SOUND_FX_2);
+            if (GameSettings.special_award_type == 0) {
+                Gameplay.add_score_bcd(0x90000);
+            } else if (GameSettings.special_award_type == 1) {
+                Gameplay.add_score_bcd(0x130000);
+            } else if (GameSettings.special_award_type == 2) {
+                Gameplay.add_shoot_again();
+            }
+            special_made = 1;
+
+            // we need to see if special will launch again.
+            if (GameSettings.unlimited_specials) {
+                // we launch again.
+            }
+        } else if (target_no == wow_number) {
+            // award wow
+            Audio.play(SOUND_FX_2);
+            if (GameSettings.wow_award_type == 0) {
+                Gameplay.add_score_bcd(0x70000);
+            } else if (GameSettings.wow_award_type == 1) {
+                Gameplay.add_shoot_again();
+            }
+        } else if (target_no == number_nine_number) {
+            // award No 9
+            // grant No 9.
+            Audio.play(SOUND_FX_6);
+            object_made = 9;
+            // possibly kick off wow and special
+            // possibly turn on the 77K bonus
+        } else if (target_no == object_made + 1) {
+            // award No target
+            Gameplay.add_score_bcd(0x1000);
+            object_made++;
+            if (object_made == 8) {
+                // kick off No 9,
+                // possibly kick off wow and special
+                // possibly turn on the 77K bonus
+            }
+        } else {
+            // he just hit a drop target.
+        }
+    }
+    else
+    {
+        // handle other switches, bumper, inlanes...
+        // maybe make current number
+    }
+
     // if object made move to the next.
     // if 8/9 was made (depending on the settings) start WOWs and Specials.
     // if 5 was made, start the ball keeping feature
     // etc.
 
-    // "" slingshots, spinner and pop bumpers control
-    // the percentage of time dead bumper, two return lanes, two outlanes
-    // and 3 bank lites are on.
+    if (object_made >= 5)
+        BallKeeper.enable_ball_capturing();
 
+    // see if we need to reset the switches
+    // if No 8 is dropped, we definitely need to .
+    // if all are down we need as well.
+    // when else? when the next number is not down?
+}
+
+void EightBankTargetsClass::award_current_number()
+{
+}
+
+void EightBankTargetsClass::award_number_nine()
+{
+}
+
+void EightBankTargetsClass::award_wow()
+{
+}
+
+void EightBankTargetsClass::award_special()
+{
+}
+
+void EightBankTargetsClass::start_number_nine_sequence()
+{
+}
+
+
+void EightBankTargetsClass::start_wow_sequence()
+{
+}
+
+void EightBankTargetsClass::start_special_sequence()
+{
 }
 
 void EightBankTargetsClass::start_spot_number_timeout()
 {
-    // start of extend the spot number timeout.
+    // "" slingshots, spinner and pop bumpers control
+    // the percentage of time dead bumper, two return lanes, two outlanes
+    // and 3 bank lites are on.
 
+    // start of extend the spot number timeout.
+    spot_number_enabled = 1;
+
+    LampMatrix.lamp_on(LAMP_LEFT_INLANE);
+    LampMatrix.lamp_on(LAMP_RIGHT_INLANE);
+    LampMatrix.lamp_on(LAMP_TOP_POP_BUMPER);
 
     TimeKeeper.callback_later(spot_number_timed_out, GameSettings.spot_light_strategy ? 10000 : 5000);
 }
@@ -841,6 +964,15 @@ void EightBankTargetsClass::start_spot_number_timeout()
 void EightBankTargetsClass::spot_number_timed_out()
 {
     // static function to turn off pop bumper etc.
+    EightBankTargets.spot_number_enabled = false;
+    LampMatrix.lamp_off(LAMP_LEFT_INLANE);
+    LampMatrix.lamp_off(LAMP_RIGHT_INLANE);
+    LampMatrix.lamp_off(LAMP_TOP_POP_BUMPER);
+}
+
+void EightBankTargetsClass::advance_number_nine_target()
+{
+    // static function to advance nine target
 }
 
 void EightBankTargetsClass::advance_wow_target()

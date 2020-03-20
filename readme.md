@@ -140,6 +140,7 @@ I may try to find a way to build from makefile.
 * Create connectors for the various pieces.
 * pressing P2 for "normal" game will select (and display) profile number.
 * make the display digits be 0..13, not 1..7 and 9..15.
+* create an animation for a single lamp blinking fast and final value.
 
 # The menu
 
