@@ -1,6 +1,6 @@
 
 
-#include "constants.h"
+#include "../constants.h"
 
 
 // define lamp groups that work for animation
@@ -28,7 +28,7 @@ public:
     get_bitmap_func_ptr bitmap_func;
     set_lamps_func_ptr set_lamps_func;
     byte final_bitmap;      // bitmap for lamps to display at the end
-    
+
     void start(get_bitmap_func_ptr get_bitmap, byte steps, byte ticks_per_step, set_lamps_func_ptr set_lamps, byte final_bitmap)
     {
         this->current_step = 0;
@@ -42,22 +42,22 @@ public:
         // first presentation
         byte bitmap = (*this->bitmap_func)(current_step);
         (*this->set_lamps_func)(bitmap);
-        
+
         this->active = 1;
     }
-    
+
     void tick()
     {
         if (!active)
             return;
-        
+
         ticks_left -= 1;
         if (ticks_left > 0)
             return;
 
         current_step += 1;
         ticks_left = step_ticks;
-         
+
         if (current_step < steps_count)
         {
             byte bitmap = (*bitmap_func)(current_step);
@@ -70,7 +70,7 @@ public:
             active = 0;
         }
     }
-    
+
     void stop()
     {
         (*set_lamps_func)(0);
@@ -86,21 +86,21 @@ public:
 
     CAnimator();
     void init();
-    
+
     void start(byte animation_no, byte final_bitmap = 0);
     void stop_all();
-    
+
     void start_blinking(byte lamp_no);
     void stop_blinking();
-    
+
     void every_100_msecs_interrupt();
-    
+
 private:
-    byte blinking_on: 1;          // whether a lamp should blink 
+    byte blinking_on: 1;          // whether a lamp should blink
     byte blinking_lamp: 6;
     byte blinking_time: 4;        // counts up to 10 calls of 10 msec each time
     byte blinking_status: 1;
-    
+
     // in this way (having switch statements in code), we use the program memory (which we have plenty)
     // otherwise, we'd have to "bring" data from PROGMEM into ram to use it.
     static byte loop_target_increase_get_bitmap(byte step);
@@ -108,7 +108,7 @@ private:
     static byte spinner_value_increase_get_bitmap(byte step_no);
     static byte spinner_value_collect_get_bitmap(byte step_no);
     static byte bonus_multiplier_increase_get_bitmap(byte step);
-    
+
     static void loop_target_set_lamps(byte bitmap);
     static void spinner_set_lamps(byte bitmap);
     static void bonus_multiplier_set_lamps(byte bitmap);
@@ -119,8 +119,8 @@ CAnimator::CAnimator()
 {
     for (byte i = 0; i < LAMP_GROUPS_COUNT; i++)
         animations[i].active = 0;
-    
-    blinking_on = false; 
+
+    blinking_on = false;
 }
 
 void CAnimator::init()
@@ -133,47 +133,47 @@ void CAnimator::start(byte animation_no, byte final_bitmap)
     {
         case ANIM_TOP_LOOP_ADVANCE_VALUE:      // animation of lamps ramping up (1 time, upwards succession, then light the correct value, incrementatlly 1, 1+2, 1+2+3 etc)
             animations[LAMP_GROUP_LOOP_TARGET_VALUE].start(
-                loop_target_increase_get_bitmap, 
+                loop_target_increase_get_bitmap,
                 21, // steps
                 1,  // ticks per step,
                 loop_target_set_lamps,
                 final_bitmap
             );
             break;
-            
+
         case ANIM_TOP_LOOP_COLLECT_VALUE:      // animation of lamps ramping down (first blink 7 times all lit values, then 4 times quick succession downwards, single lamp chase)
             animations[LAMP_GROUP_LOOP_TARGET_VALUE].start(
-                loop_target_collect_get_bitmap, 
+                loop_target_collect_get_bitmap,
                 20, // steps
                 1,  // ticks per step,
                 loop_target_set_lamps,
                 final_bitmap
             );
             break;
-            
+
         case ANIM_SPINNER_INCREASE_VALUE:      // on the original game, there is no animation for increasing the value of the spinner
             animations[LAMP_GROUP_SPINNER_TARGET_VALUE].start(
-                spinner_value_increase_get_bitmap, 
+                spinner_value_increase_get_bitmap,
                 18, // steps
                 1,  // ticks per step,
                 spinner_set_lamps,
                 final_bitmap
             );
             break;
-            
+
         case ANIM_SPINNER_COLLECT_VALUE:       // moderate chase of one lamp each time, through the lamps that were already lit.
             animations[LAMP_GROUP_SPINNER_TARGET_VALUE].start(
-                spinner_value_collect_get_bitmap, 
+                spinner_value_collect_get_bitmap,
                 24, // steps
                 1,  // ticks per step,
                 spinner_set_lamps,
                 final_bitmap
             );
             break;
-            
+
         case ANIM_BONUS_MULTIPLIER:            // fast blink of the new value for 8 times.
             animations[LAMP_GROUP_BONUS_MULTIPLIER].start(
-                bonus_multiplier_increase_get_bitmap, 
+                bonus_multiplier_increase_get_bitmap,
                 12, // steps
                 1,  // ticks per step,
                 bonus_multiplier_set_lamps,
@@ -187,7 +187,7 @@ void CAnimator::stop_all()
 {
     for (byte i = 0; i < LAMP_GROUPS_COUNT; i++)
         animations[i].stop();
-    
+
     stop_blinking();
 }
 
@@ -196,7 +196,7 @@ void CAnimator::start_blinking(byte lamp_no)
     // extinguish previous lamp
     if (blinking_on && blinking_status)
         LampMatrix.lamp_off(blinking_lamp);
-    
+
     blinking_lamp = lamp_no;
     blinking_time = 0;
     blinking_status = 1;
@@ -208,7 +208,7 @@ void CAnimator::stop_blinking()
 {
     if (blinking_on && blinking_status)
         LampMatrix.lamp_off(blinking_lamp);
-    
+
     blinking_on = false;
 }
 
@@ -217,8 +217,8 @@ void CAnimator::every_100_msecs_interrupt()
     // diminish counters, update lamps etc.
     for (byte i = 0; i < LAMP_GROUPS_COUNT; i++)
         animations[i].tick();
-    
-    // from the videos I deducted that lamps that blinked on the original game, 
+
+    // from the videos I deducted that lamps that blinked on the original game,
     // did so at maybe 5 Hz, so 100 msecs between toggles
     if (blinking_on)
     {
@@ -229,7 +229,7 @@ void CAnimator::every_100_msecs_interrupt()
             LampMatrix.set_lamp(blinking_lamp, blinking_status);
             blinking_time = 0;
         }
-    } 
+    }
 }
 
 

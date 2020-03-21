@@ -61,10 +61,42 @@
 #include "infrastructure/score_display.h"
 #include "infrastructure/time_keeper.h"
 
-#include "animations.h"
+CAudio Audio;
+CLampMatrix LampMatrix;
+CSwitchMatrix SwitchMatrix;
+CScoreDisplay ScoreDisplay;
+CTimeKeeper TimeKeeper;
+CCoils Coils;
+
+#include "game/animations.h"
 #include "game/game_settings.h"
+#include "game/ball_keeper.h"
+#include "game/bonus_multiplier.h"
+#include "game/three_bank_targets.h"
+#include "game/eight_bank_targets.h"
+#include "game/loop_target.h"
+#include "game/spinner.h"
 #include "game/gameplay.h"
 #include "game/attract.h"
+
+CGameSettings GameSettings;
+CAnimator Animator;
+CAttract Attract;
+CGameplay Gameplay;
+LoopTargetClass LoopTarget;
+SpinnerClass Spinner;
+BonusMultiplierClass BonusMultiplier;
+ThreeBankTargetsClass ThreeBankTargets;
+EightBankTargetsClass EightBankTargets;
+BallKeeperClass BallKeeper;
+
+#include "game/bonus_multiplier.cpp"
+#include "game/three_bank_targets.cpp"
+#include "game/eight_bank_targets.cpp"
+#include "game/loop_target.cpp"
+#include "game/spinner.cpp"
+#include "game/gameplay.cpp"
+#include "game/attract.cpp"
 
 #include "timers.h"
 #include "tests_software.h"
@@ -73,16 +105,6 @@
 /**
  * Declaring global objects affords us avoiding malloc() and nasty out-of-memory surprises
  */
-CAudio Audio;
-CLampMatrix LampMatrix;
-CSwitchMatrix SwitchMatrix;
-CScoreDisplay ScoreDisplay;
-CGameSettings GameSettings;
-CAnimator Animator;
-CTimeKeeper TimeKeeper;
-CCoils Coils;
-CAttract Attract;
-CGameplay Gameplay;
 
 
 
