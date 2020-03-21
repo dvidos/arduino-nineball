@@ -15,6 +15,10 @@
  * maybe we can give 2 msecs to each column, distributing switch reads every 10 msecs.
  */
 
+#ifdef RUN_SERIAL_EMULATOR
+extern EmulatorClass Emulator;
+#endif
+
 
 class CSwitchMatrix
 {
@@ -38,8 +42,8 @@ public:
 
     void intercept_next_row();
     bool is_switch_closed(byte switch_no);
-    bool get_first_closed_switch(byte *switch_no);
-    bool get_next_switch_event(byte *switch_no, byte *was_pressed);
+    bool get_first_closed_switch(byte *p_switch_no);
+    bool get_next_switch_event(byte *p_switch_no, byte *p_was_pressed);
 };
 
 
@@ -60,6 +64,9 @@ void CSwitchMatrix::init()
 {
     SET_SWITCH_MATRIX_PINS_MODE();
     LOG("Switch Matrix initialized");
+#ifdef RUN_SERIAL_EMULATOR
+    Emulator.set_switches_buffers(switches);
+#endif
 }
 
 bool CSwitchMatrix::is_switch_closed(byte switch_no)
@@ -69,7 +76,7 @@ bool CSwitchMatrix::is_switch_closed(byte switch_no)
     return (switches[switch_no >> 3] >> (switch_no & 0x7)) & 0x01;
 }
 
-bool CSwitchMatrix::get_first_closed_switch(byte *switch_no)
+bool CSwitchMatrix::get_first_closed_switch(byte *p_switch_no)
 {
     // maybe we should disable interrupts here,
     // but this function is for diagnostics, so...
@@ -81,7 +88,7 @@ bool CSwitchMatrix::get_first_closed_switch(byte *switch_no)
         for (byte offset = 0; offset <= 8; offset++)
         {
             if ((switches[row] >> offset) & 0x1)
-                *switch_no = (row * 8) + offset;
+                *p_switch_no = (row * 8) + offset;
                 return true;
         }
     }
@@ -146,7 +153,7 @@ void CSwitchMatrix::intercept_next_row()
     switches[current_row] = new_state;
 }
 
-bool CSwitchMatrix::get_next_switch_event(byte *switch_no, byte *is_closed)
+bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
 {
 #ifndef RUN_SERIAL_EMULATOR
     if (events_queue_length == 0)
@@ -157,8 +164,8 @@ bool CSwitchMatrix::get_next_switch_event(byte *switch_no, byte *is_closed)
     noInterrupts();
 
     // we will pop from the first item
-    *switch_no = events_queue[0].switch_no;
-    *is_closed = events_queue[0].is_closed;
+    *p_switch_no = events_queue[0].switch_no;
+    *p_is_closed = events_queue[0].is_closed;
 
     // shift everything 1 byte (the size of an event)
     memmove(&events_queue[0], &events_queue[1], SWITCH_MATRIX_EVENTS_QUEUE_SIZE - 1);
@@ -171,45 +178,17 @@ bool CSwitchMatrix::get_next_switch_event(byte *switch_no, byte *is_closed)
 
     return true;
 #else
-    if (Serial.available() == 0)
-        return false;
-
-    byte received = Serial.read();
-    // LOG("Serial received byte 0x%02X (%c)", received, received);
-    *is_closed = true;
-    switch (received)
-    {
-        case '1':
-            *switch_no = SW_MENU_LEFT;
-            LOG("SW_MENU_LEFT");
-            return true;
-        case '2':
-            *switch_no = SW_MENU_RIGHT;
-            LOG("SW_MENU_RIGHT");
-            return true;
-        case 's':
-            *switch_no = SW_START;
-            LOG("SW_START");
-            return true;
-        case '[':
-            *switch_no = SW_LEFT_INLANE;
-            LOG("SW_LEFT_INLANE");
-            return true;
-        case '{':
-            *switch_no = SW_LEFT_OUTLANE;
-            LOG("SW_LEFT_OUTLANE");
-            return true;
-        case ']':
-            *switch_no = SW_RIGHT_INLANE;
-            LOG("SW_RIGHT_INLANE");
-            return true;
-        case '}':
-            *switch_no = SW_RIGHT_OUTLANE;
-            LOG("SW_RIGHT_OUTLANE");
-            return true;
+    bool gotten = Emulator.get_next_switch_event(p_switch_no, p_is_closed);
+    if (gotten) {
+        // update our bitmaps in memory (it can be slow, we don't care here)
+        if (*p_is_closed)
+            switches[(*p_switch_no) >> 3] |= (1 << ((*p_switch_no) & 0x7));
+        else
+            switches[(*p_switch_no) >> 3] &= ~(1 << ((*p_switch_no) & 0x7));
     }
-
-    return false;
+    return gotten;
 #endif
 }
+
+
 

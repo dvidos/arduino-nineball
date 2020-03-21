@@ -93,7 +93,7 @@ void ThreeBankTargetsClass::on_target_hit(byte switch_no)
         if (GameSettings.wow_award_type == 0) {
             Gameplay.add_score_bcd(0x7000);
         } else if (GameSettings.wow_award_type == 1) {
-            Gameplay.add_shoot_again();
+            BallKeeper.grant_shoot_again();
         }
 
         // we could have an animation of it blinking for a while.

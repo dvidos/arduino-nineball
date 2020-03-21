@@ -9,7 +9,6 @@ public:
     void every_100_msecs_interrupt();
 
     void add_score_bcd(dword bcd);
-    void add_shoot_again();
 
 private:
     word mode: 2;                  // mode under which we are running

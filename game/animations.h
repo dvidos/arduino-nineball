@@ -93,6 +93,7 @@ public:
     void start_blinking(byte lamp_no);
     void stop_blinking();
 
+    void blink_a_little(byte lamp_no, bool final_status);
     void every_100_msecs_interrupt();
 
 private:
@@ -100,6 +101,11 @@ private:
     byte blinking_lamp: 6;
     byte blinking_time: 4;        // counts up to 10 calls of 10 msec each time
     byte blinking_status: 1;
+
+    byte blink_a_little_lamp_no: 6;
+    byte blink_a_little_current_value: 1;
+    byte blink_a_little_final_value: 1;
+    byte blink_a_little_time_remaining: 5; // count 20 times x 100 msecs => 3.2 seconds
 
     // in this way (having switch statements in code), we use the program memory (which we have plenty)
     // otherwise, we'd have to "bring" data from PROGMEM into ram to use it.
@@ -212,6 +218,21 @@ void CAnimator::stop_blinking()
     blinking_on = false;
 }
 
+void CAnimator::blink_a_little(byte lamp_no, bool final_value)
+{
+    // first, stop any currently blinking_a_little lamp
+    if (blink_a_little_time_remaining) {
+        LampMatrix.set_lamp(blink_a_little_lamp_no, blink_a_little_final_value);
+    }
+
+    // we start with the same of the final value (which sounds like the usual case)
+    blink_a_little_current_value = blink_a_little_final_value;
+    blink_a_little_time_remaining = 20; // times 100 msec, can go up to 32.
+    blink_a_little_lamp_no = lamp_no;
+    blink_a_little_final_value = final_value;
+    LampMatrix.set_lamp(blink_a_little_lamp_no, blink_a_little_current_value);
+}
+
 void CAnimator::every_100_msecs_interrupt()
 {
     // diminish counters, update lamps etc.
@@ -228,6 +249,18 @@ void CAnimator::every_100_msecs_interrupt()
             blinking_status = !blinking_status;
             LampMatrix.set_lamp(blinking_lamp, blinking_status);
             blinking_time = 0;
+        }
+    }
+
+
+    if (blink_a_little_time_remaining > 0)
+    {
+        blink_a_little_time_remaining -= 1;
+        if (blink_a_little_time_remaining) {
+            blink_a_little_current_value ^= 1;
+            LampMatrix.set_lamp(blink_a_little_lamp_no, blink_a_little_current_value);
+        } else {
+            LampMatrix.set_lamp(blink_a_little_lamp_no, blink_a_little_final_value);
         }
     }
 }

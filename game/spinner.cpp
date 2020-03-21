@@ -23,7 +23,7 @@ void SpinnerClass::advance_value()
     if (value >= 4) // we don't reset like loop target
         return;
 
-    byte bitmap;
+    byte bitmap = 0;
     if (value >= 1) bitmap |= 0x01;
     if (value >= 2) bitmap |= 0x02;
     if (value >= 3) bitmap |= 0x04;

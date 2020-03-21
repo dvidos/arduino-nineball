@@ -1,4 +1,6 @@
 
+extern CAnimator Animator;
+
 class BallKeeperClass
 {
 public:
@@ -19,3 +21,14 @@ public:
 };
 
 
+
+void BallKeeperClass::grant_shoot_again() {
+    if (shoot_agains == 3)
+        return;
+
+    shoot_agains += 1;
+
+    // bells and whistles
+    Audio.play(SOUND_EXPLOSION);
+    Animator.blink_a_little(LAMP_SHOOT_AGAIN, 1);
+}

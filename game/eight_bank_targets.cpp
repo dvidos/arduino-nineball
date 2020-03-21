@@ -200,7 +200,7 @@ void EightBankTargetsClass::award_wow()
     if (GameSettings.wow_award_type == 0) {
         Gameplay.add_score_bcd(0x70000);
     } else if (GameSettings.wow_award_type == 1) {
-        Gameplay.add_shoot_again();
+        BallKeeper.grant_shoot_again();
     }
 
     // turn off lamps (maybe blink the one for a while?)
@@ -226,7 +226,7 @@ void EightBankTargetsClass::award_special()
     } else if (GameSettings.special_award_type == 1) {
         Gameplay.add_score_bcd(0x130000);
     } else if (GameSettings.special_award_type == 2) {
-        Gameplay.add_shoot_again();
+        BallKeeper.grant_shoot_again();
     }
 
     special_made = 1;

@@ -208,7 +208,7 @@ void CTimeKeeper::callback_later(func_ptr function, word milliseconds)
     }
     if (slot == 255) {
         // we don't have enough slots to add it!
-        FATAL_IN_ISR(5);
+        FATAL(5);
     }
 
     callbacks[slot].function = function;
