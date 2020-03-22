@@ -339,19 +339,12 @@ void test_callbacks()
 {
     LOG("testing callbacks");
     callback_integer = 0;
-    TimeKeeper.callback_later(increment_callback_integer, 20);
-    TimeKeeper.callback_later(increment_callback_integer, 2000);
-
+    TimeKeeper.callback_later(increment_callback_integer, 50);
     LOG("callback_integer is %d", callback_integer);
-
     ASSERT(callback_integer == 0);
     delay(100);
     LOG("callback_integer is %d", callback_integer);
     ASSERT(callback_integer == 1);
-    LOG("let's wait for 2 seconds...");
-    delay(2000);
-    LOG("callback_integer is %d", callback_integer);
-    ASSERT(callback_integer == 2);
 }
 
 #endif // RUN_TESTS

@@ -10,9 +10,45 @@ public:
         byte switch_no;
         const char *name;
     } keymap[40] = {
-        {'q', SW_LEFT_LANE_THIRD_BALL, "SW_LEFT_LANE_THIRD_BALL"},
-        {'a', SW_LEFT_LANE_SECOND_BALL, "SW_LEFT_LANE_SECOND_BALL"},
-        {'z', SW_LEFT_LANE_THIRD_BALL, "SW_LEFT_LANE_THIRD_BALL"},
+        {'q', SW_TOP_LOOP_PASS, "SW_TOP_LOOP_PASS"},
+        {'w', SW_TOP_LOOP_TARGET, "SW_TOP_LOOP_TARGET"},
+        {'e', SW_TOP_BANK_LEFT_TARGET, "SW_TOP_BANK_LEFT_TARGET"},
+        {'r', SW_TOP_BANK_CENTER_TARGET, "SW_TOP_BANK_CENTER_TARGET"},
+        {'t', SW_TOP_BANK_RIGHT_TARGET, "SW_TOP_BANK_RIGHT_TARGET"},
+        {'i', SW_RIGHT_BANK_LEFT_TARGET, "SW_RIGHT_BANK_LEFT_TARGET"},
+        {'o', SW_RIGHT_BANK_CENTER_TARGET, "SW_RIGHT_BANK_CENTER_TARGET"},
+        {'p', SW_RIGHT_BANK_RIGHT_TARGET, "SW_RIGHT_BANK_RIGHT_TARGET"},
+        {'u', SW_TOP_POP_BUMPER, "SW_TOP_POP_BUMPER"},
+        {'b', SW_MAIN_POP_BUMPER, "SW_MAIN_POP_BUMPER"},
+        {'y', SW_SKILL_SHOT_TARGET, "SW_SKILL_SHOT_TARGET"},
+
+        {'1', SW_LEFT_BANK_TARGET_1, "SW_LEFT_BANK_TARGET_1"},
+        {'2', SW_LEFT_BANK_TARGET_2, "SW_LEFT_BANK_TARGET_2"},
+        {'3', SW_LEFT_BANK_TARGET_3, "SW_LEFT_BANK_TARGET_3"},
+        {'4', SW_LEFT_BANK_TARGET_4, "SW_LEFT_BANK_TARGET_4"},
+        {'5', SW_LEFT_BANK_TARGET_5, "SW_LEFT_BANK_TARGET_5"},
+        {'6', SW_LEFT_BANK_TARGET_6, "SW_LEFT_BANK_TARGET_6"},
+        {'7', SW_LEFT_BANK_TARGET_7, "SW_LEFT_BANK_TARGET_7"},
+        {'8', SW_LEFT_BANK_TARGET_8, "SW_LEFT_BANK_TARGET_8"},
+
+        {'d', SW_LEFT_LANE_CAPTURED_BALL, "SW_LEFT_LANE_CAPTURED_BALL"},
+        {'s', SW_LEFT_LANE_SECOND_BALL, "SW_LEFT_LANE_SECOND_BALL"},
+        {'a', SW_LEFT_LANE_THIRD_BALL, "SW_LEFT_LANE_THIRD_BALL"},
+        {'f', SW_LEFT_LANE_EXIT, "SW_LEFT_LANE_EXIT"},
+        {'m', SW_SPINNER, "SW_SPINNER"},
+        {'j', SW_LEFT_SLINGSHOT, "SW_LEFT_SLINGSHOT"},
+        {'k', SW_RIGHT_SLINGSHOT, "SW_RIGHT_SLINGSHOT"},
+        {'g', SW_LEFT_OUTLANE, "SW_LEFT_OUTLANE"},
+        {';', SW_RIGHT_OUTLANE, "SW_LEFT_INLANE"},
+        {'h', SW_LEFT_INLANE, "SW_RIGHT_INLANE"},
+        {'k', SW_RIGHT_INLANE, "SW_RIGHT_INLANE"},
+        {'z', SW_OUTHOLE_LEFT, "SW_OUTHOLE_LEFT"},
+        {'x', SW_OUTHOLE_MIDDLE, "SW_OUTHOLE_MIDDLE"},
+        {'c', SW_OUTHOLE_RIGHT, "SW_OUTHOLE_RIGHT"},
+        {'v', SW_SHOOTING_LANE, "SW_SHOOTING_LANE"},
+        {'\\', SW_START, "SW_START"},
+        {'[', SW_MENU_LEFT, "SW_MENU_LEFT"},
+        {']', SW_MENU_RIGHT, "SW_MENU_RIGHT"},
     };
 
     byte gotten_tiddle: 1;
@@ -43,20 +79,29 @@ void EmulatorClass::set_switches_buffers(byte *buffers) {
 void EmulatorClass::keys_help() {
     LOG("Available keys");
     LOG("--------------");
-    // lets do 4 columns, gives us 10 lines, each column could be up to 25 characters
+    // lets do 3 columns, gives us 10 lines, each column could be up to 25 characters
     char line[128];
-    for (int i = 0; i < 10; i++) {
-        sprintf(line, "%c %-22s| %c %-22s| %c %-22s| %c %-22s",
-            keymap[ 0 + i].chr, keymap[ 0 + i].name,
-            keymap[10 + i].chr, keymap[10 + i].name,
-            keymap[20 + i].chr, keymap[20 + i].name,
-            keymap[30 + i].chr, keymap[30 + i].name);
+    byte array_size = sizeof(keymap) / sizeof(keymap[0]);
+    LOG("+----------------------------+----------------------------+----------------------------");
+    for (int i = 0; i < 13; i++) {
+        sprintf(line, "| %c %-28s| %c %-28s| %c %-28s |",
+            ( 0 + i < array_size) ? keymap[ 0 + i].chr : ' ',
+            ( 0 + i < array_size) ? keymap[ 0 + i].name : "",
+            (13 + i < array_size) ? keymap[13 + i].chr : ' ',
+            (13 + i < array_size) ? keymap[13 + i].name : "",
+            (26 + i < array_size) ? keymap[26 + i].chr : ' ',
+            (26 + i < array_size) ? keymap[26 + i].name : "");
         LOG(line);
     }
+    LOG("+----------------------------+----------------------------+----------------------------");
     LOG("Tiddle keeps next switch closed (no opening event is generated)");
 }
 
 void EmulatorClass::show_status() {
+
+    #define DROP_TARGET(no)     (SwitchMatrix.is_switch_closed(no) ? '_' : '#')
+    #define LAMP(no)            (LampMatrix.is_on(no) ? '@' : '.')
+
     LOG("+----------------------------+");
     LOG("| Q           _ _ _ Y<*      |");
     LOG("|  W * 173    * * *     \\    |");
@@ -116,7 +161,7 @@ bool EmulatorClass::get_next_switch_event(byte *p_switch_no, byte *p_is_closed) 
         show_status();
         return false;
     } else if (c == '~') {
-        gotten_tiddle = 1;
+        gotten_tiddle = true;
         return false;
     }
 
@@ -127,6 +172,8 @@ bool EmulatorClass::get_next_switch_event(byte *p_switch_no, byte *p_is_closed) 
     register byte buffer_index = keymap[mapping].switch_no >> 3;
     register byte bit_offset = keymap[mapping].switch_no & 0x7;
     bool already_closed = (switches_buffers[buffer_index] >> bit_offset) & 0x01;
+    LOG("Emulator, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+            switches_buffers[0], switches_buffers[1], switches_buffers[2], switches_buffers[3], switches_buffers[4]);
     if (already_closed) {
         // emulate switch opening
         LOG("%s opened", keymap[mapping].name);

@@ -25,20 +25,10 @@
 
 
 /**
- * Timeouts, requested by user code, executed by TimeKeeper,
- * injected into the "handle_event()" functions, when expired
+ * See TimeKeeper::start_timeout()
  */
-#define TIMEOUT_BALL_NINE_MOVING_TARGET  0    // move to the next moving target
-#define TIMEOUT_WOW_MOVING_TARGET        1    // move to the next moving target, skip no 1.
-#define TIMEOUT_RESET_SPINNER_VALUE      2    // spinner stopped spinning, reset its value
-#define TIMEOUT_SPECIAL_MOVING_TARGET    3    // time to move to another target!
-#define TIMEOUTS_COUNT                  16    // how many timeouts will be there.
-
-#define TIMEOUT_EVERY_HALF_SECOND_ODD  101    // recurring timeout every half second
-#define TIMEOUT_EVERY_HALF_SECOND_EVEN 102    // recurring timeout every half second
-#define TIMEOUT_EVERY_SECOND_ODD       103    // recurring timeout every second
-#define TIMEOUT_EVERY_SECOND_EVEN      104    // recurring timeout every second
-
+#define TIMEOUT_DEMO           0  // a sample timeout
+#define TIMEOUTS_COUNT         1  // update this if adding more timeouts
 
 /**
  * Lamp definitions from the lamp matrix.
@@ -147,7 +137,6 @@
 #define SW_START                      35
 #define SW_MENU_LEFT                  36
 #define SW_MENU_RIGHT                 37
-#define SW_TILT                       38
 
 
 #define SOUND_FX_1             1

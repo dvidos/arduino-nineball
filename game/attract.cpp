@@ -33,7 +33,7 @@
 
 #define ATTRACT_MODE_IDLE          0
 #define ATTRACT_MODE_GAME          1
-#define ATTRACT_MODE_RADIO         2
+#define ATTRACT_MODE_RADIO         2 // note: these should mirror the ATTRACT_MENU_*
 #define ATTRACT_MODE_SETTINGS      3
 #define ATTRACT_MODE_DIAGNOSTICS   4
 
@@ -179,16 +179,64 @@ void CAttract::start_radio_mode()
 
     // start first song
     mode = ATTRACT_MODE_RADIO;
+    ScoreDisplay.show_digit(1, mode + 1);
 
     // in this mode
     menu_item = 0;  // previous song
     item_value = 0; // song playing
 
-    // we don't have a clock, use number of microseconds since we booted.
-    randomSeed((byte)micros());
-    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
+    radio_next_song();
+}
+
+void CAttract::check_song_finished()
+{
+    // static function, called every 3 seconds
+    if (Attract.mode != ATTRACT_MODE_RADIO)
+        return; // maybe we exited while waiting
+
+    // see if song has ended, start a new one.
+    if (Audio.is_playing(Attract.item_value)) {
+        // keep the callback updated
+        TimeKeeper.callback_later(check_song_finished, 3000);
+    }
+
+    // we consider this track stopped, moving to the next
+    LOG("End of track %d detected", Attract.item_value);
+    Attract.radio_next_song();
+}
+
+void CAttract::radio_next_song()
+{
+    LOG("going to a new random song");
+
+    // keep current as previous
+    menu_item = item_value;
+
+    // try (hard) to find a new rangom song
+    for (byte i = 0; menu_item == item_value && i < 10; i++)
+        item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
+
     Audio.stop_all();
     Audio.play(item_value);
+
+    // keep the callback updated
+    TimeKeeper.callback_later(check_song_finished, 3000);
+}
+
+void CAttract::radio_prev_song()
+{
+    LOG("going to previous song");
+
+    // if we don't have the previous song, re-start the same.
+    if (menu_item) {
+        item_value = menu_item;
+        menu_item = 0; // that's the end of our history
+    }
+
+    Audio.stop_all();
+    Audio.play(item_value);
+
+    TimeKeeper.callback_later(check_song_finished, 3000);
 }
 
 void CAttract::radio_handle_event(Event& e)
@@ -203,41 +251,11 @@ void CAttract::radio_handle_event(Event& e)
                 start_idle_mode();
                 break;
             case SW_MENU_LEFT:
-                LOG("going back to previous song");
-                // if we have the prev song, use it.
-                // else, repeat the current
-                if (menu_item) {
-                    item_value = menu_item;
-                    menu_item = 0; // that's the end of our history
-                }
-                Audio.stop_all();
-                Audio.play(item_value);
+                radio_prev_song();
                 break;
             case SW_MENU_RIGHT:
-                LOG("skipping to next (random) song");
-                menu_item = item_value;
-                for (byte i = 0; menu_item == item_value && i < 10; i++)
-                    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
-                Audio.stop_all();
-                Audio.play(item_value);
+                radio_next_song();
                 break;
-        }
-    }
-    else if (e.type == timeout_expired)
-    {
-        if (e.number == TIMEOUT_EVERY_SECOND_ODD)
-        {
-            // see if song has ended, start a new one.
-            if (!Audio.is_playing(item_value))
-            {
-                // we consider this track stopped, moving to the next
-                LOG("Track %d is not playing, skipping to next (random) song", item_value);
-                menu_item = item_value;
-                for (byte i = 0; menu_item == item_value && i < 10; i++)
-                    item_value = random(SOUND_SONG_FIRST, SOUND_SONG_LAST + 1);
-                Audio.stop_all();
-                Audio.play(item_value);
-            }
         }
     }
 }
@@ -294,7 +312,7 @@ void CAttract::settings_show_menu_item_value()
 
     // show one based
     ScoreDisplay.hide_all();
-    ScoreDisplay.show_digit(1, mode);
+    ScoreDisplay.show_digit(1, mode + 1);
     ScoreDisplay.show_digit(4, (menu_item + 1) / 10);
     ScoreDisplay.show_digit(5, (menu_item + 1) % 10);
 
@@ -489,12 +507,16 @@ void CAttract::start_diagnostics_mode()
     // start the menu
     menu_item = 0;
     item_value = 0;
+    blink_on = 0;
 
     // update display
     ScoreDisplay.hide_display(0);
     ScoreDisplay.show_digit(1, mode + 1);
     ScoreDisplay.show_digit(4, menu_item / 10);
     ScoreDisplay.show_digit(5, menu_item % 10);
+
+    // a background worker to blink lamps etc.
+    TimeKeeper.callback_later(diagnostics_every_half_second, 500);
 }
 
 void CAttract::diagnostics_handle_event(Event& e)
@@ -537,33 +559,33 @@ void CAttract::diagnostics_handle_event(Event& e)
             ScoreDisplay.hide_display(1);
         }
     }
-    else if (e.type == timeout_expired)
-    {
-        // toggle lamps etc, show switch pressed etc.
-        if (menu_item == DIAGNOSTICS_LAMP_MATRIX_COLUMNS) {
-            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
-                LampMatrix.all_off();
-                LampMatrix.column_on(item_value);
-            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
-                LampMatrix.all_off();
-            }
-        } else if (menu_item == DIAGNOSTICS_LAMP_MATRIX_ROWS) {
-            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
-                LampMatrix.all_off();
-                LampMatrix.row_on(item_value);
-            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
-                LampMatrix.all_off();
-            }
-        } else if (menu_item == DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP) {
-            if (e.number == TIMEOUT_EVERY_HALF_SECOND_EVEN) {
-                LampMatrix.all_off();
-                LampMatrix.lamp_on(item_value);
-            } else if (e.number == TIMEOUT_EVERY_HALF_SECOND_ODD) {
-                LampMatrix.all_off();
-            }
-        }
+}
+
+void CAttract::diagnostics_every_half_second()
+{
+    // static function
+    if (Attract.mode != ATTRACT_MODE_DIAGNOSTICS)
+        return;
+
+    Attract.blink_on = !Attract.blink_on;
+
+    // toggle lamps etc, show switch pressed etc.
+    if (Attract.menu_item == DIAGNOSTICS_LAMP_MATRIX_COLUMNS) {
+        LampMatrix.all_off();
+        if (Attract.blink_on)
+            LampMatrix.column_on(Attract.item_value);
+    } else if (Attract.menu_item == DIAGNOSTICS_LAMP_MATRIX_ROWS) {
+        LampMatrix.all_off();
+        if (Attract.blink_on)
+            LampMatrix.row_on(Attract.item_value);
+    } else if (Attract.menu_item == DIAGNOSTICS_LAMP_MATRIX_SINGLE_LAMP) {
+        LampMatrix.all_off();
+        if (Attract.blink_on)
+            LampMatrix.lamp_on(Attract.item_value);
     }
 
+    // refresh the timneout
+    TimeKeeper.callback_later(diagnostics_every_half_second, 500);
 }
 
 void CAttract::diagnostics_show_menu_item()

@@ -98,6 +98,7 @@ bool CSwitchMatrix::get_first_closed_switch(byte *p_switch_no)
 
 void CSwitchMatrix::intercept_next_row()
 {
+#ifndef RUN_SERIAL_EMULATOR
     // called from an interrupt.
     // let's move and read the next row (0..4)
     current_row++;
@@ -151,6 +152,7 @@ void CSwitchMatrix::intercept_next_row()
 
     // now keep this to detect toggles on next time
     switches[current_row] = new_state;
+#endif // RUN_SERIAL_EMULATOR
 }
 
 bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
@@ -185,6 +187,8 @@ bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
             switches[(*p_switch_no) >> 3] |= (1 << ((*p_switch_no) & 0x7));
         else
             switches[(*p_switch_no) >> 3] &= ~(1 << ((*p_switch_no) & 0x7));
+        LOG("S.Matrix, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+            switches[0], switches[1], switches[2], switches[3], switches[4]);
     }
     return gotten;
 #endif
