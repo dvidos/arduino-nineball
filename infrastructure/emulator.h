@@ -78,11 +78,10 @@ void EmulatorClass::set_switches_buffers(byte *buffers) {
 
 void EmulatorClass::keys_help() {
     LOG("Available keys");
-    LOG("--------------");
     // lets do 3 columns, gives us 10 lines, each column could be up to 25 characters
     char line[128];
     byte array_size = sizeof(keymap) / sizeof(keymap[0]);
-    LOG("+----------------------------+----------------------------+----------------------------");
+    LOG("+-------------------------------+-------------------------------+-------------------------------");
     for (int i = 0; i < 13; i++) {
         sprintf(line, "| %c %-28s| %c %-28s| %c %-28s |",
             ( 0 + i < array_size) ? keymap[ 0 + i].chr : ' ',
@@ -93,7 +92,7 @@ void EmulatorClass::keys_help() {
             (26 + i < array_size) ? keymap[26 + i].name : "");
         LOG(line);
     }
-    LOG("+----------------------------+----------------------------+----------------------------");
+    LOG("+-------------------------------+-------------------------------+-------------------------------");
     LOG("Tiddle keeps next switch closed (no opening event is generated)");
 }
 
@@ -169,11 +168,12 @@ bool EmulatorClass::get_next_switch_event(byte *p_switch_no, byte *p_is_closed) 
     if (mapping == 0xFF)
         return false; // invalid keys ignored
 
+    //LOG("Emulator, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+    //        switches_buffers[0], switches_buffers[1], switches_buffers[2], switches_buffers[3], switches_buffers[4]);
+
     register byte buffer_index = keymap[mapping].switch_no >> 3;
     register byte bit_offset = keymap[mapping].switch_no & 0x7;
     bool already_closed = (switches_buffers[buffer_index] >> bit_offset) & 0x01;
-    LOG("Emulator, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-            switches_buffers[0], switches_buffers[1], switches_buffers[2], switches_buffers[3], switches_buffers[4]);
     if (already_closed) {
         // emulate switch opening
         LOG("%s opened", keymap[mapping].name);

@@ -107,7 +107,7 @@ void setup() {
     setup_timer_interrupts();
 
     #if defined(RUN_SOFTWARE_TESTS)
-        run_software_tests();
+        run_tests();
     #endif
 
     noInterrupts();

@@ -187,8 +187,8 @@ bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
             switches[(*p_switch_no) >> 3] |= (1 << ((*p_switch_no) & 0x7));
         else
             switches[(*p_switch_no) >> 3] &= ~(1 << ((*p_switch_no) & 0x7));
-        LOG("S.Matrix, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-            switches[0], switches[1], switches[2], switches[3], switches[4]);
+        //LOG("S.Matrix, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+        //    switches[0], switches[1], switches[2], switches[3], switches[4]);
     }
     return gotten;
 #endif

@@ -25,7 +25,7 @@ extern CAttract Attract;
 
 
 
-void run_software_tests()
+void run_tests()
 {
     BcdNum n;
 
@@ -204,7 +204,6 @@ bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount)
     } else {
         LOG("Adding %ld...", amount);
     }
-
 
     BcdNum other = BcdNum(amount);
 
