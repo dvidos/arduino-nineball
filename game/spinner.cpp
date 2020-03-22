@@ -31,6 +31,7 @@ void SpinnerClass::advance_value()
     Animator.start(ANIM_SPINNER_INCREASE_VALUE, bitmap);
 
     Audio.play(SOUND_FX_5);
+    LOG("Spinner value is now %d", value);
 }
 
 void SpinnerClass::on_spinner_spun()
@@ -64,4 +65,6 @@ void SpinnerClass::reset_spinner_value()
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_900);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_1600);
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
+
+    LOG("Spinner value reset to 100");
 }

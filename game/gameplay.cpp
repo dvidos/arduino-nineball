@@ -59,21 +59,25 @@ void CGameplay::handle_event(Event& e)
 
 void CGameplay::every_100_msecs_interrupt()
 {
-    if (running)
-    {
-        // remove one from each order of magnitude, add it to score
-        BcdNum delta = BcdNum();
-        for (byte nibble = 0; nibble < 8; nibble++)
-        {
-            if (temp_score.get_nibble(0)) {
-                delta.zero();
-                delta.set_nibble(nibble, 0x1);
-                temp_score.subtract(delta);
-                player_info[current_player].score.add(delta);
-            }
-        }
+    if (!running)
+        return;
 
-        // show on display
+    // remove one from each order of magnitude, add it to score
+    BcdNum delta = BcdNum();
+
+    bool found = false;
+    for (byte nibble = 0; nibble < 8; nibble++)
+    {
+        if (temp_score.get_nibble(nibble)) {
+            delta.zero();
+            delta.set_nibble(nibble, 0x1);
+            temp_score.subtract(delta);
+            player_info[current_player].score.add(delta);
+            found = true;
+        }
+    }
+
+    if (found) {
         ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
     }
 }
