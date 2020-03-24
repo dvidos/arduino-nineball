@@ -190,5 +190,5 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
     LoopTarget.init();
     BonusMultiplier.init(false);
     ThreeBankTargets.init();
-    EightBankTargets.init();
+    EightBankTargets.init(false);
 }
