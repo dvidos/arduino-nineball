@@ -36,11 +36,7 @@ void SpinnerClass::advance_value()
 
 void SpinnerClass::on_spinner_spun()
 {
-    dword score = 0x100;
-    if      (value == 4) score = 0x2500ul;
-    else if (value == 3) score = 0x1600ul;
-    else if (value == 2) score = 0x0900ul;
-    else if (value == 1) score = 0x0400ul;
+    dword score = get_spinner_score_bcd();
     Gameplay.add_score_bcd(score);
 
     byte bitmap = 0;
@@ -67,4 +63,13 @@ void SpinnerClass::reset_spinner_value()
     LampMatrix.lamp_off(LAMP_SPINNER_VALUE_2500);
 
     LOG("Spinner value reset to 100");
+}
+
+dword SpinnerClass::get_spinner_score_bcd()
+{
+    if      (value == 4) return 0x2500ul;
+    else if (value == 3) return 0x1600ul;
+    else if (value == 2) return 0x0900ul;
+    else if (value == 1) return 0x0400ul;
+    else                 return 0x0100ul;
 }

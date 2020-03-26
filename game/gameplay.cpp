@@ -119,6 +119,33 @@ void CGameplay::handle_switch_closed(char switch_no) {
             Spinner.advance_to_top_value();
             break;
 
+        case SW_LEFT_BANK_TARGET_1: // fallthrough, all of them.
+        case SW_LEFT_BANK_TARGET_2:
+        case SW_LEFT_BANK_TARGET_3:
+        case SW_LEFT_BANK_TARGET_4:
+        case SW_LEFT_BANK_TARGET_5:
+        case SW_LEFT_BANK_TARGET_6:
+        case SW_LEFT_BANK_TARGET_7:
+        case SW_LEFT_BANK_TARGET_8:
+        case SW_LEFT_INLANE:
+        case SW_RIGHT_INLANE:
+        case SW_TOP_POP_BUMPER:
+            EightBankTargets.on_target_hit(switch_no);
+            break;
+
+        case SW_MAIN_POP_BUMPER:
+            // scores 100 or highest value on spinner (?!?!?!?)
+            add_score_bcd(Spinner.get_spinner_score_bcd());
+            EightBankTargets.start_spot_number_timeout();
+            break;
+
+        case SW_LEFT_SLINGSHOT:
+        case SW_RIGHT_SLINGSHOT:
+            add_score_bcd(0x10);
+            EightBankTargets.start_spot_number_timeout();
+            break;
+
+
         // -------------------------------------------
         //  Things "written" above this line.
         // -------------------------------------------
@@ -128,20 +155,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
 
 
 
-        case SW_LEFT_INLANE:
-        case SW_RIGHT_INLANE:
-        case SW_MAIN_POP_BUMPER:
-        case SW_TOP_POP_BUMPER:
-        case SW_LEFT_BANK_TARGET_1:
-        case SW_LEFT_BANK_TARGET_2:
-        case SW_LEFT_BANK_TARGET_3:
-        case SW_LEFT_BANK_TARGET_4:
-        case SW_LEFT_BANK_TARGET_5:
-        case SW_LEFT_BANK_TARGET_6:
-        case SW_LEFT_BANK_TARGET_7:
-        case SW_LEFT_BANK_TARGET_8:
-            break;
-
         case SW_LEFT_LANE_THIRD_BALL:
             break;
 
@@ -150,9 +163,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
 
         case SW_LEFT_LANE_CAPTURED_BALL:
             break;
-
-        case SW_LEFT_SLINGSHOT:
-        case SW_RIGHT_SLINGSHOT:
 
         case SW_OUTHOLE_RIGHT:
             // play sad fx,

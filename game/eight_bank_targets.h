@@ -2,17 +2,31 @@
 class EightBankTargetsClass
 {
 public:
+    void init(bool was_super_bonus_made_previous_ball);
+    void on_target_hit(byte switch_no);
+    void start_spot_number_timeout();
+    void make_current_target_object(byte target_no = 0);
+
+    // static functions called by timer interrupts
+    static void spot_number_timed_out();
+    static void advance_number_nine_target();
+    static void advance_wow_target();
+    static void advance_special_target();
+    static void verify_drop_targets_are_up();
+
+private:
     byte object_made: 4;          // 0=none, 1..9=1..9
     byte number_nine_number: 4;   // 0=none, 1..8=1..9
     byte wow_number: 4;           // 0=none, 1..8=1..8
     byte special_number: 4;       // 0=none, 2..8=2..8 (1 is missing)
     byte spot_number_enabled: 1;  // this is a timed mode
+    byte left_inlane_enabled: 1;  // this allows us to flip the inlanes
+    byte right_inlane_enabled: 1;
     byte special_made: 1;         // to allow at most one
     byte super_bonus_this_ball: 1;
     byte super_bonus_previous_ball: 1;
     byte bringing_targets_up_tries: 2; // 3 or 4 tries at most.
 
-    byte objects_index[8] = { 2, 4, 6, 8, 7, 5, 3, 1 };
     struct object_info {
         byte switch_no: 6;
         byte target_lamp_no: 6;
@@ -31,8 +45,6 @@ public:
         { SW_LEFT_BANK_TARGET_8, LAMP_OBJECT_8_DROP_TARGET, LAMP_OBJECT_8_WOW, LAMP_OBJECT_8_SPECIAL, LAMP_BONUS_MADE_8 }
     };
 
-    void init(bool was_super_bonus_made_previous_ball);
-    void on_target_hit(byte switch_no);
     byte get_target_number(byte switch_no);
 
     inline void set_target_lamps(bool value);
@@ -43,7 +55,6 @@ public:
     bool all_drop_targets_down();
     bool any_drop_target_down();
     void bring_drop_targets_up();
-    static void verify_drop_targets_are_up();
 
     void award_current_number(byte target_no);
     void award_number_nine(byte target_no);
@@ -53,11 +64,7 @@ public:
     void start_number_nine_sequence();
     void start_wow_sequence();
     void start_special_sequence();
-    void start_spot_number_timeout();
 
-    static void spot_number_timed_out();
-    static void advance_number_nine_target();
-    static void advance_wow_target();
-    static void advance_special_target();
+    byte get_next_target_number(byte current = 0);
 };
 

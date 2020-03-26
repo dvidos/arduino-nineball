@@ -2,10 +2,13 @@
 
 void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
 {
+    spot_number_enabled = 0;
+    left_inlane_enabled = 0;
+    right_inlane_enabled = 0;
     object_made = 0;
+
     wow_number = 0;
     special_number = 0;
-    spot_number_enabled = 0;
     special_made = 0;
     super_bonus_this_ball = 0; // this lamp will actually light in the next ball
     super_bonus_previous_ball = was_super_bonus_made_previous_ball;
@@ -43,7 +46,7 @@ void EightBankTargetsClass::on_target_hit(byte switch_no)
         } else if (target_no == number_nine_number) {
             award_number_nine(target_no);
         } else if (target_no == object_made + 1) {
-            award_current_number(target_no);
+            make_current_target_object(target_no);
         } else {
             // he just hit a drop target.
             Audio.play(SOUND_FX_6);
@@ -54,10 +57,27 @@ void EightBankTargetsClass::on_target_hit(byte switch_no)
         if (any_drop_target_down())
             bring_drop_targets_up();
     }
-    else
+    else if ((switch_no == SW_LEFT_INLANE) ||
+            (switch_no == SW_RIGHT_INLANE) ||
+            (switch_no == SW_TOP_POP_BUMPER))
     {
-        // handle other switches, bumper, inlanes...
-        // maybe make current number
+        Audio.play(SOUND_FX_6);
+        Gameplay.add_score_bcd(0x500);
+
+        if (object_made < 8) {
+            if ((switch_no == SW_LEFT_INLANE && left_inlane_enabled) ||
+                (switch_no == SW_RIGHT_INLANE && right_inlane_enabled) ||
+                (switch_no == SW_TOP_POP_BUMPER && spot_number_enabled)) {
+                make_current_target_object();
+            }
+        }
+
+        // don't turn off the "spot number" mode,
+        // this allows more than one objects to be made quickly.
+
+        // bring things up for the next number / sequence
+        if (any_drop_target_down())
+            bring_drop_targets_up();
     }
 }
 
@@ -144,8 +164,11 @@ void EightBankTargetsClass::verify_drop_targets_are_up()
     TimeKeeper.callback_later(verify_drop_targets_are_up, 600);
 }
 
-void EightBankTargetsClass::award_current_number(byte target_no)
+void EightBankTargetsClass::make_current_target_object(byte target_no)
 {
+    if (object_made >= 8)
+        return;
+
     // award No target
     Gameplay.add_score_bcd(0x1000);
     Animator.stop_blinking();
@@ -156,6 +179,7 @@ void EightBankTargetsClass::award_current_number(byte target_no)
     }
 
     object_made += 1;
+    LOG("Made current object (%d)", object_made);
 
     // turn on bonus made
     LampMatrix.lamp_on(objects[object_made].bonus_lamp_no);
@@ -187,6 +211,7 @@ void EightBankTargetsClass::award_number_nine(byte target_no)
 {
     Audio.play(SOUND_FX_6);
     object_made = 9;
+    LOG("Made object No 9");
 
     // turn off all drop target lamps
     set_target_lamps(0);
@@ -259,7 +284,8 @@ void EightBankTargetsClass::award_special(byte target_no)
 
 void EightBankTargetsClass::start_number_nine_sequence()
 {
-    number_nine_number = 1;
+    LOG("Starting No 9 sequence");
+    number_nine_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_DROP_TARGET, number_nine_number == 1);
     LampMatrix.set_lamp(LAMP_OBJECT_2_DROP_TARGET, number_nine_number == 2);
@@ -276,7 +302,8 @@ void EightBankTargetsClass::start_number_nine_sequence()
 
 void EightBankTargetsClass::start_wow_sequence()
 {
-    wow_number = 1;
+    LOG("Starting 8-bank WOW sequence");
+    wow_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_WOW, wow_number == 1);
     LampMatrix.set_lamp(LAMP_OBJECT_2_WOW, wow_number == 2);
@@ -292,7 +319,8 @@ void EightBankTargetsClass::start_wow_sequence()
 
 void EightBankTargetsClass::start_special_sequence()
 {
-    special_number = 2;
+    LOG("Starting Special sequence");
+    special_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_2_SPECIAL, special_number == 2);
     LampMatrix.set_lamp(LAMP_OBJECT_3_SPECIAL, special_number == 3);
@@ -307,24 +335,43 @@ void EightBankTargetsClass::start_special_sequence()
 
 void EightBankTargetsClass::start_spot_number_timeout()
 {
+    LOG("Starting Spot Number timeout");
+
     // "" slingshots, spinner and pop bumpers control
     // the percentage of time dead bumper, two return lanes, two outlanes
     // and 3 bank lites are on.
 
     // start of extend the spot number timeout.
-    spot_number_enabled = 1;
+    if (!spot_number_enabled) {
+        // turn on both inlanes
+        spot_number_enabled = true;
+        left_inlane_enabled = true;
+        right_inlane_enabled = true;
+    } else {
+        // flip inlances, even if both are on.
+        if (left_inlane_enabled) {
+            left_inlane_enabled = false;
+            right_inlane_enabled = true;
+        } else {
+            left_inlane_enabled = true;
+            right_inlane_enabled = false;
+        }
+    }
 
-    LampMatrix.lamp_on(LAMP_LEFT_INLANE);
-    LampMatrix.lamp_on(LAMP_RIGHT_INLANE);
+    LampMatrix.set_lamp(LAMP_LEFT_INLANE, left_inlane_enabled);
+    LampMatrix.set_lamp(LAMP_RIGHT_INLANE, right_inlane_enabled);
     LampMatrix.lamp_on(LAMP_TOP_POP_BUMPER);
 
-    TimeKeeper.callback_later(spot_number_timed_out, GameSettings.spot_light_strategy ? 10000 : 5000);
+    TimeKeeper.callback_later(spot_number_timed_out,
+        GameSettings.spot_light_strategy ? 12000 : 5000);
 }
 
 void EightBankTargetsClass::spot_number_timed_out()
 {
     // static function to turn off pop bumper etc.
     EightBankTargets.spot_number_enabled = false;
+    EightBankTargets.left_inlane_enabled = false;
+    EightBankTargets.right_inlane_enabled = false;
 
     LampMatrix.lamp_off(LAMP_LEFT_INLANE);
     LampMatrix.lamp_off(LAMP_RIGHT_INLANE);
@@ -337,9 +384,7 @@ void EightBankTargetsClass::advance_number_nine_target()
     if (EightBankTargets.number_nine_number == 0)
         return; // maybe it was made, while we were waiting.
 
-    EightBankTargets.number_nine_number += 1;
-    if (EightBankTargets.number_nine_number > 8)
-        EightBankTargets.number_nine_number = 1;
+    EightBankTargets.number_nine_number = EightBankTargets.get_next_target_number(EightBankTargets.number_nine_number);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_DROP_TARGET, EightBankTargets.number_nine_number == 1);
     LampMatrix.set_lamp(LAMP_OBJECT_2_DROP_TARGET, EightBankTargets.number_nine_number == 2);
@@ -357,9 +402,7 @@ void EightBankTargetsClass::advance_wow_target()
     if (EightBankTargets.wow_number == 0)
         return; // maybe it was made, while we were waiting.
 
-    EightBankTargets.wow_number += 1;
-    if (EightBankTargets.wow_number > 8)
-        EightBankTargets.wow_number = 1;
+    EightBankTargets.wow_number = EightBankTargets.get_next_target_number(EightBankTargets.wow_number);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_WOW, EightBankTargets.wow_number == 1);
     LampMatrix.set_lamp(LAMP_OBJECT_2_WOW, EightBankTargets.wow_number == 2);
@@ -379,9 +422,7 @@ void EightBankTargetsClass::advance_special_target()
     if (EightBankTargets.special_number == 0)
         return; // maybe it was made, while we were waiting.
 
-    EightBankTargets.special_number += 1;
-    if (EightBankTargets.special_number > 8)
-        EightBankTargets.special_number = 2;
+    EightBankTargets.special_number = EightBankTargets.get_next_target_number(EightBankTargets.special_number);
 
     LampMatrix.set_lamp(LAMP_OBJECT_2_SPECIAL, EightBankTargets.special_number == 2);
     LampMatrix.set_lamp(LAMP_OBJECT_3_SPECIAL, EightBankTargets.special_number == 3);
@@ -394,5 +435,21 @@ void EightBankTargetsClass::advance_special_target()
     TimeKeeper.callback_later(advance_special_target, 800);
 }
 
+byte EightBankTargetsClass::get_next_target_number(byte current)
+{
+    switch (current)
+    {
+        case 2: return 4;
+        case 4: return 6;
+        case 6: return 8;
+        case 8: return 7;
+        case 7: return 5;
+        case 5: return 3;
+        case 3: return 1;
+        case 1: return 2;
+    }
 
+    // all others...
+    return 2; // the first one.
+}
 
