@@ -88,6 +88,7 @@ BallKeeperClass BallKeeper;
 #include "game/eight_bank_targets.cpp"
 #include "game/loop_target.cpp"
 #include "game/spinner.cpp"
+#include "game/ball_keeper.cpp"
 #include "game/gameplay.cpp"
 #include "game/attract.cpp"
 

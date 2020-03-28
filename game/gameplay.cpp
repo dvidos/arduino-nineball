@@ -13,7 +13,6 @@
     slingshots, spinner and pop bumpers control the percentage of the time that the dead bumper, the two return lanes
     and the two outlanes and the two 3-bank lites are on. it can be setup to liberal or conservative.
 
-
 */
 
 extern CAudio Audio;
@@ -47,7 +46,21 @@ void CGameplay::start(byte mode)
     this->prepare_game(0, 0);
     running = 1;
 
+    // for any balls in capture lane,
+    // drain them and wait for all to be collected to outhole
+
+    BallKeeper.drain_any_captured_balls();
+
     LOG("Gameplay started in mode %d", mode);
+
+    // we should derive the number of players and the number of balls.
+    // then for each player/ball, we do
+    BallKeeper.start_ball();
+    // when
+    BallKeeper.is_ball_game_over();
+    // we assign bonus
+    // then move to next player/ball
+    // when all exhausted, we go to idle
 }
 
 void CGameplay::handle_event(Event& e)
@@ -152,25 +165,25 @@ void CGameplay::handle_switch_closed(char switch_no) {
 
 
 
-
-
-
-        case SW_LEFT_LANE_THIRD_BALL:
-            break;
-
+        case SW_LEFT_LANE_CAPTURED_BALL: // fallthrough all of them
         case SW_LEFT_LANE_SECOND_BALL:
-            break;
-
-        case SW_LEFT_LANE_CAPTURED_BALL:
-            break;
-
+        case SW_LEFT_LANE_THIRD_BALL:
         case SW_OUTHOLE_RIGHT:
-            // play sad fx,
-            // fall into state of assigning bonus,
-            // etc
+        case SW_OUTHOLE_MIDDLE:
+        case SW_OUTHOLE_LEFT:
+        case SW_SHOOTING_LANE:
+            BallKeeper.on_switch_closed(switch_no);
+            // we have to see if game is over,
+            // or consume shoot again
+            // then assign bonus (one-by-one),
+            // move to next player or ball
+            //if all finished, go back to attract mode.
+            break;
 
         case SW_START:
             // add user before ball leaves the shooter
+            // also, P2 could be used to denote profile No,
+            // prior to pressing start...
             break;
     }
 }
