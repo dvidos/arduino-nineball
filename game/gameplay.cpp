@@ -46,16 +46,13 @@ void CGameplay::start(byte mode)
     this->prepare_game(0, 0);
     running = 1;
 
-    // for any balls in capture lane,
-    // drain them and wait for all to be collected to outhole
-
-    BallKeeper.drain_any_captured_balls();
+    // if not 3 balls in outhole, do not start
 
     LOG("Gameplay started in mode %d", mode);
 
     // we should derive the number of players and the number of balls.
     // then for each player/ball, we do
-    BallKeeper.start_ball();
+    BallKeeper.send_ball_to_shooting_lane();
     // when
     BallKeeper.is_ball_game_over();
     // we assign bonus

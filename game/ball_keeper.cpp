@@ -5,63 +5,75 @@ void BallKeeperClass::init()
     ball_game_over = false;
     shoot_agains = 0;
     ball_capture_enabled = false;
-    releasing_balls = 0;
-    serving_shooting_ball = 0;
+    ball_release_in_progress = false;
+    release_all_balls = false;
+    ball_serving_in_progress = false;
     eject_tries = 0;
 
     LampMatrix.lamp_off(LAMP_CAPTURE_BALL);
     LampMatrix.lamp_off(LAMP_SHOOT_AGAIN);
 }
 
+/**
+ * Called at machine boot time, way before attract
+ * It's called from setup(), so can delay
+ */
+void BallKeeperClass::drain_any_captured_balls()
+{
+    byte count = count_captured_balls();
+    if (count == 0)
+        return;
+
+    LOG("Releasing balls and waiting for draining");
+    release_captured_balls();
+
+    while (1) {
+        count = count_drained_balls();
+        if (count == 3)
+            break;
+        delay(1000);
+    };
+}
+
 void BallKeeperClass::on_switch_closed(byte switch_no)
 {
     // we will ignore events if we are in progress of ejecting
-    // from capture lane or outhole
-    // (as other balls settle into place)
-    switch (switch_no)
-    {
-        case SW_LEFT_LANE_CAPTURED_BALL:
-            if (!releasing_balls)
-                on_ball_captured();
-            break;
+    // from capture lane or outhole (as other balls settle into place)
 
-        case SW_LEFT_LANE_SECOND_BALL:
-            if (!releasing_balls &&
-                SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL))
-                on_ball_captured();
-            break;
-
-        case SW_LEFT_LANE_THIRD_BALL:
-            if (!releasing_balls &&
+    if (!ball_release_in_progress) {
+        if (
+            (switch_no == SW_LEFT_LANE_CAPTURED_BALL) ||
+            (
+                switch_no == SW_LEFT_LANE_SECOND_BALL &&
+                SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL)
+            ) ||
+            (
+                switch_no == SW_LEFT_LANE_THIRD_BALL &&
                 SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL) &&
-                SwitchMatrix.is_switch_closed(SW_LEFT_LANE_SECOND_BALL))
-                on_ball_captured();
-            break;
+                SwitchMatrix.is_switch_closed(SW_LEFT_LANE_SECOND_BALL)
+            )
+        )
+            on_ball_captured();
+    }
 
-        case SW_OUTHOLE_RIGHT:
-            if (!serving_shooting_ball)
-                on_ball_drained();
-            break;
-
-        case SW_OUTHOLE_MIDDLE:
-            if (!serving_shooting_ball &&
-                SwitchMatrix.is_switch_closed(SW_OUTHOLE_RIGHT))
-                on_ball_drained();
-            break;
-
-        case SW_OUTHOLE_LEFT:
-            if (!serving_shooting_ball &&
+    if (!ball_serving_in_progress) {
+        if (
+            (switch_no == SW_OUTHOLE_RIGHT) ||
+            (
+                switch_no == SW_OUTHOLE_MIDDLE &&
+                SwitchMatrix.is_switch_closed(SW_OUTHOLE_RIGHT)
+            ) ||
+            (
+                switch_no == SW_OUTHOLE_LEFT &&
                 SwitchMatrix.is_switch_closed(SW_OUTHOLE_MIDDLE) &&
-                SwitchMatrix.is_switch_closed(SW_OUTHOLE_RIGHT))
-                on_ball_drained();
-            break;
-
-        case SW_SHOOTING_LANE:
-            // flag that we landed -- do we care?
+                SwitchMatrix.is_switch_closed(SW_OUTHOLE_RIGHT)
+            )
+        )
+            on_ball_drained();
     }
 }
 
-void BallKeeperClass::is_ball_game_over() {
+bool BallKeeperClass::is_ball_game_over() {
     return ball_game_over;
 }
 
@@ -97,7 +109,7 @@ void BallKeeperClass::on_ball_captured()
     }
 
     // there is no ball in the playfield, give one to player
-    LOG("No ball in playfield, giving one to player");
+    LOG("Ball captured, giving one to player");
     send_ball_to_shooting_lane();
     return;
 }
@@ -122,9 +134,7 @@ void BallKeeperClass::on_ball_drained()
     if (captured > 0) {
         // it seems a ball is still in play, so don't worry
         LOG("Releasing one captured ball for user");
-        releasing_balls = true;
-        TimeKeeper.callback_later(turn_off_releasing_balls, 1000);
-        Coils.fire_capture_lane_eject();
+        release_captured_balls(false);
         return;
     }
 
@@ -162,19 +172,22 @@ void BallKeeperClass::enable_ball_capturing()
     Animator.blink_a_little(LAMP_CAPTURE_BALL, 1);
 }
 
-void BallKeeperClass::release_captured_balls()
+void BallKeeperClass::release_captured_balls(bool all_balls)
 {
     LOG("Releasing captured balls");
     eject_tries = 0;
-    releasing_balls = true;
+    ball_release_in_progress = true;
+    release_all_balls = all_balls;
+
     Coils.fire_capture_lane_eject();
-    TimeKeeper.callback_later(check_all_captured_balls_released, 1000);
+    TimeKeeper.callback_later(check_release_captured_balls, 1000);
 }
 
 void BallKeeperClass::send_ball_to_shooting_lane()
 {
     LOG("Sending to shooting lane");
     eject_tries = 0;
+    ball_serving_in_progress = true;
     Coils.fire_outhole_eject();
     TimeKeeper.callback_later(check_ball_got_to_eject_lane, 3000);
 }
@@ -194,7 +207,7 @@ byte BallKeeperClass::count_captured_balls()
     return balls;
 }
 
-btye BallKeeperClass::count_drained_balls()
+byte BallKeeperClass::count_drained_balls()
 {
     byte balls = 0;
 
@@ -208,49 +221,51 @@ btye BallKeeperClass::count_drained_balls()
     return balls;
 }
 
-void BallKeeperClass::check_all_captured_balls_released()
+void BallKeeperClass::check_release_captured_balls()
 {
+    if (!BallKeeper.release_all_balls) {
+        // if we don't care for all balls, we are good.
+        BallKeeper.ball_release_in_progress = false;
+        return;
+    }
+
     // if all balls are out, we are good.
     if (!SwitchMatrix.is_switch_closed(SW_LEFT_LANE_CAPTURED_BALL) &&
         !SwitchMatrix.is_switch_closed(SW_LEFT_LANE_SECOND_BALL) &&
         !SwitchMatrix.is_switch_closed(SW_LEFT_LANE_THIRD_BALL))
-        releasing_balls = false;
+        BallKeeper.ball_release_in_progress = false;
         return;
 
     // try again, up to some efforts
     BallKeeper.eject_tries++;
     if (BallKeeper.eject_tries == 7) {
         LOG("Warning: failed releasing captured balls");
-        releasing_balls = false;
+        BallKeeper.ball_release_in_progress = false;
         return;
     }
 
-    releasing_balls = true;
+    BallKeeper.ball_release_in_progress = true;
     Coils.fire_capture_lane_eject();
-    TimeKeeper.callback_later(BallKeeperClass::check_all_captured_balls_released, 1000);
+    TimeKeeper.callback_later(BallKeeperClass::check_release_captured_balls, 1000);
 }
 
 void BallKeeperClass::check_ball_got_to_eject_lane()
 {
     // if ball made it to eject lane, we are good.
-    if (SwitchMatrix.is_switch_closed(SW_SHOOTING_LANE))
+    if (SwitchMatrix.is_switch_closed(SW_SHOOTING_LANE)) {
+        BallKeeper.ball_serving_in_progress = false;
         return;
+    }
 
     // try again, up to some efforts
     BallKeeper.eject_tries++;
     if (BallKeeper.eject_tries == 5) {
         LOG("Warning: failed launching ball in shooting lane");
+        BallKeeper.ball_serving_in_progress = false;
         return;
     }
 
+    BallKeeper.ball_serving_in_progress = true;
     Coils.fire_outhole_eject();
-    TimeKeeper.callback_later(BallKeeperClass::check_eject_lane, 3000);
-}
-
-void BallKeeperClass::turn_off_releasing_balls() {
-    BallKeeper.releasing_balls = false;
-}
-
-void BallKeeperClass::turn_off_serving_shooting_ball() {
-    BallKeeper.serving_shooting_ball = false;
+    TimeKeeper.callback_later(BallKeeperClass::check_ball_got_to_eject_lane, 3000);
 }

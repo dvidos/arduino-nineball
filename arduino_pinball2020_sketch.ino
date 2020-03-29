@@ -124,6 +124,7 @@ void setup() {
     interrupts();
 
     GameSettings.load_from_eeprom();
+    BallKeeper.drain_any_captured_balls();
     Attract.start();
 
     #ifdef RUN_SERIAL_EMULATOR
