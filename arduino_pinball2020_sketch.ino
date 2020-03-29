@@ -14,7 +14,7 @@
 /**
  * Enable this to run some software tests at startup, results on serial port
  */
-//#define RUN_SOFTWARE_TESTS
+#define RUN_SOFTWARE_TESTS
 
 
 /**
