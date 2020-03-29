@@ -12,8 +12,6 @@ public:
 
 Event::Event()
 {
-    this->type = timeout_expired;
-    this->number = 0xFF; // hopefully an invalid number
 }
 
 Event::Event(event_type type, byte number)

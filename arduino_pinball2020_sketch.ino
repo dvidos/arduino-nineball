@@ -150,12 +150,6 @@ void loop() {
         e.number = number;
         Attract.handle_event(e);
     }
-    else if (TimeKeeper.get_next_expiration_event(&number))
-    {
-        e.type = timeout_expired;
-        e.number = number;
-        Attract.handle_event(e);
-    }
 }
 
 

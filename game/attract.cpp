@@ -167,6 +167,13 @@ void CAttract::idle_handle_event(Event& e)
 
 void CAttract::start_game_mode(byte game_mode)
 {
+    if (BallKeeper.count_drained_balls() != 3) {
+        // find a way to convey that not all 3 balls are in outhole.
+        Animator.blink_a_little(LAMP_START, 0);
+        Animator.blink_a_little(LAMP_SHOOT_AGAIN, 0);
+        return;
+    }
+
     LOG("Attract starting game mode");
 
     mode = ATTRACT_MODE_GAME;

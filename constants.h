@@ -24,11 +24,6 @@
 #define ANIM_BONUS_MULTIPLIER         5    // fast blink of the new value for 8 times.
 
 
-/**
- * See TimeKeeper::start_timeout()
- */
-#define TIMEOUT_DEMO           0  // a sample timeout
-#define TIMEOUTS_COUNT         1  // update this if adding more timeouts
 
 /**
  * Lamp definitions from the lamp matrix.

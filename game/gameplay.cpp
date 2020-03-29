@@ -15,20 +15,6 @@
 
 */
 
-extern CAudio Audio;
-extern CAnimator Animator;
-extern CSwitchMatrix SwitchMatrix;
-extern CTimeKeeper TimeKeeper;
-extern CCoils Coils;
-extern CScoreDisplay ScoreDisplay;
-extern CGameSettings GameSettings;
-extern LoopTargetClass LoopTarget;
-extern SpinnerClass Spinner;
-extern BonusMultiplierClass BonusMultiplier;
-extern ThreeBankTargetsClass ThreeBankTargets;
-extern EightBankTargetsClass EightBankTargets;
-extern BallKeeperClass BallKeeper;
-
 
 CGameplay::CGameplay()
 {
@@ -211,4 +197,5 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
     BonusMultiplier.init(false);
     ThreeBankTargets.init();
     EightBankTargets.init(false);
+    BallKeeper.init();
 }

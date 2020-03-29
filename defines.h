@@ -9,7 +9,6 @@ typedef unsigned long dword;
 typedef enum {
     switch_closed,
     switch_opened,
-    timeout_expired,
 } event_type;
 
 typedef void (*func_ptr)();
