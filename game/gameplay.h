@@ -5,7 +5,7 @@ class CGameplay
 public:
     CGameplay();
     void start(byte mode);
-    void handle_event(Event& e);
+    void handle_switch(byte switch_no);
     void every_100_msecs_interrupt();
 
     void add_score_bcd(dword bcd);
@@ -24,8 +24,6 @@ private:
 
     word running: 1;               // whether we are running (or merely existing in memory)
     word collecting_bonuses: 1;
-
-    void handle_switch_closed(char switch_no);
 
     void prepare_game(byte player_no, byte ball_no);
     void make_current_target_object();

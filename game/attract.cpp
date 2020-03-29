@@ -89,24 +89,24 @@ void CAttract::start()
     start_idle_mode();
 }
 
-void CAttract::handle_event(Event& e)
+void CAttract::handle_switch(byte switch_no)
 {
     switch (mode)
     {
         case ATTRACT_MODE_IDLE:
-            idle_handle_event(e);
+            idle_handle_switch(switch_no);
             break;
         case ATTRACT_MODE_GAME:
-            Gameplay.handle_event(e);
+            Gameplay.handle_switch(switch_no);
             break;
         case ATTRACT_MODE_RADIO:
-            radio_handle_event(e);
+            radio_handle_switch(switch_no);
             break;
         case ATTRACT_MODE_DIAGNOSTICS:
-            diagnostics_handle_event(e);
+            diagnostics_handle_switch(switch_no);
             break;
         case ATTRACT_MODE_SETTINGS:
-            settings_handle_event(e);
+            settings_handle_switch(switch_no);
             break;
     }
 }
@@ -129,39 +129,36 @@ void CAttract::start_idle_mode()
     Animator.start(ANIM_BONUS_MULTIPLIER);
 }
 
-void CAttract::idle_handle_event(Event& e)
+void CAttract::idle_handle_switch(byte switch_no)
 {
-    if (e.type == switch_closed)
+    switch (switch_no)
     {
-        switch (e.number)
-        {
-            case SW_MENU_LEFT:
-                // next menu selection.
-                // maybe play audio that announces it.
-                // maybe start timeout to remove it.
-                menu_item++;
-                if (menu_item >= ATTRACT_MENU_ITEMS_COUNT)
-                    menu_item = 0;
-                ScoreDisplay.hide_display(0);
-                ScoreDisplay.show_digit(1, menu_item + 1);
-                break;
+        case SW_MENU_LEFT:
+            // next menu selection.
+            // maybe play audio that announces it.
+            // maybe start timeout to remove it.
+            menu_item++;
+            if (menu_item >= ATTRACT_MENU_ITEMS_COUNT)
+                menu_item = 0;
+            ScoreDisplay.hide_display(0);
+            ScoreDisplay.show_digit(1, menu_item + 1);
+            break;
 
-            case SW_START:
-                // start something depending on menu selection
-                // may play a sound FX too (especcially if starting a game)
-                if (menu_item == ATTRACT_MENU_NORMAL_GAME) {
-                    start_game_mode(GAMEPLAY_MODE_NORMAL);
-                } else if (menu_item == ATTRACT_MENU_EVA_HAPPY_MODE) {
-                    start_game_mode(GAMEPLAY_MODE_EVA_HAPPY);
-                } else if (menu_item == ATTRACT_MENU_RADIO) {
-                    start_radio_mode();
-                } else if (menu_item == ATTRACT_MENU_SETTINGS) {
-                    start_settings_mode();
-                } else if (menu_item == ATTRACT_MENU_DIAGNOSTICS) {
-                    start_diagnostics_mode();
-                }
-                break;
-        }
+        case SW_START:
+            // start something depending on menu selection
+            // may play a sound FX too (especcially if starting a game)
+            if (menu_item == ATTRACT_MENU_NORMAL_GAME) {
+                start_game_mode(GAMEPLAY_MODE_NORMAL);
+            } else if (menu_item == ATTRACT_MENU_EVA_HAPPY_MODE) {
+                start_game_mode(GAMEPLAY_MODE_EVA_HAPPY);
+            } else if (menu_item == ATTRACT_MENU_RADIO) {
+                start_radio_mode();
+            } else if (menu_item == ATTRACT_MENU_SETTINGS) {
+                start_settings_mode();
+            } else if (menu_item == ATTRACT_MENU_DIAGNOSTICS) {
+                start_diagnostics_mode();
+            }
+            break;
     }
 }
 
@@ -246,24 +243,21 @@ void CAttract::radio_prev_song()
     TimeKeeper.callback_later(check_song_finished, 3000);
 }
 
-void CAttract::radio_handle_event(Event& e)
+void CAttract::radio_handle_switch(byte switch_no)
 {
-    if (e.type == switch_closed)
+    switch (switch_no)
     {
-        switch (e.number)
-        {
-            case SW_START:
-                LOG("stopping radio mode");
-                Audio.stop_all();
-                start_idle_mode();
-                break;
-            case SW_MENU_LEFT:
-                radio_prev_song();
-                break;
-            case SW_MENU_RIGHT:
-                radio_next_song();
-                break;
-        }
+        case SW_START:
+            LOG("stopping radio mode");
+            Audio.stop_all();
+            start_idle_mode();
+            break;
+        case SW_MENU_LEFT:
+            radio_prev_song();
+            break;
+        case SW_MENU_RIGHT:
+            radio_next_song();
+            break;
     }
 }
 
@@ -281,35 +275,32 @@ void CAttract::start_settings_mode()
     settings_show_menu_item_value();
 }
 
-void CAttract::settings_handle_event(Event& e)
+void CAttract::settings_handle_switch(byte switch_no)
 {
-    if (e.type == switch_closed)
+    switch (switch_no)
     {
-        switch (e.number)
-        {
-            case SW_START:
-                // exit without saving
-                // to avoid messing around without saving,
-                // we reload the eeprom settinsg.
-                LOG("Exiting without saving");
-                GameSettings.load_from_eeprom();
-                start_idle_mode();
-                break;
-            case SW_MENU_LEFT:
-                menu_item += 1;
-                if (menu_item >= SETTINGS_OPTIONS_COUNT)
-                    menu_item = 0;
-                settings_show_menu_item_value();
-                item_value = 0;
-                break;
-            case SW_MENU_RIGHT:
-                settings_change_menu_item_value();
-                // there's a chance we did save-and-exit
-                if (mode != ATTRACT_MODE_SETTINGS)
-                    return;
-                settings_show_menu_item_value();
-                break;
-        }
+        case SW_START:
+            // exit without saving
+            // to avoid messing around without saving,
+            // we reload the eeprom settinsg.
+            LOG("Exiting without saving");
+            GameSettings.load_from_eeprom();
+            start_idle_mode();
+            break;
+        case SW_MENU_LEFT:
+            menu_item += 1;
+            if (menu_item >= SETTINGS_OPTIONS_COUNT)
+                menu_item = 0;
+            settings_show_menu_item_value();
+            item_value = 0;
+            break;
+        case SW_MENU_RIGHT:
+            settings_change_menu_item_value();
+            // there's a chance we did save-and-exit
+            if (mode != ATTRACT_MODE_SETTINGS)
+                return;
+            settings_show_menu_item_value();
+            break;
     }
 }
 
@@ -526,45 +517,36 @@ void CAttract::start_diagnostics_mode()
     TimeKeeper.callback_later(diagnostics_every_half_second, 500);
 }
 
-void CAttract::diagnostics_handle_event(Event& e)
+void CAttract::diagnostics_handle_switch(byte switch_no)
 {
-    if (e.type == switch_closed)
+    switch (switch_no)
     {
-        switch (e.number)
-        {
-            case SW_START:
-                // exit
-                start_idle_mode();
-                break;
-            case SW_MENU_LEFT:
-                menu_item += 1;
-                if (menu_item >= DIAGNOSTICS_OPTIONS_COUNT)
-                    menu_item = 0;
-                item_value = 0;
-                diagnostics_show_menu_item();
-                break;
-            case SW_MENU_RIGHT:
-                diagnostics_menu_item_action();
-                // there's a chance we did save-and-exit
-                if (mode != ATTRACT_MODE_DIAGNOSTICS)
-                    return;
-                diagnostics_show_menu_item();
-                break;
-            default:
-                if (menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
-                    // show any switch pressed on the display.
-                    ScoreDisplay.show_digit(14, e.number / 10);
-                    ScoreDisplay.show_digit(15, e.number % 10);
-                }
-                break;
-        }
-    }
-    else if (e.type == switch_opened)
-    {
-        if (menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
-            // clear display if switch is up
-            ScoreDisplay.hide_display(1);
-        }
+        case SW_START:
+            // exit
+            start_idle_mode();
+            break;
+        case SW_MENU_LEFT:
+            menu_item += 1;
+            if (menu_item >= DIAGNOSTICS_OPTIONS_COUNT)
+                menu_item = 0;
+            item_value = 0;
+            diagnostics_show_menu_item();
+            break;
+        case SW_MENU_RIGHT:
+            diagnostics_menu_item_action();
+            // there's a chance we did save-and-exit
+            if (mode != ATTRACT_MODE_DIAGNOSTICS)
+                return;
+            diagnostics_show_menu_item();
+            break;
+        default:
+            if (menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
+                // show any switch pressed on the display.
+                // this here allows immediate display of the switch upon closure
+                ScoreDisplay.show_digit(14, switch_no / 10);
+                ScoreDisplay.show_digit(15, switch_no % 10);
+            }
+            break;
     }
 }
 
@@ -589,6 +571,13 @@ void CAttract::diagnostics_every_half_second()
         LampMatrix.all_off();
         if (Attract.blink_on)
             LampMatrix.lamp_on(Attract.item_value);
+    } else if (Attract.menu_item == DIAGNOSTICS_SWITCH_MATRIX) {
+        // a closed switch event will display the switch immediately
+        // here, we clear the display if no switch is pressed.
+        // if we displayed the switch here, we might have .5 secs delay.
+        byte switch_no;
+        if (!SwitchMatrix.get_first_closed_switch(&switch_no))
+            ScoreDisplay.hide_display(1);
     }
 
     // refresh the timneout
@@ -674,7 +663,7 @@ void CAttract::diagnostics_menu_item_action()
                 item_value = 0;
             break;
         case DIAGNOSTICS_SWITCH_MATRIX:                 // display num of switch closed.
-            // nothing. taken care on the handle_event() function
+            // nothing. taken care on the handle_switch() function
             break;
         case DIAGNOSTICS_COILS:                         // fire a coil every second.          P2=start & next coil
             // original game fires coils in a row, automatically.

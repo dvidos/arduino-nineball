@@ -46,13 +46,6 @@ void CGameplay::start(byte mode)
     // when all exhausted, we go to idle
 }
 
-void CGameplay::handle_event(Event& e)
-{
-    if (e.type == switch_closed) {
-        handle_switch_closed(e.number);
-    }
-}
-
 void CGameplay::every_100_msecs_interrupt()
 {
     if (!running)
@@ -83,7 +76,7 @@ void CGameplay::add_score_bcd(dword bcd)
     temp_score.add_bcd(bcd);
 }
 
-void CGameplay::handle_switch_closed(char switch_no) {
+void CGameplay::handle_switch(byte switch_no) {
     switch (switch_no)
     {
         case SW_TOP_LOOP_PASS:  // fallthrough
@@ -140,13 +133,6 @@ void CGameplay::handle_switch_closed(char switch_no) {
             add_score_bcd(0x10);
             EightBankTargets.start_spot_number_timeout();
             break;
-
-
-        // -------------------------------------------
-        //  Things "written" above this line.
-        // -------------------------------------------
-
-
 
         case SW_LEFT_LANE_CAPTURED_BALL: // fallthrough all of them
         case SW_LEFT_LANE_SECOND_BALL:

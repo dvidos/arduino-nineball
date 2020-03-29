@@ -139,6 +139,11 @@ void CSwitchMatrix::intercept_next_row()
             byte switch_no = (current_row << 3) + offset; // (row * 8) + offset
             byte is_closed = (new_state >> offset) & 0x1;
 
+            // it seems we don't need opening events, so we can ignore them.
+            // the is_switch_closed() function seems to cover the need.
+            if (!is_closed)
+                continue;
+
             // we can detect queue overflow here
             if (events_queue_length >= SWITCH_MATRIX_EVENTS_QUEUE_SIZE) {
                 FATAL_IN_ISR(3); // this will stop Arduino and will repeatedly flash the embedded LED

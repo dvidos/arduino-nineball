@@ -38,7 +38,6 @@
 #include "defines.h"
 #include "constants.h"
 #include "bcdnum.h"
-#include "event.h"
 
 #ifdef RUN_SERIAL_EMULATOR
   #include "infrastructure/emulator.h"
@@ -137,19 +136,13 @@ void loop() {
     // if a FATAL had happened while in an ISR, we can now handle it.
     CHECK_FATAL_IN_ISR();
 
-    // get event from switch matrix and timeouts
     // ask attract to handle it.
     // this way, we can run simulations with streams of events, checking the responses of the software.
-    byte number;
+    byte switch_no;
     byte was_pressed;
-    Event e;
 
-    if (SwitchMatrix.get_next_switch_event(&number, &was_pressed))
-    {
-        e.type = was_pressed ? switch_closed : switch_opened;
-        e.number = number;
-        Attract.handle_event(e);
-    }
+    if (SwitchMatrix.get_next_switch_event(&switch_no, &was_pressed))
+        Attract.handle_switch(switch_no);
 }
 
 

@@ -6,13 +6,7 @@ typedef unsigned char byte;
 typedef unsigned int word;
 typedef unsigned long dword;
 
-typedef enum {
-    switch_closed,
-    switch_opened,
-} event_type;
-
 typedef void (*func_ptr)();
-
 
 
 /**
