@@ -23,7 +23,8 @@ public:
     bool is_zero();
     byte get_nibble(byte location);
     void set_nibble(byte location, byte value);
-    void from_decimal(unsigned long value);
+    void from_bcd(dword value);
+    void from_decimal(dword value);
     dword to_decimal();
     void to_string(char *output);
 
@@ -193,7 +194,19 @@ void BcdNum::to_string(char *output)
     output[8] = 0;
 }
 
-void BcdNum::from_decimal(unsigned long value)
+void BcdNum::from_bcd(dword value_bcd)
+{
+    set_nibble(0, (value_bcd >> 28) & 0xF);
+    set_nibble(1, (value_bcd >> 24) & 0xF);
+    set_nibble(2, (value_bcd >> 20) & 0xF);
+    set_nibble(3, (value_bcd >> 16) & 0xF);
+    set_nibble(4, (value_bcd >> 12) & 0xF);
+    set_nibble(5, (value_bcd >>  8) & 0xF);
+    set_nibble(6, (value_bcd >>  4) & 0xF);
+    set_nibble(7, (value_bcd >>  0) & 0xF);
+}
+
+void BcdNum::from_decimal(dword value)
 {
     byte left_nibble, right_nibble;
 

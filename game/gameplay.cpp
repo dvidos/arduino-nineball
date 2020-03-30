@@ -26,7 +26,7 @@ void CGameplay::start(byte mode)
     // e.g. EVA_HAPPY_MODE (unlimited balls)
 
     this->mode = mode;
-    highest_player = 0;
+    num_players = 1;
     memset(player_info, 0, sizeof(player_info));
 
     this->prepare_game(0, 0);
@@ -51,29 +51,52 @@ void CGameplay::every_100_msecs_interrupt()
     if (!running)
         return;
 
-    // remove one from each order of magnitude, add it to score
-    BcdNum delta = BcdNum();
+    if (temp_score.is_zero())
+        return;
 
-    bool found = false;
-    for (byte nibble = 0; nibble < 8; nibble++)
-    {
-        if (temp_score.get_nibble(nibble)) {
-            delta.zero();
-            delta.set_nibble(nibble, 0x1);
-            temp_score.subtract(delta);
-            player_info[current_player].score.add(delta);
-            found = true;
-        }
+    // start at 10Ks, 1Ks, 100s 10s.
+    BcdNum n = BcdNum();
+    n.from_bcd(0x10000);
+    if (temp_score > n) {
+        temp_score.subtract(n);
+        player_info[current_player].score.add(n);
+    }
+    n.from_bcd(0x1000);
+    if (temp_score > n) {
+        temp_score.subtract(n);
+        player_info[current_player].score.add(n);
+    }
+    n.from_bcd(0x100);
+    if (temp_score > n) {
+        temp_score.subtract(n);
+        player_info[current_player].score.add(n);
+    }
+    n.from_bcd(0x10);
+    if (temp_score > n) {
+        temp_score.subtract(n);
+        player_info[current_player].score.add(n);
     }
 
-    if (found) {
-        ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
+    // see if we passed any high score
+    if (!player_info[current_player].achieved_l1_highscore &&
+        player_info[current_player].score > GameSettings.awards_threshold[0]) {
+        BallKeeper.grant_shoot_again();
+        player_info[current_player].achieved_l1_highscore = true;
     }
-}
 
-void CGameplay::add_score_bcd(dword bcd)
-{
-    temp_score.add_bcd(bcd);
+    if (!player_info[current_player].achieved_l2_highscore &&
+        player_info[current_player].score > GameSettings.awards_threshold[1]) {
+        BallKeeper.grant_shoot_again();
+        player_info[current_player].achieved_l2_highscore = true;
+    }
+
+    if (!player_info[current_player].achieved_l3_highscore &&
+        player_info[current_player].score > GameSettings.awards_threshold[2]) {
+        BallKeeper.grant_shoot_again();
+        player_info[current_player].achieved_l3_highscore = true;
+    }
+
+    ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
 }
 
 void CGameplay::handle_switch(byte switch_no) {
@@ -185,3 +208,21 @@ void CGameplay::prepare_game(byte player_no, byte ball_no)
     EightBankTargets.init(false);
     BallKeeper.init();
 }
+
+void CGameplay::super_bonus_for_next_ball_achieved()
+{
+    player_info[current_player].achieved_super_bonus_for_next_ball = true;
+}
+
+void CGameplay::multipler_6x_achieved()
+{
+    player_info[current_player].achieved_6x_bonus_multiplier = true;
+}
+
+void CGameplay::add_score_bcd(dword bcd)
+{
+    temp_score.add_bcd(bcd);
+}
+
+
+

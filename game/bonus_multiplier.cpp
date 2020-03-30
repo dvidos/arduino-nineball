@@ -22,4 +22,7 @@ void BonusMultiplierClass::increase_multiplier()
     if ((value == 6 && GameSettings.three_bank_wow_turn_on == 1) ||
         (value == 7))
         ThreeBankTargets.start_wow();
+
+    if (value >= 6)
+        Gameplay.multipler_6x_achieved();
 }

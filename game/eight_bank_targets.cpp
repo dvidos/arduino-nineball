@@ -202,8 +202,10 @@ void EightBankTargetsClass::make_current_target_object(byte target_no)
         if (GameSettings.eight_bank_wow_turn_on == 1) // start on 8
             start_wow_sequence();
 
-        if (GameSettings.when_super_bonus_lights == 1) // award on 8
+        if (GameSettings.when_super_bonus_lights == 1) { // award on 8
             super_bonus_this_ball = 1;
+            Gameplay.super_bonus_for_next_ball_achieved();
+        }
     }
 }
 
@@ -225,8 +227,10 @@ void EightBankTargetsClass::award_number_nine(byte target_no)
     if (GameSettings.eight_bank_wow_turn_on == 0) // start on 9
         start_wow_sequence();
 
-    if (GameSettings.when_super_bonus_lights == 0) // award on 9
+    if (GameSettings.when_super_bonus_lights == 0) { // award on 9
         super_bonus_this_ball = 1;
+        Gameplay.super_bonus_for_next_ball_achieved();
+    }
 
     // this also starts multiball!!!
     BallKeeper.release_captured_balls();
