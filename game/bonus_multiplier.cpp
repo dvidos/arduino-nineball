@@ -26,3 +26,8 @@ void BonusMultiplierClass::increase_multiplier()
     if (value >= 6)
         Gameplay.multipler_6x_achieved();
 }
+
+byte BonusMultiplierClass::get_multiplier()
+{
+    return value;
+}

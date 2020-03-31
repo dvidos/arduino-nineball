@@ -31,6 +31,11 @@ void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
     Animator.start_blinking(objects[1].target_lamp_no);
 }
 
+byte EightBankTargetsClass::get_object_made()
+{
+    return object_made;
+}
+
 void EightBankTargetsClass::on_target_hit(byte switch_no)
 {
     // let's deduce the number hit, so we can programmatically

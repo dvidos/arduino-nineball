@@ -6,6 +6,7 @@ public:
     void on_target_hit(byte switch_no);
     void start_spot_number_timeout();
     void make_current_target_object(byte target_no = 0);
+    byte get_object_made();
 
     // static functions called by timer interrupts
     static void spot_number_timed_out();

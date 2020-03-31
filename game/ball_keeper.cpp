@@ -186,6 +186,8 @@ void BallKeeperClass::release_captured_balls(bool all_balls)
 void BallKeeperClass::send_ball_to_shooting_lane()
 {
     LOG("Sending to shooting lane");
+    GameSettings.balls_served += 1;
+
     eject_tries = 0;
     ball_serving_in_progress = true;
     Coils.fire_outhole_eject();

@@ -3,7 +3,6 @@
 class CGameplay
 {
 public:
-    CGameplay();
     void start(byte mode);
     void handle_switch(byte switch_no);
     void every_100_msecs_interrupt();
@@ -11,6 +10,7 @@ public:
     void add_score_bcd(dword bcd);
     void super_bonus_for_next_ball_achieved();
     void multipler_6x_achieved();
+    void get_object_made();
 
 private:
     word mode: 2;           // mode under which we are running
@@ -36,5 +36,8 @@ private:
 
     void prepare_game(byte player_no, byte ball_no);
     void make_current_target_object();
+
+    void collect_bonus();
+    inline byte get_object_bonus_lamp(byte object_no);
 };
 
