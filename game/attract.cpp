@@ -534,7 +534,7 @@ void CAttract::diagnostics_handle_switch(byte switch_no)
             break;
         case SW_MENU_RIGHT:
             diagnostics_menu_item_action();
-            // there's a chance we did save-and-exit
+            // there's a chance we chose exit
             if (mode != ATTRACT_MODE_DIAGNOSTICS)
                 return;
             diagnostics_show_menu_item();
@@ -580,7 +580,7 @@ void CAttract::diagnostics_every_half_second()
             ScoreDisplay.hide_display(1);
     }
 
-    // refresh the timneout
+    // refresh the timeout
     TimeKeeper.callback_later(diagnostics_every_half_second, 500);
 }
 
@@ -671,7 +671,10 @@ void CAttract::diagnostics_menu_item_action()
             item_value += 1;
             if (item_value > COILS_COUNT)
                 item_value = 0;
-            ScoreDisplay.show_digit(15, item_value);
+            ScoreDisplay.show_digit(14, item_value / 10);
+            ScoreDisplay.show_digit(15, item_value % 10);
+            // measured at this line
+            // Free memory: 2331, Stack allocated: 147, Total memory: 8192
             Coils.fire_coil_by_number(item_value);
             break;
         case DIAGNOSTICS_Q_RELAY:                       // turn Q relay on off                P2=toggle

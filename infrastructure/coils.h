@@ -6,15 +6,15 @@
 class CCoils
 {
 public:
-    // 5 bits allow value up to 32, for timeouts up to 320 msecs.
-    byte top_bank_reset_timeout: 5;
-    byte right_bank_reset_timeout: 5;
-    byte left_bank_reset_timeout: 5;
-    byte outhole_eject_timeout: 5;
-    byte capture_lane_eject_timeout: 5;
-    byte left_slingshot_timeout: 5;
-    byte right_slingshot_timeout: 5;
-    byte knocker_timeout: 5;
+    //  bits allow value up to 64, for timeouts up to 640 msecs.
+    byte top_bank_reset_timeout: 6;
+    byte right_bank_reset_timeout: 6;
+    byte left_bank_reset_timeout: 6;
+    byte outhole_eject_timeout: 6;
+    byte capture_lane_eject_timeout: 6;
+    byte left_slingshot_timeout: 6;
+    byte right_slingshot_timeout: 6;
+    byte knocker_timeout: 6;
 
     CCoils();
     void fire_top_bank_reset();
@@ -63,89 +63,89 @@ void CCoils::init()
 
 void CCoils::fire_top_bank_reset()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (top_bank_reset_timeout != 0)
         return;
 
     SET_TOP_BANK_RESET_COIL(1);
-    top_bank_reset_timeout = 10;
+    top_bank_reset_timeout = 10; // each unit is 10 msecs
     LOG("Top Bank coil fired");
 }
 
 void CCoils::fire_right_bank_reset()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (right_bank_reset_timeout != 0)
         return;
 
     SET_RIGHT_BANK_RESET_COIL(1);
-    right_bank_reset_timeout = 10;
+    right_bank_reset_timeout = 10; // each unit is 10 msecs
     LOG("Right Bank coil fired");
 }
 
 void CCoils::fire_left_bank_reset()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (left_bank_reset_timeout != 0)
         return;
 
     SET_LEFT_BANK_RESET_COIL(1);
-    left_bank_reset_timeout = 10;
+    left_bank_reset_timeout = 10; // each unit is 10 msecs
     LOG("Left (8) Bank coil fired");
 }
 
 void CCoils::fire_outhole_eject()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (outhole_eject_timeout != 0)
         return;
 
     SET_OUTHOLE_EJECT_COIL(1);
-    outhole_eject_timeout = 10;
+    outhole_eject_timeout = 10; // each unit is 10 msecs
     LOG("Outhole Eject coil fired");
 }
 
 void CCoils::fire_capture_lane_eject()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (capture_lane_eject_timeout != 0)
         return;
 
     SET_CAPTURE_LANE_EJECT_COIL(1);
-    capture_lane_eject_timeout = 10;
+    capture_lane_eject_timeout = 10; // each unit is 10 msecs
     LOG("Capture Lane Eject coil fired");
 }
 
 void CCoils::fire_left_slingshot()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (left_slingshot_timeout != 0)
         return;
 
     SET_LEFT_SLINGSHOT_COIL(1);
-    left_slingshot_timeout = 10;
+    left_slingshot_timeout = 10; // each unit is 10 msecs
     LOG("Left Slingshot coil fired");
 }
 
 void CCoils::fire_right_slingshot()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (right_slingshot_timeout != 0)
         return;
 
     SET_RIGHT_SLINGSHOT_COIL(1);
-    right_slingshot_timeout = 10;
+    right_slingshot_timeout = 10; // each unit is 10 msecs
     LOG("Right Slingshot coil fired");
 }
 
 void CCoils::fire_knocker()
 {
-    // don't fire unless the coil is idle
+    // don't fire unless the coil is idle, avoid burning transistors
     if (knocker_timeout != 0)
         return;
 
     SET_KNOCKER_COIL(1);
-    knocker_timeout = 10;
+    knocker_timeout = 10; // each unit is 10 msecs
     LOG("Knocker coil fired");
 }
 

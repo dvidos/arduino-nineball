@@ -2,13 +2,14 @@
 
 
 
-
 bool test_bcd_math(BcdNum *n, unsigned long *expected_value, long amount);
 void test_bcdnum_comparisons(dword decimal_1, dword decimal_2);
 void test_callbacks();
 void test_bcd();
 void test_score_display();
-int freeMemory();
+void test_nesting_1();
+void test_nesting_2();
+void test_nesting_3();
 
 
 extern CGameSettings GameSettings;
@@ -20,7 +21,6 @@ extern CCoils Coils;
 extern CAnimator Animator;
 extern CTimeKeeper TimeKeeper;
 extern CAttract Attract;
-
 
 
 
@@ -64,10 +64,42 @@ void run_tests()
         sizeof(ThreeBankTargets);
     LOG("All global variables: %d", global_variables_total_memory);
 
+    LOG("Free memory reports %d", freeMemory());
+
+    LOG("Depth %d, Stack used %d", 1, stack_size());
+    test_nesting_1();
+
     test_bcd();
     test_score_display();
     test_callbacks();
 }
+
+void test_nesting_1() {
+    char something[16];
+    memset(something, 0, sizeof(something));
+    something[2] = something[1];
+
+    LOG("Depth %d, Stack used %d", 2, stack_size());
+    test_nesting_2();
+}
+
+void test_nesting_2() {
+    char something[128];
+    memset(something, 0, sizeof(something));
+    something[2] = something[1];
+
+    LOG("Depth %d, Stack used %d", 3, stack_size());
+    test_nesting_3();
+}
+
+void test_nesting_3() {
+    char something[256];
+    memset(something, 0, sizeof(something));
+    something[2] = something[1];
+
+    LOG("Depth %d, Stack used %d", 4, stack_size());
+}
+
 
 
 void test_bcd()
@@ -228,29 +260,6 @@ void test_bcdnum_comparisons(dword decimal_1, dword decimal_2)
         ASSERT(n2 > n1);
     }
 }
-
-
-// see https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory
-// and https://playground.arduino.cc/Code/AvailableMemory/
-
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
-
 
 void test_score_display()
 {

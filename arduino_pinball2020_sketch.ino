@@ -28,9 +28,6 @@
 #define LOG_ON_SERIAL_MONITOR
 
 
-
-
-
 #include <Arduino.h>
 #include <wavTrigger.h>
 #include <EEPROM.h>
@@ -42,6 +39,7 @@
 #ifdef RUN_SERIAL_EMULATOR
   #include "infrastructure/emulator.h"
 #endif
+#include "infrastructure/memory.h"
 #include "infrastructure/pins.h"
 #include "infrastructure/audio.h"
 #include "infrastructure/lamp_matrix.h"
