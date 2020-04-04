@@ -195,6 +195,11 @@ bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
         //LOG("S.Matrix, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
         //    switches[0], switches[1], switches[2], switches[3], switches[4]);
     }
+    // we ignore switch_opened events, we don't return them
+    // we just update the status variables
+    if (!(*p_is_closed))
+        return false;
+
     return gotten;
 #endif
 }
