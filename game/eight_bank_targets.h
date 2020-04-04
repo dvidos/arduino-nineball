@@ -7,6 +7,7 @@ public:
     void start_spot_number_timeout();
     void make_current_target_object(byte target_no = 0);
     byte get_object_made();
+    bool get_super_bonus_made();
 
     // static functions called by timer interrupts
     static void spot_number_timed_out();
@@ -24,8 +25,7 @@ private:
     byte left_inlane_enabled: 1;  // this allows us to flip the inlanes
     byte right_inlane_enabled: 1;
     byte special_made: 1;         // to allow at most one
-    byte super_bonus_this_ball: 1;
-    byte super_bonus_previous_ball: 1;
+    byte super_bonus_made: 1;
     byte bringing_targets_up_tries: 2; // 3 or 4 tries at most.
 
     struct object_info {

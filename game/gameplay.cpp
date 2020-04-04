@@ -29,24 +29,53 @@ void CGameplay::start(byte mode)
     // start gameplay, in a specific mode.
     // e.g. EVA_HAPPY_MODE (unlimited balls)
     this->mode = mode;
-    current_player = 0;
     num_players = 1;
     memset(player_info, 0, sizeof(player_info));
+    current_player = 0;
 
-    this->prepare_game(0, 0);
-    running = 1;
+    prepare_player_ball_game();
 
     GameSettings.games_played += 1;
 
     LOG("Gameplay started in mode %d", mode);
 }
 
+void CGameplay::prepare_player_ball_game()
+{
+    temp_score.zero();
+
+    game_running = true;
+    game_collecting_bonuses = false;
+
+    // show player, ball, score
+    ScoreDisplay.hide_display(0);
+    ScoreDisplay.hide_display(1);
+    ScoreDisplay.show_digit(2, (current_player + 1));
+    ScoreDisplay.show_digit(6, (player_info[current_player].ball_number + 1));
+    ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
+
+    Audio.play(SOUND_START);
+    Coils.set_flippers_relay(1);
+
+    Spinner.init();
+    LoopTarget.init();
+    BonusMultiplier.init(player_info[current_player].achieved_6x_bonus_multiplier);
+    ThreeBankTargets.init();
+    EightBankTargets.init(player_info[current_player].super_bonus_made_prev_ball);
+    BallKeeper.init();
+
+    // reset housekeeping for this round
+    player_info[current_player].achieved_l1_highscore = false;
+    player_info[current_player].achieved_l2_highscore = false;
+    player_info[current_player].achieved_l3_highscore = false;
+
+    // finally...
+    BallKeeper.send_ball_to_shooting_lane();
+}
+
 void CGameplay::every_100_msecs_interrupt()
 {
-    if (!running)
-        return;
-
-    if (temp_score.is_zero())
+    if (!game_running || temp_score.is_zero())
         return;
 
     // start at 10Ks, 1Ks, 100s 10s.
@@ -72,7 +101,7 @@ void CGameplay::every_100_msecs_interrupt()
         player_info[current_player].score.add(n);
     }
 
-    if (!collecting_bonuses) {
+    if (!game_collecting_bonuses) {
         // see if we passed any high score
         if (!player_info[current_player].achieved_l1_highscore &&
             player_info[current_player].score > GameSettings.awards_threshold[0]) {
@@ -162,31 +191,8 @@ void CGameplay::handle_switch(byte switch_no) {
         case SW_OUTHOLE_LEFT:
         case SW_SHOOTING_LANE:
             BallKeeper.on_switch_closed(switch_no);
-            // we have to see if game is over,
-            // or consume shoot again
-            // then assign bonus (one-by-one),
-            // move to next player or ball
-            //if all finished, go back to attract mode.
-            if (BallKeeper.is_ball_game_over()) {
-                // we need to wait for the score to catch up
-                collect_bonus();
-                // move to next player/ball etc.
-                current_player++;
-                if (current_player >= num_players) {
-                    current_player = 0;
-                    player_info[current_player].ball_number += 1;
-                }
-                register byte total_balls = GameSettings.five_balls_per_game ? 5 : 3;
-                if (player_info[current_player].ball_number >= total_balls) {
-                    // we finished for good
-                    // for high scores, balls served and games played.
-                    GameSettings.save_to_eeprom();
-                    Attract.start();
-                } else {
-                    // next player/ball
-                    prepare_game(current_player, player_info[current_player].ball_number);
-                }
-            }
+            if (BallKeeper.is_ball_game_over())
+                on_this_player_ball_game_finished();
             break;
 
         case SW_START:
@@ -203,55 +209,6 @@ void CGameplay::handle_switch(byte switch_no) {
     }
 }
 
-void CGameplay::prepare_game(byte player_no, byte ball_no)
-{
-    // set current player and ball no.
-    current_player = player_no;
-    player_info[current_player].ball_number = ball_no;
-
-    temp_score.zero();
-
-    // show player, ball, score
-    ScoreDisplay.hide_display(0);
-    ScoreDisplay.hide_display(1);
-    ScoreDisplay.show_digit(2, current_player);
-    ScoreDisplay.show_digit(6, player_info[current_player].ball_number);
-    ScoreDisplay.show_bcd_num(1, player_info[current_player].score);
-
-    Audio.play(SOUND_START);
-    Coils.set_flippers_relay(1);
-
-    // state
-    collecting_bonuses = 0;
-
-    Spinner.init();
-    LoopTarget.init();
-    BonusMultiplier.init(player_info[current_player].achieved_6x_bonus_multiplier);
-    ThreeBankTargets.init();
-    EightBankTargets.init(player_info[current_player].achieved_super_bonus_for_next_ball);
-    BallKeeper.init();
-
-    // reset housekeeping for this round
-    player_info[current_player].achieved_6x_bonus_multiplier = false;
-    player_info[current_player].achieved_super_bonus_for_next_ball = false;
-    player_info[current_player].achieved_l1_highscore = false;
-    player_info[current_player].achieved_l2_highscore = false;
-    player_info[current_player].achieved_l3_highscore = false;
-
-    // finally...
-    BallKeeper.send_ball_to_shooting_lane();
-}
-
-void CGameplay::super_bonus_for_next_ball_achieved()
-{
-    player_info[current_player].achieved_super_bonus_for_next_ball = true;
-}
-
-void CGameplay::multipler_6x_achieved()
-{
-    player_info[current_player].achieved_6x_bonus_multiplier = true;
-}
-
 void CGameplay::add_score_bcd(dword bcd)
 {
     temp_score.add_bcd(bcd);
@@ -259,11 +216,22 @@ void CGameplay::add_score_bcd(dword bcd)
 
 void CGameplay::collect_bonus() {
     LOG("Collecting bonuses");
-    collecting_bonuses = true;
+    game_collecting_bonuses = true;
 
     byte multiplier = BonusMultiplier.get_multiplier();
     byte times;
     byte object_no;
+
+
+    // collect super bonus if achieved in previous ball
+    if (player_info[current_player].super_bonus_made_prev_ball) {
+        Audio.play(SOUND_FAST_PHASERS);
+        Animator.start_blinking(LAMP_SUPER_BONUS_77K);
+        add_score_bcd(0x77000ul);
+        while (!temp_score.is_zero())
+            delay(100); // just wait
+        Animator.stop_blinking();
+    }
 
     for (object_no = 9; object_no >= 1; object_no--) {
         if (object_no > EightBankTargets.get_object_made())
@@ -293,9 +261,6 @@ void CGameplay::collect_bonus() {
         delay(400);
     }
     delay(2000);
-
-    // we are done.
-    collecting_bonuses = false;
 }
 
 inline byte CGameplay::get_object_bonus_lamp(byte object_no)
@@ -317,3 +282,36 @@ inline byte CGameplay::get_object_bonus_lamp(byte object_no)
 
     return 0;
 }
+
+void CGameplay::on_this_player_ball_game_finished()
+{
+    Coils.set_flippers_relay(0);
+
+    // we need to wait for the score to catch up
+    // do this before carrying over the super bonus
+    collect_bonus();
+
+    // save super bonus for next ball,
+    // AFTER we collect bonuses
+    // this does sound like a bug in the original game software
+    player_info[current_player].super_bonus_made_prev_ball = EightBankTargets.get_super_bonus_made();
+    player_info[current_player].achieved_6x_bonus_multiplier = BonusMultiplier.get_multiplier() >= 6;
+
+    // move to next player/ball etc.
+    current_player++;
+    if (current_player >= num_players) {
+        current_player = 0;
+        player_info[current_player].ball_number += 1;
+    }
+    register byte total_balls = GameSettings.five_balls_per_game ? 5 : 3;
+    if (player_info[current_player].ball_number >= total_balls) {
+        // we finished for good
+        // for high scores, balls served and games played.
+        GameSettings.save_to_eeprom();
+        Attract.start();
+    } else {
+        // next player/ball
+        prepare_player_ball_game();
+    }
+}
+

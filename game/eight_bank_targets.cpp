@@ -1,6 +1,6 @@
 
 
-void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
+void EightBankTargetsClass::init(bool super_bonus_made_previous_ball)
 {
     spot_number_enabled = 0;
     left_inlane_enabled = 0;
@@ -10,8 +10,7 @@ void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
     wow_number = 0;
     special_number = 0;
     special_made = 0;
-    super_bonus_this_ball = 0; // this lamp will actually light in the next ball
-    super_bonus_previous_ball = was_super_bonus_made_previous_ball;
+    super_bonus_made = 0; // this is for next round
     bringing_targets_up_tries = 0;
 
     set_target_lamps(1);
@@ -21,7 +20,7 @@ void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
 
     LampMatrix.lamp_off(LAMP_OBJECT_9);
     LampMatrix.lamp_off(LAMP_TOP_POP_BUMPER);
-    LampMatrix.set_lamp(LAMP_SUPER_BONUS_77K, super_bonus_previous_ball);
+    LampMatrix.set_lamp(LAMP_SUPER_BONUS_77K, super_bonus_made_previous_ball);
     LampMatrix.lamp_off(LAMP_ALL_TARGETS_DOWN_SPECIAL);
 
     LampMatrix.lamp_off(LAMP_LEFT_INLANE);
@@ -34,6 +33,11 @@ void EightBankTargetsClass::init(bool was_super_bonus_made_previous_ball)
 byte EightBankTargetsClass::get_object_made()
 {
     return object_made;
+}
+
+bool EightBankTargetsClass::get_super_bonus_made()
+{
+    return super_bonus_made;
 }
 
 void EightBankTargetsClass::on_target_hit(byte switch_no)
@@ -208,8 +212,7 @@ void EightBankTargetsClass::make_current_target_object(byte target_no)
             start_wow_sequence();
 
         if (GameSettings.when_super_bonus_lights == 1) { // award on 8
-            super_bonus_this_ball = 1;
-            Gameplay.super_bonus_for_next_ball_achieved();
+            super_bonus_made = 1;
         }
     }
 }
@@ -233,8 +236,7 @@ void EightBankTargetsClass::award_number_nine(byte target_no)
         start_wow_sequence();
 
     if (GameSettings.when_super_bonus_lights == 0) { // award on 9
-        super_bonus_this_ball = 1;
-        Gameplay.super_bonus_for_next_ball_achieved();
+        super_bonus_made = 1;
     }
 
     // this also starts multiball!!!
