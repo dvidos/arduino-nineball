@@ -30,6 +30,7 @@ public:
 
     friend bool operator==(const BcdNum &a, const BcdNum &b);
     friend bool operator>(const BcdNum &a, const BcdNum &b);
+    friend bool operator>=(const BcdNum &a, const BcdNum &b);
 
 protected:
     void math_operation(byte bcd_amount[], bool do_addition);
@@ -69,6 +70,20 @@ bool operator>(const BcdNum &a, const BcdNum &b)
     if (a.bcd[2] < b.bcd[2]) return false;
 
     return (a.bcd[3] > b.bcd[3]);
+}
+
+bool operator>=(const BcdNum &a, const BcdNum &b)
+{
+    if (a.bcd[0] > b.bcd[0]) return true;
+    if (a.bcd[0] < b.bcd[0]) return false;
+
+    if (a.bcd[1] > b.bcd[1]) return true;
+    if (a.bcd[1] < b.bcd[1]) return false;
+
+    if (a.bcd[2] > b.bcd[2]) return true;
+    if (a.bcd[2] < b.bcd[2]) return false;
+
+    return (a.bcd[3] >= b.bcd[3]);
 }
 
 void BcdNum::copy_from(BcdNum other)

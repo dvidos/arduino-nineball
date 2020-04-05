@@ -81,22 +81,22 @@ void CGameplay::every_100_msecs_interrupt()
     // start at 10Ks, 1Ks, 100s 10s.
     BcdNum n = BcdNum();
     n.from_bcd(0x10000);
-    if (temp_score > n) {
+    if (temp_score >= n) {
         temp_score.subtract(n);
         player_info[current_player].score.add(n);
     }
     n.from_bcd(0x1000);
-    if (temp_score > n) {
+    if (temp_score >= n) {
         temp_score.subtract(n);
         player_info[current_player].score.add(n);
     }
     n.from_bcd(0x100);
-    if (temp_score > n) {
+    if (temp_score >= n) {
         temp_score.subtract(n);
         player_info[current_player].score.add(n);
     }
     n.from_bcd(0x10);
-    if (temp_score > n) {
+    if (temp_score >= n) {
         temp_score.subtract(n);
         player_info[current_player].score.add(n);
     }
