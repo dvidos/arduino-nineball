@@ -34,6 +34,7 @@
 
 #include "defines.h"
 #include "constants.h"
+#include "messages.h"
 #include "bcdnum.h"
 
 #ifdef RUN_SERIAL_EMULATOR

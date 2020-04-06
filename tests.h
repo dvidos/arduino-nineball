@@ -69,6 +69,12 @@ void run_tests()
     LOG("Depth %d, Stack used %d", 1, stack_size());
     test_nesting_1();
 
+    LOG("Testing PROGMEM");
+    test_print(2);
+    LOG("^ should show String 2");
+    test_print(4);
+    LOG("^ should show a very long String 4");
+
     test_bcd();
     test_score_display();
     test_callbacks();
