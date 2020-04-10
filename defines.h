@@ -98,22 +98,35 @@ byte __isr_fatal_number = 0;
  * A central way to have LOG() calls in code, without affecting performance in the end.
  */
 #ifdef LOG_ON_SERIAL_MONITOR
-    #define LOG_INIT()      Serial.begin(115200/*9600*/); while (!Serial) { ; } Serial.println("Serial Log initialized");
-    #define LOG(...)        log_info(__VA_ARGS__)
+    #define LOG_INIT()         Serial.begin(115200/*9600*/); while (!Serial) { ; } Serial.println("Serial Log initialized");
+    #define LOG(...)           log_info(__VA_ARGS__)
+    #define LOGM(...)          log_info_from_progmem(__VA_ARGS__)
+    #define LOG_DISPLAY(bytes1, bytes2)   log_display(bytes1, bytes2)
+
+    char logging_buffer[64];
+    char logging_message[64];
+
     void log_info(const char *fmt, ...) {
-        char buffer[128];
         va_list args_list;
         va_start(args_list, fmt);
-        vsprintf(buffer, fmt, args_list);
-        Serial.println(buffer);
+
+        vsnprintf(logging_buffer, sizeof(logging_buffer), fmt, args_list);
+
+        Serial.println(logging_buffer);
     }
 
-    #define LOG_DISPLAY(bytes1, bytes2)   log_display(bytes1, bytes2)
-    void log_display(byte *bytes1, byte *bytes2) {
-        // show what the display would show on the Serial port.
-        char buffer[64];
+    void log_info_from_progmem(byte message_no, ...) {
+        va_list args_list;
+        va_start(args_list, message_no);
 
-        sprintf(buffer, "Score Display is:  [%01X%02X%02X%02X]  [%01X%02X%02X%02X]",
+        get_progmem_message(message_no, logging_message, sizeof(logging_message));
+
+        vsnprintf(logging_buffer, sizeof(logging_buffer), logging_message, args_list);
+        Serial.println(logging_buffer);
+    }
+
+    void log_display(byte *bytes1, byte *bytes2) {
+        snprintf(logging_buffer, sizeof(logging_buffer), "Score Display is:  [%01X%02X%02X%02X]  [%01X%02X%02X%02X]",
             (bytes1[0] & 0xF),
             bytes1[1],
             bytes1[2],
@@ -124,15 +137,16 @@ byte __isr_fatal_number = 0;
             bytes2[3]
         );
 
-        for (byte i = 0; i < 40; i++)
-            if (buffer[i] == 'F')
-                buffer[i] = '_';
-        Serial.println(buffer);
+        for (byte i = 0; i < sizeof(logging_buffer); i++)
+            if (logging_buffer[i] == 'F')
+                logging_buffer[i] = '_';
+        Serial.println(logging_buffer);
     }
 #else
-    #define LOG_INIT()           (void)0
-    #define LOG(fmt, ...)        (void)0
-    #define LOG_DISPLAY(b1, b2)  (void)0
+    #define LOG_INIT()           ((void)0)
+    #define LOG(fmt, ...)        ((void)0)
+    #define LOGM(msg_no, ...)    ((void)0)
+    #define LOG_DISPLAY(b1, b2)  ((void)0)
 #endif
 
 

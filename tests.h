@@ -70,10 +70,10 @@ void run_tests()
     test_nesting_1();
 
     LOG("Testing PROGMEM");
-    test_print(2);
-    LOG("^ should show String 2");
-    test_print(4);
-    LOG("^ should show a very long String 4");
+    LOGM(1);
+    LOGM(2);
+    LOGM(3);
+    LOG("^ should be strings 1 through 3");
 
     test_bcd();
     test_score_display();
