@@ -24,7 +24,7 @@ void BallKeeperClass::drain_any_captured_balls()
     if (count == 0)
         return;
 
-    LOG("Releasing balls and waiting for draining");
+    LOGM(M_RELEASING_BALLS_AND_WAITING_FOR_DRAINING);
     release_captured_balls();
 
     while (1) {
@@ -81,7 +81,7 @@ void BallKeeperClass::on_ball_captured()
 {
     if (!ball_capture_enabled) {
         // not allowed yet.
-        LOG("Releasing ball as capturing is disabled");
+        LOGM(M_RELEASING_BALL_AS_CAPTURING_IS_DISABLED);
         release_captured_balls();
         return;
     }
@@ -95,7 +95,7 @@ void BallKeeperClass::on_ball_captured()
 
     if (captured == 3) {
         // no point, we cannot serve more balls
-        LOG("Releasing balls as they're all captured");
+        LOGM(M_RELEASING_BALLS_AS_THEY_ARE_ALL_CAPTURED);
         release_captured_balls();
         return;
     }
@@ -104,12 +104,12 @@ void BallKeeperClass::on_ball_captured()
         // so there seems to be a ball in the playfield,
         // e.g. we had multiball and a ball is captured again.
         // not doing anything.
-        LOG("Ball captured, but another ball still somewhere in playfield");
+        LOGM(M_BALL_CAPTURED_BUT_ANOTHER_STILL_IN_PLAYFIELD);
         return;
     }
 
     // there is no ball in the playfield, give one to player
-    LOG("Ball captured, giving one to player");
+    LOGM(M_BALL_CAPTURED_GIVING_NEW_ONE_TO_PLAYER);
     send_ball_to_shooting_lane();
     return;
 }
@@ -125,7 +125,7 @@ void BallKeeperClass::on_ball_drained()
 
     if (captured + drained < 3) {
         // it seems a ball is still in play, so don't worry
-        LOG("Ball drained, but another ball still somewhere in playfield");
+        LOGM(M_BALL_DRAINED_BUT_ANOTHER_STILL_IN_PLAYFIELD);
         return;
     }
 
@@ -133,7 +133,7 @@ void BallKeeperClass::on_ball_drained()
     // if captured, release so that he can play.
     if (captured > 0) {
         // it seems a ball is still in play, so don't worry
-        LOG("Releasing one captured ball for user");
+        LOGM(M_RELEASING_ONE_CAPTURED_BALL_FOR_USER);
         release_captured_balls(false);
         return;
     }
@@ -146,7 +146,7 @@ void BallKeeperClass::on_ball_drained()
     }
 
     // if no captured, this could be the end, unless he has shoot again
-    LOG("Game over for this ball No");
+    LOGM(M_GAME_OVER_FOR_THIS_BALL);
     ball_game_over = true;
 }
 
@@ -154,7 +154,7 @@ void BallKeeperClass::grant_shoot_again() {
     if (shoot_agains == 3)
         return;
 
-    LOG("Shoot again granted");
+    LOGM(M_SHOOT_AGAIN_GRANTED);
     shoot_agains += 1;
 
     // bells and whistles
@@ -165,7 +165,7 @@ void BallKeeperClass::grant_shoot_again() {
 void BallKeeperClass::enable_ball_capturing()
 {
     ball_capture_enabled = true;
-    LOG("Ball capturing enabled");
+    LOGM(M_BALL_CAPTURING_ENABLED);
 
     // bells and whistles
     Audio.play(SOUND_FAST_PHASERS);
@@ -174,7 +174,7 @@ void BallKeeperClass::enable_ball_capturing()
 
 void BallKeeperClass::release_captured_balls(bool all_balls)
 {
-    LOG("Releasing captured balls");
+    LOGM(M_RELEASING_CAPTURED_BALLS);
     eject_tries = 0;
     ball_release_in_progress = true;
     release_all_balls = all_balls;
@@ -185,7 +185,7 @@ void BallKeeperClass::release_captured_balls(bool all_balls)
 
 void BallKeeperClass::send_ball_to_shooting_lane()
 {
-    LOG("Sending to shooting lane");
+    LOGM(M_SENDING_BALL_TO_SHOOTING_LANE);
     GameSettings.balls_served += 1;
 
     eject_tries = 0;
@@ -241,7 +241,7 @@ void BallKeeperClass::check_release_captured_balls()
     // try again, up to some efforts
     BallKeeper.eject_tries++;
     if (BallKeeper.eject_tries == 7) {
-        LOG("Warning: failed releasing captured balls");
+        LOGM(M_FAILED_RELEASING_CAPTURED_BALLS);
         BallKeeper.ball_release_in_progress = false;
         return;
     }
@@ -262,7 +262,7 @@ void BallKeeperClass::check_ball_got_to_eject_lane()
     // try again, up to some efforts
     BallKeeper.eject_tries++;
     if (BallKeeper.eject_tries == 5) {
-        LOG("Warning: failed launching ball in shooting lane");
+        LOGM(M_FAILED_LAUNCHING_BALL_TO_SHOOTER_LANE);
         BallKeeper.ball_serving_in_progress = false;
         return;
     }

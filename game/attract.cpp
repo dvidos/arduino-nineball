@@ -113,7 +113,7 @@ void CAttract::handle_switch(byte switch_no)
 
 void CAttract::start_idle_mode()
 {
-    LOG("Attract starting idle mode");
+    LOGM(M_ATTRACT_STARTING_IDLE_MODE);
 
     mode = ATTRACT_MODE_IDLE;
     menu_item = 0;
@@ -171,7 +171,7 @@ void CAttract::start_game_mode(byte game_mode)
         return;
     }
 
-    LOG("Attract starting game mode");
+    LOGM(M_ATTRACT_STARTING_GAME_MODE);
 
     mode = ATTRACT_MODE_GAME;
     Gameplay.start(game_mode);
@@ -179,7 +179,7 @@ void CAttract::start_game_mode(byte game_mode)
 
 void CAttract::start_radio_mode()
 {
-    LOG("Attract starting radio mode");
+    LOGM(M_ATTRACT_STARTING_RADIO_MODE);
 
     // start first song
     mode = ATTRACT_MODE_RADIO;
@@ -205,13 +205,13 @@ void CAttract::check_song_finished()
     }
 
     // we consider this track stopped, moving to the next
-    LOG("End of track %d detected", Attract.item_value);
+    LOGM(M_END_OF_TRACK_D_DETECTED, Attract.item_value);
     Attract.radio_next_song();
 }
 
 void CAttract::radio_next_song()
 {
-    LOG("going to a new random song");
+    LOGM(M_GOING_TO_NEW_RANDOM_SONG);
 
     // keep current as previous
     menu_item = item_value;
@@ -229,7 +229,7 @@ void CAttract::radio_next_song()
 
 void CAttract::radio_prev_song()
 {
-    LOG("going to previous song");
+    LOGM(M_GOING_TO_PREVIOUS_SONG);
 
     // if we don't have the previous song, re-start the same.
     if (menu_item) {
@@ -248,7 +248,7 @@ void CAttract::radio_handle_switch(byte switch_no)
     switch (switch_no)
     {
         case SW_START:
-            LOG("stopping radio mode");
+            LOGM(M_STOPPING_RADIO_MODE);
             Audio.stop_all();
             start_idle_mode();
             break;
@@ -263,7 +263,7 @@ void CAttract::radio_handle_switch(byte switch_no)
 
 void CAttract::start_settings_mode()
 {
-    LOG("Attract starting settings mode");
+    LOGM(M_ATTRACT_STARTING_SETTINGS_MODE);
 
     // start settings menu
     mode = ATTRACT_MODE_SETTINGS;
@@ -283,7 +283,7 @@ void CAttract::settings_handle_switch(byte switch_no)
             // exit without saving
             // to avoid messing around without saving,
             // we reload the eeprom settinsg.
-            LOG("Exiting without saving");
+            LOGM(M_EXITING_WITHOUT_SAVING);
             GameSettings.load_from_eeprom();
             start_idle_mode();
             break;
@@ -497,7 +497,7 @@ void CAttract::settings_change_menu_item_value()
 
 void CAttract::start_diagnostics_mode()
 {
-    LOG("Attract starting diagnostics mode");
+    LOGM(M_ATTRACT_STARTING_DIAGNOSTICS_MODE);
 
     // start diagnostics menu
     mode = ATTRACT_MODE_DIAGNOSTICS;
@@ -694,7 +694,6 @@ void CAttract::diagnostics_menu_item_action()
             start_idle_mode();
             break;
     }
-
 }
 
 

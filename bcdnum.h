@@ -120,8 +120,6 @@ void BcdNum::add_bcd(dword bcd_value)
     bcd[2] = (bcd_value >>  8) & 0xFF;
     bcd[3] = (bcd_value >>  0) & 0xFF;
 
-    // LOG("buffer prepared to add 0x%04X ones: 0x%02X 0x%02X 0x%02X 0x%02X", tens_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
-
     math_operation(bcd, true);
 }
 
@@ -132,8 +130,6 @@ void BcdNum::add_tens(word tens_bcd)
     bcd[1] = (tens_bcd & 0xF000) >> 12;
     bcd[2] = (tens_bcd & 0x0FF0) >> 4;
     bcd[3] = (tens_bcd & 0x000F) << 4;
-
-    // LOG("buffer prepared to add 0x%04X tens: 0x%02X 0x%02X 0x%02X 0x%02X", tens_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
 
     math_operation(bcd, true);
 }
@@ -146,8 +142,6 @@ void BcdNum::add_hundreds(word hundreds_bcd)
     bcd[2] = (hundreds_bcd & 0x00FF);
     bcd[3] = 0x00;
 
-    // LOG("buffer prepared to add 0x%04X hundreds: 0x%02X 0x%02X 0x%02X 0x%02X", hundreds_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
-
     math_operation(bcd, true);
 }
 
@@ -158,8 +152,6 @@ void BcdNum::add_thousands(word thousands_bcd)
     bcd[1] = (thousands_bcd & 0x0FF0) >> 4;
     bcd[2] = (thousands_bcd & 0x000F) << 4;
     bcd[3] = 0x00;
-
-    // LOG("buffer prepared to add 0x%04X thousands: 0x%02X 0x%02X 0x%02X 0x%02X", thousands_bcd, bcd[0], bcd[1], bcd[2], bcd[3]);
 
     math_operation(bcd, true);
 }
@@ -279,13 +271,6 @@ void BcdNum::math_operation(byte amount_bcd[4], bool do_addition)
     char amount_nibble;
     char current_value;
     char new_value;
-
-    /*LOG("Will %s x%02x%02x%02x%02x %s x%02x%02x%02x%02x",
-        do_addition ? "add" : "subtract",
-        amount_bcd[0], amount_bcd[1], amount_bcd[2], amount_bcd[3],
-        do_addition ? "to" : "from",
-        bcd[0], bcd[1], bcd[2], bcd[3]
-    );*/
 
     carry = 0;
     for (char i = 7; i >= 0; i--)

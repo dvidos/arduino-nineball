@@ -70,10 +70,12 @@ void run_tests()
     test_nesting_1();
 
     LOG("Testing PROGMEM");
-    LOGM(1);
+    LOGM(0);
     LOGM(2);
     LOGM(3);
-    LOG("^ should be strings 1 through 3");
+    LOGM(3);
+    LOGM(4);
+    LOG("^ should be strings 0 through 4");
 
     test_bcd();
     test_score_display();

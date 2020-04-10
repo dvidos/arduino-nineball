@@ -58,7 +58,7 @@ CCoils::CCoils()
 void CCoils::init()
 {
     SET_COILS_PINS_MODE();
-    LOG("Coils initialized");
+    LOGM(M_COILS_INITIATED);
 }
 
 void CCoils::fire_top_bank_reset()
@@ -69,7 +69,7 @@ void CCoils::fire_top_bank_reset()
 
     SET_TOP_BANK_RESET_COIL(1);
     top_bank_reset_timeout = 10; // each unit is 10 msecs
-    LOG("Top Bank coil fired");
+    LOGM(M_TOP_BANK_COIL_FIRED);
 }
 
 void CCoils::fire_right_bank_reset()
@@ -80,7 +80,7 @@ void CCoils::fire_right_bank_reset()
 
     SET_RIGHT_BANK_RESET_COIL(1);
     right_bank_reset_timeout = 10; // each unit is 10 msecs
-    LOG("Right Bank coil fired");
+    LOGM(M_RIGHT_BANK_COIL_FIRED);
 }
 
 void CCoils::fire_left_bank_reset()
@@ -91,7 +91,7 @@ void CCoils::fire_left_bank_reset()
 
     SET_LEFT_BANK_RESET_COIL(1);
     left_bank_reset_timeout = 10; // each unit is 10 msecs
-    LOG("Left (8) Bank coil fired");
+    LOGM(M_LEFT_8_BANK_COIL_FIRED);
 }
 
 void CCoils::fire_outhole_eject()
@@ -102,7 +102,7 @@ void CCoils::fire_outhole_eject()
 
     SET_OUTHOLE_EJECT_COIL(1);
     outhole_eject_timeout = 10; // each unit is 10 msecs
-    LOG("Outhole Eject coil fired");
+    LOGM(M_OUTHOLE_EJECT_COIL_FIRED);
 }
 
 void CCoils::fire_capture_lane_eject()
@@ -113,7 +113,7 @@ void CCoils::fire_capture_lane_eject()
 
     SET_CAPTURE_LANE_EJECT_COIL(1);
     capture_lane_eject_timeout = 10; // each unit is 10 msecs
-    LOG("Capture Lane Eject coil fired");
+    LOGM(M_CAPTURE_LANE_EJECT_COIL_FIRED);
 }
 
 void CCoils::fire_left_slingshot()
@@ -124,7 +124,7 @@ void CCoils::fire_left_slingshot()
 
     SET_LEFT_SLINGSHOT_COIL(1);
     left_slingshot_timeout = 10; // each unit is 10 msecs
-    LOG("Left Slingshot coil fired");
+    LOGM(M_LEFT_SLINGSHOT_COIL_FIRED);
 }
 
 void CCoils::fire_right_slingshot()
@@ -135,7 +135,7 @@ void CCoils::fire_right_slingshot()
 
     SET_RIGHT_SLINGSHOT_COIL(1);
     right_slingshot_timeout = 10; // each unit is 10 msecs
-    LOG("Right Slingshot coil fired");
+    LOGM(M_RIGHT_SLINGSHOT_COIL_FIRED);
 }
 
 void CCoils::fire_knocker()
@@ -146,13 +146,13 @@ void CCoils::fire_knocker()
 
     SET_KNOCKER_COIL(1);
     knocker_timeout = 10; // each unit is 10 msecs
-    LOG("Knocker coil fired");
+    LOGM(M_KNOCKER_COIL_FIRED);
 }
 
 void CCoils::set_flippers_relay(bool on)
 {
     SET_FLIPPERS_RELAY(on ? 1 : 0);
-    LOG("Flippers relay set to %d", on);
+    LOGM(M_FLIPPERS_RELAY_SET_TO_D, on);
 }
 
 void CCoils::every_10_msecs_interrupt()

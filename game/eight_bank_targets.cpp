@@ -164,7 +164,7 @@ void EightBankTargetsClass::verify_drop_targets_are_up()
         return; // we are successful
 
     if (EightBankTargets.bringing_targets_up_tries == 3) {
-        LOG("Warning: exhausted tries to bring drop targets up");
+        LOGM(M_FAILED_BRINGING_EIGHT_BANK_TARGETS_UP);
         return; // give up
     }
 
@@ -188,7 +188,7 @@ void EightBankTargetsClass::make_current_target_object(byte target_no)
     }
 
     object_made += 1;
-    LOG("Made current object (%d)", object_made);
+    LOGM(M_MADE_CURRENT_OBJECT_NO_D, object_made);
 
     // turn on bonus made
     LampMatrix.lamp_on(objects[object_made].bonus_lamp_no);
@@ -221,7 +221,7 @@ void EightBankTargetsClass::award_number_nine(byte target_no)
 {
     Audio.play(SOUND_FX_6);
     object_made = 9;
-    LOG("Made object No 9");
+    LOGM(M_MADE_OBJECT_NO_9);
 
     // turn off all drop target lamps
     set_target_lamps(0);
@@ -295,7 +295,7 @@ void EightBankTargetsClass::award_special(byte target_no)
 
 void EightBankTargetsClass::start_number_nine_sequence()
 {
-    LOG("Starting No 9 sequence");
+    LOGM(M_STARTING_NO_9_SEQUENCE);
     number_nine_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_DROP_TARGET, number_nine_number == 1);
@@ -313,7 +313,7 @@ void EightBankTargetsClass::start_number_nine_sequence()
 
 void EightBankTargetsClass::start_wow_sequence()
 {
-    LOG("Starting 8-bank WOW sequence");
+    LOGM(M_STARTING_8_BANK_WOW_SEQUENCE);
     wow_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_1_WOW, wow_number == 1);
@@ -330,7 +330,7 @@ void EightBankTargetsClass::start_wow_sequence()
 
 void EightBankTargetsClass::start_special_sequence()
 {
-    LOG("Starting Special sequence");
+    LOGM(M_STARTING_8_BANK_SPECIAL_SEQUENCE);
     special_number = get_next_target_number(0);
 
     LampMatrix.set_lamp(LAMP_OBJECT_2_SPECIAL, special_number == 2);
@@ -346,7 +346,7 @@ void EightBankTargetsClass::start_special_sequence()
 
 void EightBankTargetsClass::start_spot_number_timeout()
 {
-    LOG("Starting Spot Number timeout");
+    LOGM(M_STARTING_SPOT_NUMBER_TIMEOUT);
 
     // "" slingshots, spinner and pop bumpers control
     // the percentage of time dead bumper, two return lanes, two outlanes

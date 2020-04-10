@@ -100,7 +100,7 @@ BallKeeperClass BallKeeper;
 void setup() {
     FATAL_INIT();
     LOG_INIT();
-    LOG("setup() starting");
+    LOGM(M_SETUP_STARTING);
     LED13_INIT();
 
     setup_timer_interrupts();
@@ -126,9 +126,9 @@ void setup() {
     Attract.start();
 
     #ifdef RUN_SERIAL_EMULATOR
-        LOG("Running Serial Emulator, send \"?\" for help");
+        LOGM(M_SERIAL_EMULATOR_RUNNING);
     #endif
-    LOG("setup() finished");
+    LOGM(M_SETUP_FINISHED);
 }
 
 void loop() {

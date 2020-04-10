@@ -37,11 +37,12 @@ void CGameplay::start(byte mode)
 
     GameSettings.games_played += 1;
 
-    LOG("Gameplay started in mode %d", mode);
+    LOGM(M_GAMEPLAY_STARTED_IN_MODE_D, mode);
 }
 
 void CGameplay::prepare_player_ball_game()
 {
+    LOGM(M_PREPARING_GAME_FOR_PLAYER_D_BALL_D, current_player, player_info[current_player].ball_number);
     temp_score.zero();
 
     game_running = true;
@@ -215,7 +216,7 @@ void CGameplay::add_score_bcd(dword bcd)
 }
 
 void CGameplay::collect_bonus() {
-    LOG("Collecting bonuses");
+    LOGM(M_COLLECTING_BONUSES);
     game_collecting_bonuses = true;
 
     byte multiplier = BonusMultiplier.get_multiplier();

@@ -32,7 +32,7 @@ void LoopTargetClass::advance_value()
 
     Gameplay.add_score_bcd(0x3000);
     Audio.play(SOUND_FX_6);
-    LOG("Loop target value is now %d", value);
+    LOGM(M_LOOP_TARGET_VALUE_IS_NOW_D, value);
 }
 
 void LoopTargetClass::collect_value()
@@ -49,7 +49,7 @@ void LoopTargetClass::collect_value()
 
     value = 1;
     Animator.start(ANIM_TOP_LOOP_COLLECT_VALUE, 0x01);
-    LOG("Loop target value collected and reset");
+    LOGM(M_LOOP_TARGET_VALUE_COLLECTED_AND_RESET);
 }
 
 void LoopTargetClass::enable_or_flip_outlanes()
@@ -65,7 +65,7 @@ void LoopTargetClass::enable_or_flip_outlanes()
     LampMatrix.set_lamp(LAMP_RIGHT_OUTLANE, right_outlane);
 
     TimeKeeper.callback_later(turn_off_outlanes, GameSettings.spot_light_strategy ? 10000 : 5000);
-    LOG("Outlanes lights turned on or flipped (%d, %d)", left_outlane, right_outlane);
+    LOGM(M_OUTLANES_TURNED_ON_OR_FLIPPED_D_D, left_outlane, right_outlane);
 }
 
 void LoopTargetClass::on_passed_outlane(byte switch_no)
@@ -85,5 +85,5 @@ void LoopTargetClass::turn_off_outlanes()
 
     LampMatrix.lamp_off(LAMP_LEFT_OUTLANE);
     LampMatrix.lamp_off(LAMP_RIGHT_OUTLANE);
-    LOG("Outlanes lights turned off");
+    LOGM(M_OUTLANES_TURNED_OFF);
 }

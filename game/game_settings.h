@@ -90,7 +90,7 @@ void CGameSettings::save_to_eeprom()
     _awards_threshold_decimal[2] = awards_threshold[2].to_decimal();
 
     // now save the buffer.
-    LOG("Saving settings to EEPROM");
+    LOGM(M_SAVING_SETTINGS_TO_EEPROM);
     for (byte i = 0; i < sizeof(buffer); i++) {
         EEPROM.update(i, buffer[i]);
     }
@@ -98,7 +98,7 @@ void CGameSettings::save_to_eeprom()
 
 void CGameSettings::load_from_eeprom()
 {
-    LOG("Loading settings from EEPROM");
+    LOGM(M_LOADING_SETTINGS_FROM_EEPROM);
     for (byte i = 0; i < sizeof(buffer); i++) {
         buffer[i] = EEPROM.read(i);
     }

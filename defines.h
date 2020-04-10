@@ -72,7 +72,7 @@ byte __isr_fatal_number = 0;
 #define FATAL_IN_ISR(flashes)             (__isr_fatal_number = flashes)
 #define CHECK_FATAL_IN_ISR()              if (__isr_fatal_number) { FATAL(__isr_fatal_number); }
 #define FATAL(flashes)                                                                    \
-        LOG("*** FATAL %d ***", flashes);                                                 \
+        LOGM(M_FATAL, flashes);                                                 \
         pinMode(13, OUTPUT);                                                              \
         while (1) {                                                                       \
             for (byte fatal_flashes = 0; fatal_flashes < (flashes); fatal_flashes++) {    \
@@ -90,7 +90,7 @@ byte __isr_fatal_number = 0;
 #if defined(NDEBUG)
     #define ASSERT(condition)   (void)0
 #else
-    #define ASSERT(condition)    if(!(condition)) { LOG("** Failed asserting that \"%s\"", #condition); }
+    #define ASSERT(condition)    if(!(condition)) { LOGM(M_ASSERION_FAILED, #condition); }
 #endif
 
 
