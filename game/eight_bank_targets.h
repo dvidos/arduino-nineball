@@ -16,7 +16,6 @@ public:
     static void advance_special_target();
     static void verify_drop_targets_are_up();
 
-private:
     byte object_made: 4;          // 0=none, 1..9=1..9
     byte number_nine_number: 4;   // 0=none, 1..8=1..9
     byte wow_number: 4;           // 0=none, 1..8=1..8
@@ -27,6 +26,8 @@ private:
     byte special_made: 1;         // to allow at most one
     byte super_bonus_made: 1;
     byte bringing_targets_up_tries: 2; // 3 or 4 tries at most.
+
+private:
 
     struct object_info {
         byte switch_no: 6;

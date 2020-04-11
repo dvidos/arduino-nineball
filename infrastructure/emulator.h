@@ -1,5 +1,6 @@
 #ifdef RUN_SERIAL_EMULATOR
-
+#ifndef EMULATOR_H
+#define EMULATOR_H
 
 
 class EmulatorClass
@@ -64,120 +65,7 @@ public:
 };
 
 
-EmulatorClass::EmulatorClass() {
-    gotten_tiddle = false;
-    switch_pending_opening = 0xFF; // none
-}
-
-void EmulatorClass::set_switches_buffers(byte *buffers) {
-    // this function allows switch_matrix to depend on emulator
-    // and frees emulator from depending on switch_matrix.
-    // aiding with the #include sequence
-    switches_buffers = buffers;
-}
-
-void EmulatorClass::keys_help() {
-    LOGM(M_EMULATOR_SCREEN_01);
-    LOGM(M_EMULATOR_SCREEN_02);
-    LOGM(M_EMULATOR_SCREEN_03);
-    LOGM(M_EMULATOR_SCREEN_04);
-    LOGM(M_EMULATOR_SCREEN_05);
-    LOGM(M_EMULATOR_SCREEN_06);
-    LOGM(M_EMULATOR_SCREEN_07);
-    LOGM(M_EMULATOR_SCREEN_08);
-    LOGM(M_EMULATOR_SCREEN_09);
-    LOGM(M_EMULATOR_SCREEN_10);
-    LOGM(M_EMULATOR_SCREEN_11);
-    LOGM(M_EMULATOR_SCREEN_12);
-    LOGM(M_EMULATOR_SCREEN_13);
-    LOGM(M_EMULATOR_SCREEN_14);
-    LOGM(M_EMULATOR_SCREEN_15);
-    LOGM(M_EMULATOR_SCREEN_16);
-    LOGM(M_EMULATOR_SCREEN_17);
-    LOGM(M_EMULATOR_SCREEN_18);
-    LOGM(M_EMULATOR_SCREEN_19);
-    LOGM(M_EMULATOR_SCREEN_20);
-    LOGM(M_EMULATOR_SCREEN_21);
-    LOGM(M_EMULATOR_SCREEN_22);
-    LOGM(M_EMULATOR_SCREEN_23);
-    LOGM(M_EMULATOR_SCREEN_24);
-    LOGM(M_EMULATOR_SCREEN_25);
-}
-
-void EmulatorClass::show_status() {
-
-}
-
-byte EmulatorClass::get_mapping(char chr) {
-    for (byte i = 0; i < (sizeof(keymap) / sizeof(keymap[0])); i++) {
-        if (keymap[i].chr == chr)
-            return i;
-    }
-    return 0xFF;
-}
-
-bool EmulatorClass::get_next_switch_event(byte *p_switch_no, byte *p_is_closed) {
-
-    // see if we have a switch opening pending
-    if (switch_pending_opening != 0xFF) {
-        // don't log here, to avoid excess noise
-        *p_switch_no = switch_pending_opening;
-        *p_is_closed = false;
-        switch_pending_opening = 0xFF;
-        return true;
-    }
-
-    // then see if user sent something
-    if (Serial.available() == 0)
-        return false;
-
-    byte received = Serial.read();
-    char c = (char)received;
-    if (c == '?') {
-        keys_help();
-        return false;
-    } else if (c == '/') {
-        show_status();
-        return false;
-    } else if (c == '~') {
-        gotten_tiddle = true;
-        return false;
-    }
-
-    byte mapping = get_mapping(c);
-    if (mapping == 0xFF)
-        return false; // invalid keys ignored
-
-    register byte buffer_index = keymap[mapping].switch_no >> 3;
-    register byte bit_offset = keymap[mapping].switch_no & 0x7;
-    bool already_closed = (switches_buffers[buffer_index] >> bit_offset) & 0x01;
-    if (already_closed) {
-        // emulate switch opening
-        LOGM(M_SWITCH_OPENED);
-        LOGM(keymap[mapping].eeprom_message_no);
-        *p_switch_no = keymap[mapping].switch_no;
-        *p_is_closed = false;
-    } else {
-        // we will either keep it closed or just emulate a "click" (down
-        if (gotten_tiddle) {
-            // a tiddle keeps the switch closed.
-            LOGM(M_SWITCH_CLOSED);
-            LOGM(keymap[mapping].eeprom_message_no);
-            *p_switch_no = keymap[mapping].switch_no;
-            *p_is_closed = true;
-            gotten_tiddle = false;
-        } else {
-            // the usual case is to close and open right after, emulating a "click"
-            LOGM(M_SWITCH_CLICKED);
-            LOGM(keymap[mapping].eeprom_message_no);
-            *p_switch_no = keymap[mapping].switch_no;
-            *p_is_closed = true;
-            switch_pending_opening = keymap[mapping].switch_no;
-        }
-    }
-
-    return true;
-}
 
 
+#endif // EMULATOR_H
 #endif // RUN_SERIAL_EMULATOR

@@ -2,8 +2,6 @@
 
 
 
-
-
 class CGameplay
 {
 public:
@@ -15,7 +13,6 @@ public:
     void multipler_6x_achieved();
     void get_object_made();
 
-private:
     word mode: 2;           // mode under which we are running
     word num_players: 3;    // number of players
     word current_player: 2; // current player no
@@ -34,6 +31,7 @@ private:
 
     BcdNum temp_score; // a place to add score that is slowly moved to player score and display.
 
+private:
     word game_running: 1;  // whether we are running (or merely existing in memory)
     word game_collecting_bonuses: 1; // whether we should ignore further high scores
 

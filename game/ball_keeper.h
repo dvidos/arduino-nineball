@@ -21,7 +21,6 @@ public:
     byte count_captured_balls();
     byte count_drained_balls();
 
-private:
     byte ball_game_over: 1;        // whether player has drained with no alternatives
     byte shoot_agains: 2;          // up to 3 shoot agains may be awarded
     byte ball_capture_enabled: 1;  // the yellow arrow light
@@ -30,6 +29,7 @@ private:
     byte ball_serving_in_progress: 1; // to avoid false captures from settling balls
     byte eject_tries: 4;           // number of tries so far.
 
+private:
     void on_ball_captured();
     void on_ball_drained();
 

@@ -91,6 +91,9 @@ BallKeeperClass BallKeeper;
 #include "game/attract.cpp"
 
 #include "timers.h"
+#ifdef RUN_SERIAL_EMULATOR
+  #include "infrastructure/emulator.cpp"
+#endif
 #ifdef RUN_SOFTWARE_TESTS
   #include "tests.h"
 #endif
