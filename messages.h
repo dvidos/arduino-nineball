@@ -69,18 +69,91 @@
 #define M_RIGHT_SLINGSHOT_COIL_FIRED            63
 #define M_KNOCKER_COIL_FIRED                    64
 #define M_FLIPPERS_RELAY_SET_TO_D               65
+#define M_LAMP_MATRIX_INITIALIZED               66
+#define M_ALL_LAMPS_OFF                         67
+#define M_LAMPS_COLUMN_D_ON                     68
+#define M_LAMPS_ROW_D_ON                        69
+#define M_SCORE_DISPLAY_INITIALIZED             70
+#define M_SWITCH_MATRIX_INITIALIZED             71
+#define M_EMULATOR_SCREEN_01                    72
+#define M_EMULATOR_SCREEN_02                    73
+#define M_EMULATOR_SCREEN_03                    74
+#define M_EMULATOR_SCREEN_04                    75
+#define M_EMULATOR_SCREEN_05                    76
+#define M_EMULATOR_SCREEN_06                    77
+#define M_EMULATOR_SCREEN_07                    78
+#define M_EMULATOR_SCREEN_08                    79
+#define M_EMULATOR_SCREEN_09                    80
+#define M_EMULATOR_SCREEN_10                    81
+#define M_EMULATOR_SCREEN_11                    82
+#define M_EMULATOR_SCREEN_12                    83
+#define M_EMULATOR_SCREEN_13                    84
+#define M_EMULATOR_SCREEN_14                    85
+#define M_EMULATOR_SCREEN_15                    86
+#define M_EMULATOR_SCREEN_16                    87
+#define M_EMULATOR_SCREEN_17                    88
+#define M_EMULATOR_SCREEN_18                    89
+#define M_EMULATOR_SCREEN_19                    90
+#define M_EMULATOR_SCREEN_20                    91
+#define M_EMULATOR_SCREEN_21                    92
+#define M_EMULATOR_SCREEN_22                    93
+#define M_EMULATOR_SCREEN_23                    94
+#define M_EMULATOR_SCREEN_24                    95
+#define M_EMULATOR_SCREEN_25                    96
+#define M_EMULATOR_SCREEN_26                    97
+#define M_SW_TOP_LOOP_PASS_NAME                 98
+#define M_SW_TOP_LOOP_TARGET_NAME               99
+#define M_SW_TOP_BANK_LEFT_TARGET_NAME          100
+#define M_SW_TOP_BANK_CENTER_TARGET_NAME        101
+#define M_SW_TOP_BANK_RIGHT_TARGET_NAME         102
+#define M_SW_RIGHT_BANK_LEFT_TARGET_NAME        103
+#define M_SW_RIGHT_BANK_CENTER_TARGET_NAME      104
+#define M_SW_RIGHT_BANK_RIGHT_TARGET_NAME       105
+#define M_SW_TOP_POP_BUMPER_NAME                106
+#define M_SW_MAIN_POP_BUMPER_NAME               107
+#define M_SW_SKILL_SHOT_TARGET_NAME             108
+#define M_SW_LEFT_BANK_TARGET_1_NAME            109
+#define M_SW_LEFT_BANK_TARGET_2_NAME            110
+#define M_SW_LEFT_BANK_TARGET_3_NAME            111
+#define M_SW_LEFT_BANK_TARGET_4_NAME            112
+#define M_SW_LEFT_BANK_TARGET_5_NAME            113
+#define M_SW_LEFT_BANK_TARGET_6_NAME            114
+#define M_SW_LEFT_BANK_TARGET_7_NAME            115
+#define M_SW_LEFT_BANK_TARGET_8_NAME            116
+#define M_SW_LEFT_LANE_CAPTURED_BALL_NAME       117
+#define M_SW_LEFT_LANE_SECOND_BALL_NAME         118
+#define M_SW_LEFT_LANE_THIRD_BALL_NAME          119
+#define M_SW_LEFT_LANE_EXIT_NAME                120
+#define M_SW_SPINNER_NAME                       121
+#define M_SW_LEFT_SLINGSHOT_NAME                122
+#define M_SW_RIGHT_SLINGSHOT_NAME               123
+#define M_SW_LEFT_OUTLANE_NAME                  124
+#define M_SW_RIGHT_OUTLANE_NAME                 125
+#define M_SW_LEFT_INLANE_NAME                   126
+#define M_SW_RIGHT_INLANE_NAME                  127
+#define M_SW_OUTHOLE_LEFT_NAME                  128
+#define M_SW_OUTHOLE_MIDDLE_NAME                129
+#define M_SW_OUTHOLE_RIGHT_NAME                 130
+#define M_SW_SHOOTING_LANE_NAME                 131
+#define M_SW_START_NAME                         132
+#define M_SW_MENU_LEFT_NAME                     133
+#define M_SW_MENU_RIGHT_NAME                    134
+#define M_SWITCH_CLOSED                         135
+#define M_SWITCH_OPENED                         136
+#define M_SWITCH_CLICKED                        137
 
 
-const char _eeprom_00[] PROGMEM = "String 0";
-const char _eeprom_01[] PROGMEM = "*** FATAL %d ***";
-const char _eeprom_02[] PROGMEM = "** Failed asserting that \"%s\"";
-const char _eeprom_03[] PROGMEM = "String 3";
-const char _eeprom_04[] PROGMEM = "int value: %d";
-const char _eeprom_05[] PROGMEM = "setup() starting";
-const char _eeprom_06[] PROGMEM = "setup() finished";
-const char _eeprom_07[] PROGMEM = "Running Serial Emulator, send \"?\" for help";
-const char _eeprom_08[] PROGMEM = "Attract starting idle mode";
-const char _eeprom_09[] PROGMEM = "Attract starting game mode";
+
+const char _eeprom_0[] PROGMEM = "String 0";
+const char _eeprom_1[] PROGMEM = "*** FATAL %d ***";
+const char _eeprom_2[] PROGMEM = "** Failed asserting that \"%s\"";
+const char _eeprom_3[] PROGMEM = "String 3";
+const char _eeprom_4[] PROGMEM = "int value: %d";
+const char _eeprom_5[] PROGMEM = "setup() starting";
+const char _eeprom_6[] PROGMEM = "setup() finished";
+const char _eeprom_7[] PROGMEM = "Running Serial Emulator, send \"?\" for help";
+const char _eeprom_8[] PROGMEM = "Attract starting idle mode";
+const char _eeprom_9[] PROGMEM = "Attract starting game mode";
 const char _eeprom_10[] PROGMEM = "Attract starting radio mode";
 const char _eeprom_11[] PROGMEM = "End of track %d detected";
 const char _eeprom_12[] PROGMEM = "Going to a new random song";
@@ -137,17 +210,96 @@ const char _eeprom_62[] PROGMEM = "Left Slingshot coil fired";
 const char _eeprom_63[] PROGMEM = "Right Slingshot coil fired";
 const char _eeprom_64[] PROGMEM = "Knocker coil fired";
 const char _eeprom_65[] PROGMEM = "Flippers relay set to %d";
+const char _eeprom_66[] PROGMEM = "Lamp Matrix initialized";
+const char _eeprom_67[] PROGMEM = "Lamps all off";
+const char _eeprom_68[] PROGMEM = "Lamps column %d ON";
+const char _eeprom_69[] PROGMEM = "Lamps row %d ON";
+const char _eeprom_70[] PROGMEM = "Score Display initialized";
+const char _eeprom_71[] PROGMEM = "Switch Matrix initialized";
+const char _eeprom_72[] PROGMEM = "+----------------------------+";
+const char _eeprom_73[] PROGMEM = "| Q           _ _ _ Y<*      |";
+const char _eeprom_74[] PROGMEM = "|  W * 173    * * *     \\    |";
+const char _eeprom_75[] PROGMEM = "|     * 40    E R T  (U*)\\   |";
+const char _eeprom_76[] PROGMEM = "|      * 30               \\  |";
+const char _eeprom_77[] PROGMEM = "|       * 20          I *_ | |";
+const char _eeprom_78[] PROGMEM = "|  <*    * 10   ( )   O *_ | |";
+const char _eeprom_79[] PROGMEM = "|A                    P *_ | |";
+const char _eeprom_80[] PROGMEM = "|S _2 * * *       * 4X     | |";
+const char _eeprom_81[] PROGMEM = "|D _4 * * *       * 2X     | |";
+const char _eeprom_82[] PROGMEM = "|  _6 * * *       * 1X     | |";
+const char _eeprom_83[] PROGMEM = "|  _8 * * *                | |";
+const char _eeprom_84[] PROGMEM = "|  9 *     * Sp     --[M]--| |";
+const char _eeprom_85[] PROGMEM = "|  _7 * * *         * 2500 | |";
+const char _eeprom_86[] PROGMEM = "|  _5 * * *         * 1600 | |";
+const char _eeprom_87[] PROGMEM = "|F _3 * * *        * 900   | |";
+const char _eeprom_88[] PROGMEM = "|  _1 * *         * 400    | |";
+const char _eeprom_89[] PROGMEM = "|     *77K   *8            | |";
+const char _eeprom_90[] PROGMEM = "|  *  \\    *6  *7    /  *  | |";
+const char _eeprom_91[] PROGMEM = "| |H| J\\ *4  *9  *5 /K |L| | |";
+const char _eeprom_92[] PROGMEM = "|G| |   \\  *2  *3  /   | |;| |";
+const char _eeprom_93[] PROGMEM = "|*           *1           *| |";
+const char _eeprom_94[] PROGMEM = "|          * ShAgn         |V|";
+const char _eeprom_95[] PROGMEM = "+------------------Z-X-C---+-+";
+const char _eeprom_96[] PROGMEM = "\\:Start  [:P1  ]:P2  ?:Help  /:Status  ~:Keep next switch down";
+const char _eeprom_97[] PROGMEM = "Tiddle keeps next switch closed (no opening event is generated)";
+const char _eeprom_98[] PROGMEM = "SW_TOP_LOOP_PASS";
+const char _eeprom_99[] PROGMEM = "SW_TOP_LOOP_TARGET";
+const char _eeprom_100[] PROGMEM = "SW_TOP_BANK_LEFT_TARGET";
+const char _eeprom_101[] PROGMEM = "SW_TOP_BANK_CENTER_TARGET";
+const char _eeprom_102[] PROGMEM = "SW_TOP_BANK_RIGHT_TARGET";
+const char _eeprom_103[] PROGMEM = "SW_RIGHT_BANK_LEFT_TARGET";
+const char _eeprom_104[] PROGMEM = "SW_RIGHT_BANK_CENTER_TARGET";
+const char _eeprom_105[] PROGMEM = "SW_RIGHT_BANK_RIGHT_TARGET";
+const char _eeprom_106[] PROGMEM = "SW_TOP_POP_BUMPER";
+const char _eeprom_107[] PROGMEM = "SW_MAIN_POP_BUMPER";
+const char _eeprom_108[] PROGMEM = "SW_SKILL_SHOT_TARGET";
+const char _eeprom_109[] PROGMEM = "SW_LEFT_BANK_TARGET_1";
+const char _eeprom_110[] PROGMEM = "SW_LEFT_BANK_TARGET_2";
+const char _eeprom_111[] PROGMEM = "SW_LEFT_BANK_TARGET_3";
+const char _eeprom_112[] PROGMEM = "SW_LEFT_BANK_TARGET_4";
+const char _eeprom_113[] PROGMEM = "SW_LEFT_BANK_TARGET_5";
+const char _eeprom_114[] PROGMEM = "SW_LEFT_BANK_TARGET_6";
+const char _eeprom_115[] PROGMEM = "SW_LEFT_BANK_TARGET_7";
+const char _eeprom_116[] PROGMEM = "SW_LEFT_BANK_TARGET_8";
+const char _eeprom_117[] PROGMEM = "SW_LEFT_LANE_CAPTURED_BALL";
+const char _eeprom_118[] PROGMEM = "SW_LEFT_LANE_SECOND_BALL";
+const char _eeprom_119[] PROGMEM = "SW_LEFT_LANE_THIRD_BALL";
+const char _eeprom_120[] PROGMEM = "SW_LEFT_LANE_EXIT";
+const char _eeprom_121[] PROGMEM = "SW_SPINNER";
+const char _eeprom_122[] PROGMEM = "SW_LEFT_SLINGSHOT";
+const char _eeprom_123[] PROGMEM = "SW_RIGHT_SLINGSHOT";
+const char _eeprom_124[] PROGMEM = "SW_LEFT_OUTLANE";
+const char _eeprom_125[] PROGMEM = "SW_RIGHT_OUTLANE";
+const char _eeprom_126[] PROGMEM = "SW_LEFT_INLANE";
+const char _eeprom_127[] PROGMEM = "SW_RIGHT_INLANE";
+const char _eeprom_128[] PROGMEM = "SW_OUTHOLE_LEFT";
+const char _eeprom_129[] PROGMEM = "SW_OUTHOLE_MIDDLE";
+const char _eeprom_130[] PROGMEM = "SW_OUTHOLE_RIGHT";
+const char _eeprom_131[] PROGMEM = "SW_SHOOTING_LANE";
+const char _eeprom_132[] PROGMEM = "SW_START";
+const char _eeprom_133[] PROGMEM = "SW_MENU_LEFT";
+const char _eeprom_134[] PROGMEM = "SW_MENU_RIGHT";
+const char _eeprom_135[] PROGMEM = "Switch closed";
+const char _eeprom_136[] PROGMEM = "Switch opened";
+const char _eeprom_137[] PROGMEM = "Switch clicked";
+
+
+
+
+
+
 
 const char *const _eeprom_strings_table[] PROGMEM = {
-    _eeprom_00,
-    _eeprom_01,
-    _eeprom_02,
-    _eeprom_03,
-    _eeprom_04,
-    _eeprom_05,
-    _eeprom_06,
-    _eeprom_07,
-    _eeprom_09,
+    _eeprom_0,
+    _eeprom_1,
+    _eeprom_2,
+    _eeprom_3,
+    _eeprom_4,
+    _eeprom_5,
+    _eeprom_6,
+    _eeprom_7,
+    _eeprom_8,
+    _eeprom_9,
     _eeprom_10,
     _eeprom_11,
     _eeprom_12,
@@ -204,6 +356,75 @@ const char *const _eeprom_strings_table[] PROGMEM = {
     _eeprom_63,
     _eeprom_64,
     _eeprom_65,
+    _eeprom_66,
+    _eeprom_67,
+    _eeprom_68,
+    _eeprom_69,
+    _eeprom_70,
+    _eeprom_71,
+    _eeprom_72,
+    _eeprom_73,
+    _eeprom_74,
+    _eeprom_75,
+    _eeprom_76,
+    _eeprom_77,
+    _eeprom_78,
+    _eeprom_79,
+    _eeprom_80,
+    _eeprom_81,
+    _eeprom_82,
+    _eeprom_83,
+    _eeprom_84,
+    _eeprom_85,
+    _eeprom_86,
+    _eeprom_87,
+    _eeprom_88,
+    _eeprom_89,
+    _eeprom_90,
+    _eeprom_91,
+    _eeprom_92,
+    _eeprom_93,
+    _eeprom_94,
+    _eeprom_95,
+    _eeprom_96,
+    _eeprom_97,
+    _eeprom_98,
+    _eeprom_99,
+    _eeprom_100,
+    _eeprom_101,
+    _eeprom_102,
+    _eeprom_103,
+    _eeprom_104,
+    _eeprom_105,
+    _eeprom_106,
+    _eeprom_107,
+    _eeprom_108,
+    _eeprom_109,
+    _eeprom_110,
+    _eeprom_111,
+    _eeprom_112,
+    _eeprom_113,
+    _eeprom_114,
+    _eeprom_115,
+    _eeprom_116,
+    _eeprom_117,
+    _eeprom_118,
+    _eeprom_119,
+    _eeprom_120,
+    _eeprom_121,
+    _eeprom_122,
+    _eeprom_123,
+    _eeprom_124,
+    _eeprom_125,
+    _eeprom_126,
+    _eeprom_127,
+    _eeprom_128,
+    _eeprom_129,
+    _eeprom_130,
+    _eeprom_131,
+    _eeprom_132,
+    _eeprom_133,
+    _eeprom_134,
 };
 
 
@@ -216,4 +437,3 @@ void get_progmem_message(byte message_no, char *output, byte output_size)
 
 
 #endif // MESSAGES_H
-

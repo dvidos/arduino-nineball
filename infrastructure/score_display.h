@@ -206,7 +206,7 @@ void CScoreDisplay::init()
 {
     hide_all();
     SET_SCORE_DISPLAY_PINS_MODE();
-    LOG("Score Display initialized");
+    LOGM(M_SCORE_DISPLAY_INITIALIZED);
 }
 
 inline byte CScoreDisplay::get_nibble_value(byte display_no, byte digit_no)

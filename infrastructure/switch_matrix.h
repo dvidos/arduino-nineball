@@ -63,10 +63,10 @@ CSwitchMatrix::CSwitchMatrix()
 void CSwitchMatrix::init()
 {
     SET_SWITCH_MATRIX_PINS_MODE();
-    LOG("Switch Matrix initialized");
 #ifdef RUN_SERIAL_EMULATOR
     Emulator.set_switches_buffers(switches);
 #endif
+    LOGM(M_SWITCH_MATRIX_INITIALIZED);
 }
 
 bool CSwitchMatrix::is_switch_closed(byte switch_no)
@@ -192,8 +192,6 @@ bool CSwitchMatrix::get_next_switch_event(byte *p_switch_no, byte *p_is_closed)
             switches[(*p_switch_no) >> 3] |= (1 << ((*p_switch_no) & 0x7));
         else
             switches[(*p_switch_no) >> 3] &= ~(1 << ((*p_switch_no) & 0x7));
-        //LOG("S.Matrix, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-        //    switches[0], switches[1], switches[2], switches[3], switches[4]);
     }
     // we ignore switch_opened events, we don't return them
     // we just update the status variables

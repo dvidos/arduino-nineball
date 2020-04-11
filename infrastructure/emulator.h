@@ -8,47 +8,47 @@ public:
     struct char_switch_association {
         char chr;
         byte switch_no;
-        const char *name;
+        byte eeprom_message_no;
     } keymap[40] = {
-        {'q', SW_TOP_LOOP_PASS, "SW_TOP_LOOP_PASS"},
-        {'w', SW_TOP_LOOP_TARGET, "SW_TOP_LOOP_TARGET"},
-        {'e', SW_TOP_BANK_LEFT_TARGET, "SW_TOP_BANK_LEFT_TARGET"},
-        {'r', SW_TOP_BANK_CENTER_TARGET, "SW_TOP_BANK_CENTER_TARGET"},
-        {'t', SW_TOP_BANK_RIGHT_TARGET, "SW_TOP_BANK_RIGHT_TARGET"},
-        {'i', SW_RIGHT_BANK_LEFT_TARGET, "SW_RIGHT_BANK_LEFT_TARGET"},
-        {'o', SW_RIGHT_BANK_CENTER_TARGET, "SW_RIGHT_BANK_CENTER_TARGET"},
-        {'p', SW_RIGHT_BANK_RIGHT_TARGET, "SW_RIGHT_BANK_RIGHT_TARGET"},
-        {'u', SW_TOP_POP_BUMPER, "SW_TOP_POP_BUMPER"},
-        {'b', SW_MAIN_POP_BUMPER, "SW_MAIN_POP_BUMPER"},
-        {'y', SW_SKILL_SHOT_TARGET, "SW_SKILL_SHOT_TARGET"},
+        {'q', SW_TOP_LOOP_PASS, M_SW_TOP_LOOP_PASS_NAME},
+        {'w', SW_TOP_LOOP_TARGET, M_SW_TOP_LOOP_TARGET_NAME},
+        {'e', SW_TOP_BANK_LEFT_TARGET, M_SW_TOP_BANK_LEFT_TARGET_NAME},
+        {'r', SW_TOP_BANK_CENTER_TARGET, M_SW_TOP_BANK_CENTER_TARGET_NAME},
+        {'t', SW_TOP_BANK_RIGHT_TARGET, M_SW_TOP_BANK_RIGHT_TARGET_NAME},
+        {'i', SW_RIGHT_BANK_LEFT_TARGET, M_SW_RIGHT_BANK_LEFT_TARGET_NAME},
+        {'o', SW_RIGHT_BANK_CENTER_TARGET, M_SW_RIGHT_BANK_CENTER_TARGET_NAME},
+        {'p', SW_RIGHT_BANK_RIGHT_TARGET, M_SW_RIGHT_BANK_RIGHT_TARGET_NAME},
+        {'u', SW_TOP_POP_BUMPER, M_SW_TOP_POP_BUMPER_NAME},
+        {'b', SW_MAIN_POP_BUMPER, M_SW_MAIN_POP_BUMPER_NAME},
+        {'y', SW_SKILL_SHOT_TARGET, M_SW_SKILL_SHOT_TARGET_NAME},
 
-        {'1', SW_LEFT_BANK_TARGET_1, "SW_LEFT_BANK_TARGET_1"},
-        {'2', SW_LEFT_BANK_TARGET_2, "SW_LEFT_BANK_TARGET_2"},
-        {'3', SW_LEFT_BANK_TARGET_3, "SW_LEFT_BANK_TARGET_3"},
-        {'4', SW_LEFT_BANK_TARGET_4, "SW_LEFT_BANK_TARGET_4"},
-        {'5', SW_LEFT_BANK_TARGET_5, "SW_LEFT_BANK_TARGET_5"},
-        {'6', SW_LEFT_BANK_TARGET_6, "SW_LEFT_BANK_TARGET_6"},
-        {'7', SW_LEFT_BANK_TARGET_7, "SW_LEFT_BANK_TARGET_7"},
-        {'8', SW_LEFT_BANK_TARGET_8, "SW_LEFT_BANK_TARGET_8"},
+        {'1', SW_LEFT_BANK_TARGET_1, M_SW_LEFT_BANK_TARGET_1_NAME},
+        {'2', SW_LEFT_BANK_TARGET_2, M_SW_LEFT_BANK_TARGET_2_NAME},
+        {'3', SW_LEFT_BANK_TARGET_3, M_SW_LEFT_BANK_TARGET_3_NAME},
+        {'4', SW_LEFT_BANK_TARGET_4, M_SW_LEFT_BANK_TARGET_4_NAME},
+        {'5', SW_LEFT_BANK_TARGET_5, M_SW_LEFT_BANK_TARGET_5_NAME},
+        {'6', SW_LEFT_BANK_TARGET_6, M_SW_LEFT_BANK_TARGET_6_NAME},
+        {'7', SW_LEFT_BANK_TARGET_7, M_SW_LEFT_BANK_TARGET_7_NAME},
+        {'8', SW_LEFT_BANK_TARGET_8, M_SW_LEFT_BANK_TARGET_8_NAME},
 
-        {'d', SW_LEFT_LANE_CAPTURED_BALL, "SW_LEFT_LANE_CAPTURED_BALL"},
-        {'s', SW_LEFT_LANE_SECOND_BALL, "SW_LEFT_LANE_SECOND_BALL"},
-        {'a', SW_LEFT_LANE_THIRD_BALL, "SW_LEFT_LANE_THIRD_BALL"},
-        {'f', SW_LEFT_LANE_EXIT, "SW_LEFT_LANE_EXIT"},
-        {'m', SW_SPINNER, "SW_SPINNER"},
-        {'j', SW_LEFT_SLINGSHOT, "SW_LEFT_SLINGSHOT"},
-        {'k', SW_RIGHT_SLINGSHOT, "SW_RIGHT_SLINGSHOT"},
-        {'g', SW_LEFT_OUTLANE, "SW_LEFT_OUTLANE"},
-        {';', SW_RIGHT_OUTLANE, "SW_LEFT_INLANE"},
-        {'h', SW_LEFT_INLANE, "SW_RIGHT_INLANE"},
-        {'k', SW_RIGHT_INLANE, "SW_RIGHT_INLANE"},
-        {'z', SW_OUTHOLE_LEFT, "SW_OUTHOLE_LEFT"},
-        {'x', SW_OUTHOLE_MIDDLE, "SW_OUTHOLE_MIDDLE"},
-        {'c', SW_OUTHOLE_RIGHT, "SW_OUTHOLE_RIGHT"},
-        {'v', SW_SHOOTING_LANE, "SW_SHOOTING_LANE"},
-        {'\\', SW_START, "SW_START"},
-        {'[', SW_MENU_LEFT, "SW_MENU_LEFT"},
-        {']', SW_MENU_RIGHT, "SW_MENU_RIGHT"},
+        {'d', SW_LEFT_LANE_CAPTURED_BALL, M_SW_LEFT_LANE_CAPTURED_BALL_NAME},
+        {'s', SW_LEFT_LANE_SECOND_BALL, M_SW_LEFT_LANE_SECOND_BALL_NAME},
+        {'a', SW_LEFT_LANE_THIRD_BALL, M_SW_LEFT_LANE_THIRD_BALL_NAME},
+        {'f', SW_LEFT_LANE_EXIT, M_SW_LEFT_LANE_EXIT_NAME},
+        {'m', SW_SPINNER, M_SW_SPINNER_NAME},
+        {'j', SW_LEFT_SLINGSHOT, M_SW_LEFT_SLINGSHOT_NAME},
+        {'k', SW_RIGHT_SLINGSHOT, M_SW_RIGHT_SLINGSHOT_NAME},
+        {'g', SW_LEFT_OUTLANE, M_SW_LEFT_OUTLANE_NAME},
+        {';', SW_RIGHT_OUTLANE, M_SW_LEFT_INLANE_NAME},
+        {'h', SW_LEFT_INLANE, M_SW_RIGHT_INLANE_NAME},
+        {'k', SW_RIGHT_INLANE, M_SW_RIGHT_INLANE_NAME},
+        {'z', SW_OUTHOLE_LEFT, M_SW_OUTHOLE_LEFT_NAME},
+        {'x', SW_OUTHOLE_MIDDLE, M_SW_OUTHOLE_MIDDLE_NAME},
+        {'c', SW_OUTHOLE_RIGHT, M_SW_OUTHOLE_RIGHT_NAME},
+        {'v', SW_SHOOTING_LANE, M_SW_SHOOTING_LANE_NAME},
+        {'\\', SW_START, M_SW_START_NAME},
+        {'[', SW_MENU_LEFT, M_SW_MENU_LEFT_NAME},
+        {']', SW_MENU_RIGHT, M_SW_MENU_RIGHT_NAME},
     };
 
     byte gotten_tiddle: 1;
@@ -77,55 +77,35 @@ void EmulatorClass::set_switches_buffers(byte *buffers) {
 }
 
 void EmulatorClass::keys_help() {
-    LOG("Available keys");
-    // lets do 3 columns, gives us 10 lines, each column could be up to 25 characters
-    char line[128];
-    byte array_size = sizeof(keymap) / sizeof(keymap[0]);
-    LOG("+-------------------------------+-------------------------------+-------------------------------");
-    for (int i = 0; i < 13; i++) {
-        sprintf(line, "| %c %-28s| %c %-28s| %c %-28s |",
-            ( 0 + i < array_size) ? keymap[ 0 + i].chr : ' ',
-            ( 0 + i < array_size) ? keymap[ 0 + i].name : "",
-            (13 + i < array_size) ? keymap[13 + i].chr : ' ',
-            (13 + i < array_size) ? keymap[13 + i].name : "",
-            (26 + i < array_size) ? keymap[26 + i].chr : ' ',
-            (26 + i < array_size) ? keymap[26 + i].name : "");
-        LOG(line);
-    }
-    LOG("+-------------------------------+-------------------------------+-------------------------------");
-    LOG("Tiddle keeps next switch closed (no opening event is generated)");
+    LOGM(M_EMULATOR_SCREEN_01);
+    LOGM(M_EMULATOR_SCREEN_02);
+    LOGM(M_EMULATOR_SCREEN_03);
+    LOGM(M_EMULATOR_SCREEN_04);
+    LOGM(M_EMULATOR_SCREEN_05);
+    LOGM(M_EMULATOR_SCREEN_06);
+    LOGM(M_EMULATOR_SCREEN_07);
+    LOGM(M_EMULATOR_SCREEN_08);
+    LOGM(M_EMULATOR_SCREEN_09);
+    LOGM(M_EMULATOR_SCREEN_10);
+    LOGM(M_EMULATOR_SCREEN_11);
+    LOGM(M_EMULATOR_SCREEN_12);
+    LOGM(M_EMULATOR_SCREEN_13);
+    LOGM(M_EMULATOR_SCREEN_14);
+    LOGM(M_EMULATOR_SCREEN_15);
+    LOGM(M_EMULATOR_SCREEN_16);
+    LOGM(M_EMULATOR_SCREEN_17);
+    LOGM(M_EMULATOR_SCREEN_18);
+    LOGM(M_EMULATOR_SCREEN_19);
+    LOGM(M_EMULATOR_SCREEN_20);
+    LOGM(M_EMULATOR_SCREEN_21);
+    LOGM(M_EMULATOR_SCREEN_22);
+    LOGM(M_EMULATOR_SCREEN_23);
+    LOGM(M_EMULATOR_SCREEN_24);
+    LOGM(M_EMULATOR_SCREEN_25);
 }
 
 void EmulatorClass::show_status() {
 
-    #define DROP_TARGET(no)     (SwitchMatrix.is_switch_closed(no) ? '_' : '#')
-    #define LAMP(no)            (LampMatrix.is_on(no) ? '@' : '.')
-
-    LOG("+----------------------------+");
-    LOG("| Q           _ _ _ Y<*      |");
-    LOG("|  W * 173    * * *     \\    |");
-    LOG("|     * 40    E R T  (U*)\\   |");
-    LOG("|      * 30               \\  |");
-    LOG("|       * 20          I *_ | |");
-    LOG("|  <*    * 10   ( )   O *_ | |");
-    LOG("|A                    P *_ | |");
-    LOG("|S _2 * * *       * 4X     | |");
-    LOG("|D _4 * * *       * 2X     | |");
-    LOG("|  _6 * * *       * 1X     | |");
-    LOG("|  _8 * * *                | |");
-    LOG("|  9 *     * Sp     --[M]--| |");
-    LOG("|  _7 * * *         * 2500 | |");
-    LOG("|  _5 * * *         * 1600 | |");
-    LOG("|F _3 * * *        * 900   | |");
-    LOG("|  _1 * *         * 400    | |");
-    LOG("|     *77K   *8            | |");
-    LOG("|  *  \\    *6  *7    /  *  | |");
-    LOG("| |H| J\\ *4  *9  *5 /K |L| | |");
-    LOG("|G| |   \\  *2  *3  /   | |;| |");
-    LOG("|*           *1           *| |");
-    LOG("|          * ShAgn         |V|");
-    LOG("+------------------Z-X-C---+-+");
-    LOG("\\:Start  [:P1  ]:P2  ?:Help  /:Status  ~:Keep next switch down");
 }
 
 byte EmulatorClass::get_mapping(char chr) {
@@ -168,28 +148,28 @@ bool EmulatorClass::get_next_switch_event(byte *p_switch_no, byte *p_is_closed) 
     if (mapping == 0xFF)
         return false; // invalid keys ignored
 
-    //LOG("Emulator, switches bytes are 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-    //        switches_buffers[0], switches_buffers[1], switches_buffers[2], switches_buffers[3], switches_buffers[4]);
-
     register byte buffer_index = keymap[mapping].switch_no >> 3;
     register byte bit_offset = keymap[mapping].switch_no & 0x7;
     bool already_closed = (switches_buffers[buffer_index] >> bit_offset) & 0x01;
     if (already_closed) {
         // emulate switch opening
-        LOG("%s opened", keymap[mapping].name);
+        LOGM(M_SWITCH_OPENED);
+        LOGM(keymap[mapping].eeprom_message_no);
         *p_switch_no = keymap[mapping].switch_no;
         *p_is_closed = false;
     } else {
         // we will either keep it closed or just emulate a "click" (down
         if (gotten_tiddle) {
             // a tiddle keeps the switch closed.
-            LOG("%s closed", keymap[mapping].name);
+            LOGM(M_SWITCH_CLOSED);
+            LOGM(keymap[mapping].eeprom_message_no);
             *p_switch_no = keymap[mapping].switch_no;
             *p_is_closed = true;
             gotten_tiddle = false;
         } else {
             // the usual case is to close and open right after, emulating a "click"
-            LOG("%s clicked", keymap[mapping].name);
+            LOGM(M_SWITCH_CLICKED);
+            LOGM(keymap[mapping].eeprom_message_no);
             *p_switch_no = keymap[mapping].switch_no;
             *p_is_closed = true;
             switch_pending_opening = keymap[mapping].switch_no;

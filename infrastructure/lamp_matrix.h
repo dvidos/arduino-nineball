@@ -36,7 +36,7 @@ CLampMatrix::CLampMatrix()
 void CLampMatrix::init()
 {
     SET_LAMP_MATRIX_PINS_MODE();
-    LOG("Lamp Matrix initialized");
+    LOGM(M_LAMP_MATRIX_INITIALIZED);
 }
 
 void inline CLampMatrix::lamp_on(byte lamp_no)
@@ -74,17 +74,17 @@ bool CLampMatrix::is_on(byte lamp_no)
 void CLampMatrix::all_off()
 {
     memset(lamp_rows, 0, 8);
-    LOG("Lamps all off");
+    LOGM(M_ALL_LAMPS_OFF);
 }
 void CLampMatrix::column_on(byte column_no)
 {
     memset(lamp_rows, (1 << column_no), 8);
-    LOG("Lamps column %d ON", column_no);
+    LOGM(M_LAMPS_COLUMN_D_ON, column_no);
 }
 void CLampMatrix::row_on(byte row_no)
 {
     lamp_rows[(row_no & 0x07)] = 0xFF;
-    LOG("Lamps row %d ON", row_no);
+    LOGM(M_LAMPS_ROW_D_ON, row_no);
 }
 
 
